@@ -91,7 +91,8 @@ public final class BrowserWindow: NSWindow, Sendable {
     for window in NSApp.windows {
       if
         let browserWindow = window as? BrowserWindow,
-        browserWindow.windowModel.id == windowID
+        browserWindow.windowModel.id == windowID,
+        !browserWindow.isClosed
       {
         return browserWindow
       }
@@ -103,7 +104,8 @@ public final class BrowserWindow: NSWindow, Sendable {
     for window in NSApp.windows {
       if
         let browserWindow = window as? BrowserWindow,
-        browserWindow.viewModel.groupModel.id == groupID
+        browserWindow.viewModel.groupModel.id == groupID,
+        !browserWindow.isClosed
       {
         return browserWindow
       }
@@ -192,6 +194,7 @@ public final class BrowserWindow: NSWindow, Sendable {
 
   private let action: (Action) -> Void
   private var isFullScreen = false
+  private var isClosed = false
 
   private lazy var windowInteractionView = WindowInteractionView()
 
@@ -332,6 +335,8 @@ public final class BrowserWindow: NSWindow, Sendable {
   }
 
   private func willClose() {
+    isClosed = true
+
     action(.closed)
 
     // Try to discard resources even if the window itself leaks...
