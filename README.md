@@ -19,6 +19,16 @@ framework.
 [SparrowBrowser](SparrowBrowser) is a more full featured web browser, intended to put
 the framework to the test.
 
+## Build environment setup
+
+### macOS
+
+Make sure you have Xcode 26.4 (or later) installed.
+
+### Windows
+
+More steps. TODO: Enumerate them here :-D
+
 ## Build commands
 
 Debug:
@@ -33,6 +43,36 @@ Release:
   $ cmake -S . -B build-release -G Ninja -DCMAKE_BUILD_TYPE=Release`
   $ cmake --build build-release --target SparrowUIDemo`
   $ cmake --build build-release --target SparrowBrowser`
+```
+
+## Run the apps
+
+### macOS
+
+Debug:
+```
+  $ ./build-debug/SparrowUIDemo/SparrowUIDemo.app/Contents/MacOS/SparrowUIDemo
+  $ ./build-debug/SparrowBrowser/Sources/SparrowBrowser/SparrowBrowser.app/Contents/MacOS/SparrowBrowser
+```
+
+Release, macOS:
+```
+  $ ./build-debug/SparrowUIDemo/SparrowUIDemo.app/Contents/MacOS/SparrowUIDemo
+  $ ./build-debug/SparrowBrowser/Sources/SparrowBrowser/SparrowBrowser.app/Contents/MacOS/SparrowBrowser
+```
+
+### Windows
+
+Debug:
+```
+  $ ./build-debug/SparrowUIDemo/SparrowUIDemo.exe
+  $ ./build-debug/SparrowBrowser/Sources/SparrowBrowser/SparrowBrowser.exe
+```
+
+Release, macOS:
+```
+  $ ./build-release/SparrowUIDemo/SparrowUIDemo.exe
+  $ ./build-release/SparrowBrowser/Sources/SparrowBrowser/SparrowBrowser.exe
 ```
 
 ## License
