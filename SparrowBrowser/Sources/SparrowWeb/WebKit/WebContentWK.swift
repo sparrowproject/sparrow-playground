@@ -17,6 +17,7 @@ final class WebContentWK: NSObject, WebContent {
 
     super.init()
 
+    webView.allowsMagnification = true
     webView.navigationDelegate = self
     webView.uiDelegate = self
     webView.perform(NSSelectorFromString("_setIconLoadingDelegate:"), with: self)
