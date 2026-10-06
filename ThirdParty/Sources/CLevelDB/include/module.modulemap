@@ -1,0 +1,4 @@
+module CLevelDB {
+  header "shim.h"
+  export *
+}

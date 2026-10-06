@@ -1,0 +1,4 @@
+@MainActor
+public protocol CoreEventDispatcher {
+
+}
