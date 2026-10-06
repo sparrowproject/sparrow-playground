@@ -37,6 +37,13 @@ the framework to the test.
 
 More steps. TODO: Enumerate them here :-D
 
+1. Make sure you have a Swift on Windows development setup. Follow the instructions at [https://www.swift.org/install/windows/](https://www.swift.org/install/windows/).
+2. Install CMake & Ninja:
+```
+  $ winget install CMake
+  $ winget install ninja
+```
+
 ## Build commands
 
 Debug:
