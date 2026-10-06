@@ -23,7 +23,12 @@ the framework to the test.
 
 ### macOS
 
-Make sure you have Xcode 26.4 (or later) installed.
+1. Make sure you have Xcode 26.4 (or later) installed along with the command line tools.
+2. Install CMake & Ninja:
+```
+  $ brew install cmake
+  $ brew install ninja
+```
 
 ### Windows
 
