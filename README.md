@@ -24,6 +24,9 @@ the framework to the test.
 ### macOS
 
 1. Make sure you have Xcode 26.4 (or later) installed along with the command line tools.
+   You can either install Xcode from the App Store to have it automatically be upgraded,
+   or if you prefer to manage it yourself (hint: this is nice for knowing what version
+   you are using), then install directly from [https://developer.apple.com/download/all/?q=Xcode](https://developer.apple.com/download/all/?q=Xcode). Get the command line tools from that location as well.
 2. Install CMake & Ninja:
 ```
   $ brew install cmake
