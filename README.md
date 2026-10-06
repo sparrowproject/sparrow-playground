@@ -52,16 +52,16 @@ More steps. TODO: Enumerate them here :-D
 
 Debug:
 ```
-  $ cmake -S . -B build-debug -G Ninja -DCMAKE_BUILD_TYPE=Debug`
-  $ cmake --build build-debug --target SparrowUIDemo`
-  $ cmake --build build-debug --target SparrowBrowser`
+  $ cmake -S . -B build-debug -G Ninja -DCMAKE_BUILD_TYPE=Debug
+  $ cmake --build build-debug --target SparrowUIDemo
+  $ cmake --build build-debug --target SparrowBrowser
 ```
 
 Release:
 ```
-  $ cmake -S . -B build-release -G Ninja -DCMAKE_BUILD_TYPE=Release`
-  $ cmake --build build-release --target SparrowUIDemo`
-  $ cmake --build build-release --target SparrowBrowser`
+  $ cmake -S . -B build-release -G Ninja -DCMAKE_BUILD_TYPE=Release
+  $ cmake --build build-release --target SparrowUIDemo
+  $ cmake --build build-release --target SparrowBrowser
 ```
 
 ## Run the apps
