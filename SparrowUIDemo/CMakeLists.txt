@@ -65,6 +65,25 @@ target_link_libraries(SparrowUIDemo PRIVATE
   WinAppSupport
   WinUI
 )
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(AMD64|x86_64)$")
+  set(SparrowUIDemo_NUGET_RUNTIME_ARCH "x64")
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^(ARM64|aarch64)$")
+  set(SparrowUIDemo_NUGET_RUNTIME_ARCH "arm64")
+else()
+  set(SparrowUIDemo_NUGET_RUNTIME_ARCH "x86")
+endif()
+sparrow_glob_latest_nuget_file(SparrowUIDemo_WIN2D_CANVAS
+  "${SPARROW_WIN2D_PACKAGE_ROOT}/runtimes/win-${SparrowUIDemo_NUGET_RUNTIME_ARCH}/native/Microsoft.Graphics.Canvas.dll"
+)
+if(SparrowUIDemo_WIN2D_CANVAS)
+  add_custom_command(TARGET SparrowUIDemo POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+      "${SparrowUIDemo_WIN2D_CANVAS}"
+      "$<TARGET_FILE_DIR:SparrowUIDemo>/Microsoft.Graphics.Canvas.dll"
+  )
+else()
+  message(WARNING "Microsoft.Graphics.Canvas.dll was not found in the restored Win2D NuGet package; Win2D may fail to initialize at runtime.")
+endif()
 add_custom_command(TARGET SparrowUIDemo POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy_if_different
     "${CMAKE_SOURCE_DIR}/ThirdParty/Sources/CWinAppSDK/nuget/bin/Microsoft.WindowsAppRuntime.Bootstrap.dll"

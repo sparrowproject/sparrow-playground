@@ -40,8 +40,12 @@ More steps. TODO: Enumerate them here :-D
 1. Make sure you have a Swift on Windows development setup. Follow the instructions at [https://www.swift.org/install/windows/](https://www.swift.org/install/windows/).
 2. Install CMake & Ninja:
 ```
-  $ winget install CMake
-  $ winget install ninja
+  $ winget install Kitware.CMake
+  $ winget install Ninja-build.Ninja
+```
+3. Install NuGet CLI:
+```
+  $ winget install Microsoft.NuGet
 ```
 
 ## Build commands

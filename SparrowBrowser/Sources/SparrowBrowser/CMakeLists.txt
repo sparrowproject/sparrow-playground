@@ -101,49 +101,42 @@ else()
   set(SparrowBrowser_NUGET_RUNTIME_ARCH "x86")
 endif()
 
-file(TO_CMAKE_PATH "$ENV{USERPROFILE}" SparrowBrowser_USERPROFILE)
-file(GLOB SparrowBrowser_WEBVIEW2_LOADER_CANDIDATES
-  "${SparrowBrowser_USERPROFILE}/.nuget/packages/microsoft.web.webview2/*/build/native/${SparrowBrowser_WEBVIEW2_ARCH}/WebView2Loader.dll"
-  "${SparrowBrowser_USERPROFILE}/.nuget/packages/microsoft.web.webview2/*/runtimes/win-${SparrowBrowser_WEBVIEW2_ARCH}/native/WebView2Loader.dll"
+sparrow_glob_latest_nuget_file(SparrowBrowser_WEBVIEW2_LOADER
+  "${SPARROW_WEBVIEW2_PACKAGE_ROOT}/build/native/${SparrowBrowser_WEBVIEW2_ARCH}/WebView2Loader.dll"
+  "${SPARROW_WEBVIEW2_PACKAGE_ROOT}/runtimes/win-${SparrowBrowser_WEBVIEW2_ARCH}/native/WebView2Loader.dll"
 )
-file(GLOB SparrowBrowser_WEBVIEW2_CORE_CANDIDATES
-  "${SparrowBrowser_USERPROFILE}/.nuget/packages/microsoft.web.webview2/*/runtimes/win-${SparrowBrowser_WEBVIEW2_ARCH}/native_uap/Microsoft.Web.WebView2.Core.dll"
+sparrow_glob_latest_nuget_file(SparrowBrowser_WEBVIEW2_CORE
+  "${SPARROW_WEBVIEW2_PACKAGE_ROOT}/runtimes/win-${SparrowBrowser_WEBVIEW2_ARCH}/native_uap/Microsoft.Web.WebView2.Core.dll"
 )
-file(GLOB SparrowBrowser_WIN2D_CANVAS_CANDIDATES
-  "${SparrowBrowser_USERPROFILE}/.nuget/packages/microsoft.graphics.win2d/*/runtimes/win-${SparrowBrowser_NUGET_RUNTIME_ARCH}/native/Microsoft.Graphics.Canvas.dll"
+sparrow_glob_latest_nuget_file(SparrowBrowser_WIN2D_CANVAS
+  "${SPARROW_WIN2D_PACKAGE_ROOT}/runtimes/win-${SparrowBrowser_NUGET_RUNTIME_ARCH}/native/Microsoft.Graphics.Canvas.dll"
 )
-if(SparrowBrowser_WEBVIEW2_LOADER_CANDIDATES)
-  list(SORT SparrowBrowser_WEBVIEW2_LOADER_CANDIDATES COMPARE NATURAL)
-  list(GET SparrowBrowser_WEBVIEW2_LOADER_CANDIDATES -1 SparrowBrowser_WEBVIEW2_LOADER)
+if(SparrowBrowser_WEBVIEW2_LOADER)
   add_custom_command(TARGET SparrowBrowser POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
       "${SparrowBrowser_WEBVIEW2_LOADER}"
       "$<TARGET_FILE_DIR:SparrowBrowser>/WebView2Loader.dll"
   )
 else()
-  message(WARNING "WebView2Loader.dll was not found in the local NuGet cache; WebView2 may fail to initialize at runtime.")
+  message(WARNING "WebView2Loader.dll was not found in the restored WebView2 NuGet package; WebView2 may fail to initialize at runtime.")
 endif()
-if(SparrowBrowser_WEBVIEW2_CORE_CANDIDATES)
-  list(SORT SparrowBrowser_WEBVIEW2_CORE_CANDIDATES COMPARE NATURAL)
-  list(GET SparrowBrowser_WEBVIEW2_CORE_CANDIDATES -1 SparrowBrowser_WEBVIEW2_CORE)
+if(SparrowBrowser_WEBVIEW2_CORE)
   add_custom_command(TARGET SparrowBrowser POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
       "${SparrowBrowser_WEBVIEW2_CORE}"
       "$<TARGET_FILE_DIR:SparrowBrowser>/Microsoft.Web.WebView2.Core.dll"
   )
 else()
-  message(WARNING "Microsoft.Web.WebView2.Core.dll was not found in the local NuGet cache; WebView2 may fail to initialize at runtime.")
+  message(WARNING "Microsoft.Web.WebView2.Core.dll was not found in the restored WebView2 NuGet package; WebView2 may fail to initialize at runtime.")
 endif()
-if(SparrowBrowser_WIN2D_CANVAS_CANDIDATES)
-  list(SORT SparrowBrowser_WIN2D_CANVAS_CANDIDATES COMPARE NATURAL)
-  list(GET SparrowBrowser_WIN2D_CANVAS_CANDIDATES -1 SparrowBrowser_WIN2D_CANVAS)
+if(SparrowBrowser_WIN2D_CANVAS)
   add_custom_command(TARGET SparrowBrowser POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
       "${SparrowBrowser_WIN2D_CANVAS}"
       "$<TARGET_FILE_DIR:SparrowBrowser>/Microsoft.Graphics.Canvas.dll"
   )
 else()
-  message(WARNING "Microsoft.Graphics.Canvas.dll was not found in the local NuGet cache; Win2D may fail to initialize at runtime.")
+  message(WARNING "Microsoft.Graphics.Canvas.dll was not found in the restored Win2D NuGet package; Win2D may fail to initialize at runtime.")
 endif()
 
 add_custom_command(TARGET SparrowBrowser POST_BUILD

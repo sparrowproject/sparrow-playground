@@ -6,6 +6,11 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
 
 project(SwiftPlayground LANGUAGES Swift C CXX)
 
+if(WIN32)
+  include(cmake/SparrowNuGet.cmake)
+  sparrow_restore_windows_nuget_packages()
+endif()
+
 add_compile_options(
   "$<$<AND:$<COMPILE_LANGUAGE:Swift>,$<CONFIG:Debug>>:-DDEBUG>"
 )
