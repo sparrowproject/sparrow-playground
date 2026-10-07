@@ -26,18 +26,12 @@ final class LiveTabsManager {
       return nil
     }
 
-    // let initialURL = tabModel.url
-
     let liveTab = DefaultLiveTab(dependencies: dependencies, tabModel: tabModel, webContent: webContent)
     liveTab.webContent.action = { [weak self] in
       self?.handleWebContentAction($0, tabID: tabModel.id)
     }
 
     model.liveTabs[tabModel.id] = liveTab
-
-    // if let initialURL {
-    //   liveTab.load(.init(url: initialURL))
-    // }
     return liveTab
   }
 
@@ -60,6 +54,8 @@ final class LiveTabsManager {
     switch action {
     case .createdNew(let webContent):
       self.action?(.createNewTabWithContent(webContent, openerID: tabID))
+    case .downloadStarted(let webDownload):
+      break // TODO: Implement me!
     }
   }
 }

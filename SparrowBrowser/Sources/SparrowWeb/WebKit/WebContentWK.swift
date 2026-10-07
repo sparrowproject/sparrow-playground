@@ -174,6 +174,22 @@ extension WebContentWK: WKNavigationDelegate {
     print(">>> NAVIGATION ERROR:", error)
   }
 
+  func webView(
+    _ webView: WKWebView,
+    navigationResponse: WKNavigationResponse,
+    didBecome download: WKDownload
+  ) {
+    print(">>> navigation response did become download!")
+  }
+
+  func webView(
+    _ webView: WKWebView,
+    navigationAction: WKNavigationAction,
+    didBecome download: WKDownload
+  ) {
+    print(">>> navigation action did become download!")
+  }
+
   // This private selector is implemented so we can learn when the URL of the
   // page changes without the underlying document changing. This way we can
   // associate the new page URL with the same favicon.
