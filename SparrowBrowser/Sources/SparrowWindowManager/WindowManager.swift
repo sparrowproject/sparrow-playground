@@ -244,11 +244,12 @@ final class DefaultWindowManager: WindowManager {
   }
 
   private func browserWindowContainer(for browserWindowModel: BrowserWindowModel) -> BrowserWindowContainer {
-    let container = dependencies.profileSystem.container(for: browserWindowModel.profileID)
+    let profileID = browserWindowModel.profileID
+    let container = dependencies.profileSystem.container(for: profileID)
 
     // TODO: Would be nice to avoid setting this repeatedly.
     container.tabSystem.action = { [weak self] in
-      self?.handleTabSystemAction($0)
+      self?.handleTabSystemAction($0, for: profileID)
     }
 
     return .init(browserWindowModel: browserWindowModel, profileContainer: container)
@@ -256,12 +257,17 @@ final class DefaultWindowManager: WindowManager {
 
   private let dependencies: WindowManagerDependencies
 
-  private func handleTabSystemAction(_ action: TabSystemAction) {
+  private func handleTabSystemAction(_ action: TabSystemAction, for profileID: ProfileID) {
     switch action {
     case .newTabRequested(_, let completion):
       withAnimation {
         completion(.continue)
       }
+    case .startDownload(let webDownload, let tabID):
+      print(">>> handling .startDownload")
+      dependencies.profileSystem.container(for: profileID).downloadsManager.startDownload(
+        webDownload, forTab: tabID
+      )
     }
   }
 }

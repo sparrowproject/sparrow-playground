@@ -1,4 +1,5 @@
 import Foundation
+import SparrowDownloads
 import SparrowNetwork
 import SparrowProfileModel
 import SparrowSpaces
@@ -12,7 +13,8 @@ import SparrowWindow
 import SparrowWindowModel
 
 public protocol ProfileContainer
-  : NetworkServiceProviding
+  : DownloadsManagerProviding
+  , NetworkServiceProviding
   , ProfileIDProviding
   , ProfileModelProviding
   , SpaceGridModelProviding
@@ -42,6 +44,13 @@ struct NormalProfileContainer: LiveContainer, ProfileContainer, StorageSystemPro
     // MODULE DEPENDENCY TREE
 
     let storagePaths = ProfileStoragePaths(index: profileModel.index, rootPaths: dependencies.storagePaths)
+
+    let downloadsManager = {
+      @MainActor
+      struct Container: DownloadsManagerDependencies {}
+      let container = Container()
+      return Factory<DownloadsManager>.makeDefaultInstance(dependencies: container)
+    }()
 
     let networkService = {
       @MainActor
@@ -122,6 +131,7 @@ struct NormalProfileContainer: LiveContainer, ProfileContainer, StorageSystemPro
     // Store exported modules:
 
     self.dependencies = dependencies
+    self.downloadsManager = downloadsManager
     self.networkService = networkService
     self.profileModel = profileModel
     self.spaceGridModel = spaceStore.model
@@ -133,6 +143,7 @@ struct NormalProfileContainer: LiveContainer, ProfileContainer, StorageSystemPro
   }
 
   let dependencies: ProfileContainerDependencies
+  let downloadsManager: DownloadsManager
   let networkService: NetworkService
   let profileModel: ProfileModel
   let spaceGridModel: SpaceGridModel
@@ -203,6 +214,7 @@ struct IncognitoProfileContainer: LiveContainer, ProfileContainer {
 
     // Store exported modules:
 
+    downloadsManager = normalContainer.downloadsManager
     self.networkService = networkService
     self.spaceGridModel = spaceGridModel
     self.suggestService = suggestService
@@ -211,6 +223,7 @@ struct IncognitoProfileContainer: LiveContainer, ProfileContainer {
     windowSystemModel = normalContainer.windowSystemModel
   }
 
+  let downloadsManager: DownloadsManager
   let networkService: NetworkService
   let profileModel: ProfileModel
   let spaceGridModel: SpaceGridModel

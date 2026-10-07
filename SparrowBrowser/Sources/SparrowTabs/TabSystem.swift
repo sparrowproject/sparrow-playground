@@ -1,4 +1,5 @@
 import SparrowToolbelt
+import SparrowWeb
 
 @MainActor
 public protocol TabSystem: AnyObject {
@@ -41,6 +42,7 @@ public typealias TabSystemDependencies
 @MainActor
 public enum TabSystemAction {
   case newTabRequested(byTab: TabID, completion: (TabSystemNewTabPolicy) -> Void)
+  case startDownload(WebDownload, fromTab: TabID)
 }
 
 @MainActor
@@ -245,15 +247,17 @@ final class DefaultTabSystem: TabSystem {
   private func handleLiveTabsManagerAction(_ action: LiveTabsManager.Action) {
     switch action {
     case .createNewTabWithContent(let webContent, let openerTabID):
-      print(">>> createNewTabWithContent, openerTabID: \(openerTabID)")
+      self.action?(handleCreateNewTab(withWebContent: webContent, openerTabID: openerTabID))
+    case .startDownload(let webDownload, let openerTabID):
+      self.action?(.startDownload(webDownload, fromTab: openerTabID))
+    }
+  }
 
-      // TODO: We should instead expose this up so that the `BrowserWindowViewModel`
-      // can be involved in routing the new tab to the right group (possibly creating
-      // a new top-level group). This should also give `BrowserWindowViewModel` the
-      // ability to wrap operations in a `withAnimation` block.
-
-      func completion(_ newTabPolicy: TabSystemNewTabPolicy) {
-        guard newTabPolicy == .continue else { return }
+  private func handleCreateNewTab(withWebContent webContent: WebContent, openerTabID: TabID) -> TabSystemAction {
+    .newTabRequested(
+      byTab: openerTabID,
+      completion: { [weak self] newTabPolicy in
+        guard newTabPolicy == .continue, let self else { return }
 
         let openerTabModel = model(forTab: openerTabID)
         let groupID = openerTabModel.groupID
@@ -276,8 +280,6 @@ final class DefaultTabSystem: TabSystem {
         // TODO: make this configurable!
         select(tab: tabID)
       }
-
-      self.action?(.newTabRequested(byTab: openerTabID, completion: completion))
-    }
+    )
   }
 }

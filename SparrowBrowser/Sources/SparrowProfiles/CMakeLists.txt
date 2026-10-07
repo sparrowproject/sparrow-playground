@@ -8,6 +8,7 @@ set_target_properties(SparrowProfiles PROPERTIES
   OUTPUT_NAME "libSparrowProfiles"
 )
 target_link_libraries(SparrowProfiles PUBLIC
+  SparrowDownloads
   SparrowProfileModel
   SparrowStorage
   SparrowStorageBase

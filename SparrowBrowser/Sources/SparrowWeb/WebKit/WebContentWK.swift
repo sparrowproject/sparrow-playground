@@ -179,7 +179,7 @@ extension WebContentWK: WKNavigationDelegate {
     navigationResponse: WKNavigationResponse,
     didBecome download: WKDownload
   ) {
-    print(">>> navigation response did become download!")
+    action?(.downloadStarting(WebDownloadWK(download: download)))
   }
 
   func webView(
@@ -187,7 +187,7 @@ extension WebContentWK: WKNavigationDelegate {
     navigationAction: WKNavigationAction,
     didBecome download: WKDownload
   ) {
-    print(">>> navigation action did become download!")
+    action?(.downloadStarting(WebDownloadWK(download: download)))
   }
 
   // This private selector is implemented so we can learn when the URL of the

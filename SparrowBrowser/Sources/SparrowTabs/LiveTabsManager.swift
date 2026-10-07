@@ -6,7 +6,8 @@ typealias LiveTabsManagerDependencies
 @MainActor
 final class LiveTabsManager {
   enum Action {
-    case createNewTabWithContent(WebContent, openerID: TabID)
+    case createNewTabWithContent(WebContent, requestingTab: TabID)
+    case startDownload(WebDownload, requestingTab: TabID)
   }
 
   init(dependencies: LiveTabsManagerDependencies, model: TabSystemModel) {
@@ -53,9 +54,9 @@ final class LiveTabsManager {
   private func handleWebContentAction(_ action: WebContentAction, tabID: TabID) {
     switch action {
     case .createdNew(let webContent):
-      self.action?(.createNewTabWithContent(webContent, openerID: tabID))
-    case .downloadStarted(let webDownload):
-      break // TODO: Implement me!
+      self.action?(.createNewTabWithContent(webContent, requestingTab: tabID))
+    case .downloadStarting(let webDownload):
+      self.action?(.startDownload(webDownload, requestingTab: tabID))
     }
   }
 }

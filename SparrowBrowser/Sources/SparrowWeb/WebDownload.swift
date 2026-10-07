@@ -2,5 +2,7 @@ import Foundation
 
 @MainActor
 public protocol WebDownload {
-  var url: URL? { get }
+  var model: WebDownloadModel { get }
+
+  func cancel()
 }
