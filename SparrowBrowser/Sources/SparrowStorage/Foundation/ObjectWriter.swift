@@ -13,14 +13,14 @@ final class ObjectWriter<T: Codable & Sendable & Equatable> {
   func write(_ obj: T) {
     pendingObject = obj
 
-    pendingTask?.cancel()
+    guard pendingTask == nil else { return }
+
     pendingTask = .init {
       try? await Task.sleep(for: .milliseconds(200))
       guard !Task.isCancelled else { return }
 
       // Avoid redundant writes.
       if pendingObject != currentObject {
-        // print(">>> pendingObject: \(pendingObject) != currentObject: \(currentObject)")
         print(">>> writeObject, toFile: \(fileURL)")
         dispatchQueue.async { [pendingObject, fileURL] in
           writeObject(pendingObject, toFile: fileURL)

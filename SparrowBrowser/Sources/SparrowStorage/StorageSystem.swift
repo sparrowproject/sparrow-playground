@@ -1,3 +1,4 @@
+import SparrowDownloads
 import SparrowStorageBase
 import SparrowTabs
 import SparrowToolbelt
@@ -15,7 +16,8 @@ public protocol StorageSystemProviding {
 }
 
 public typealias StorageSystemDependencies
-  = SpaceStoreProviding
+  = DownloadsManagerProviding
+  & SpaceStoreProviding
   & StoragePathsProviding
   & TabSystemProviding
   & WebHistoryProviding
@@ -31,12 +33,16 @@ final class DefaultStorageSystem: StorageSystem {
     self.dependencies = dependencies
     tabStore = .init(dependencies: dependencies)
     tabGroupStore = .init(dependencies: dependencies)
+    downloadInfoStore = .init(dependencies: dependencies)
   }
 
   func initialize() async {
     await withTaskGroup(of: Void.self) { group in
       group.addTask {
         await self.initializeTabSystem()
+      }
+      group.addTask {
+        await self.initializeDownloadInfoStore()
       }
       group.addTask {
         await self.initializeSpaceStore()
@@ -54,6 +60,9 @@ final class DefaultStorageSystem: StorageSystem {
     if let task = tabGroupStore.shutdown() {
       tasks.append(task)
     }
+    if let task = downloadInfoStore.shutdown() {
+      tasks.append(task)
+    }
     if let task = dependencies.spaceStore.shutdown() {
       tasks.append(task)
     }
@@ -67,6 +76,7 @@ final class DefaultStorageSystem: StorageSystem {
   private let dependencies: StorageSystemDependencies
   private let tabStore: TabStore
   private let tabGroupStore: TabGroupStore
+  private let downloadInfoStore: DownloadInfoStore
 
   private func initializeTabSystem() async {
     await dependencies.tabSystem.initialize { tabSystemInitializer in
@@ -81,6 +91,10 @@ final class DefaultStorageSystem: StorageSystem {
     }
     tabStore.setUpObservers()
     tabGroupStore.setUpObservers()
+  }
+
+  private func initializeDownloadInfoStore() async {
+    await downloadInfoStore.initialize()
   }
 
   private func initializeSpaceStore() async {

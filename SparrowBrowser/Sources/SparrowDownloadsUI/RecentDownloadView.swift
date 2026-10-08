@@ -61,6 +61,7 @@ struct RecentDownloadView: View {
         // Debounce
         detailToApply = detail
         guard detailTask == nil else { return }
+        self.detail = detailToApply
         detailTask = Task<Void, Never> {
           try? await Task.sleep(for: .milliseconds(200))
           self.detail = detailToApply

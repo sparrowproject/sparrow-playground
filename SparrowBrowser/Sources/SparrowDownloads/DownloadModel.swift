@@ -6,16 +6,21 @@ import Tagged
 @Observable
 @MainActor
 public final class DownloadModel {
+  public init(
+    id: DownloadID,
+    creationTime: Date = .now,
+    webDownloadModel: WebDownloadModel? = nil
+  ) {
+    self.id = id
+    self.creationTime = creationTime
+    self.webDownloadModel = webDownloadModel
+  }
+
   public let id: DownloadID
   public let creationTime: Date
 
   /// An in-progress or complete download will have an associated `WebDownloadModel`.
   public var webDownloadModel: WebDownloadModel?
-
-  init(id: DownloadID) {
-    self.id = id
-    creationTime = .now
-  }
 }
 
 extension DownloadModel: Identifiable {}

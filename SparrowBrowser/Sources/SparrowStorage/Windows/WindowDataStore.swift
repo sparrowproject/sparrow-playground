@@ -24,7 +24,7 @@ extension Factory where Interface == WindowDataStore {
   }
 }
 
-final class DefaultWindowDataStore: WindowDataStore {
+private final class DefaultWindowDataStore: WindowDataStore {
   init(dependencies: WindowDataStoreDependencies) {
     self.dependencies = dependencies
   }

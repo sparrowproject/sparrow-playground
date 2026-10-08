@@ -15,6 +15,7 @@ target_link_libraries(SparrowStorage PUBLIC
   SparrowStorageBase
 )
 target_link_libraries(SparrowStorage PRIVATE
+  SparrowDownloads
   SparrowProfileModel
   SparrowSpaces
   SparrowTabs

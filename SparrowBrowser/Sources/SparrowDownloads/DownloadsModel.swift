@@ -8,7 +8,7 @@ import Tagged
 public final class DownloadsModel {
   public var downloads = OrderedDictionary<DownloadID, DownloadModel>()
 
-  init() {}
+  public init() {}
 }
 
 extension DownloadsModel {

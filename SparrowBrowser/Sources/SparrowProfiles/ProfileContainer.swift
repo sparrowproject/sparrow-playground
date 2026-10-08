@@ -114,12 +114,14 @@ struct NormalProfileContainer: LiveContainer, ProfileContainer, StorageSystemPro
     let storageSystem = {
       @MainActor
       struct Container: StorageSystemDependencies {
+        let downloadsManager: DownloadsManager
         let spaceStore: SpaceStore
         let storagePaths: StoragePaths
         let tabSystem: TabSystem
         let webHistory: WebHistory
       }
       let container = Container(
+        downloadsManager: downloadsManager,
         spaceStore: spaceStore,
         storagePaths: storagePaths,
         tabSystem: tabSystem,
