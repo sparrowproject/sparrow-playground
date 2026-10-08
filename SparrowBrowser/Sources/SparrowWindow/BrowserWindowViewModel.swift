@@ -15,10 +15,6 @@ import SparrowUICore
 import SparrowUIFoundation
 import SparrowWeb
 
-#if os(macOS)
-import AppKit
-#endif
-
 public typealias BrowserWindowViewModelDependencies
   = BrowserWindowOverlayViewModelDependencies
   & ContentViewModelDependencies
@@ -350,17 +346,13 @@ public final class BrowserWindowViewModel {
     case .cancel(let downloadID):
       dependencies.downloadsManager.cancelDownload(withID: downloadID)
     case .openFile(let downloadID):
-      #if os(macOS)
       if let fileLocation = dependencies.downloadsManager.model.downloads[downloadID]?.fileLocation {
-        NSWorkspace.shared.open(fileLocation)
+        ShellUtils.openFile(fileLocation)
       }
-      #endif
     case .openFolder(let downloadID):
-      #if os(macOS)
       if let fileLocation = dependencies.downloadsManager.model.downloads[downloadID]?.fileLocation {
-        NSWorkspace.shared.activateFileViewerSelecting([fileLocation])
+        ShellUtils.openFolder(fileLocation)
       }
-      #endif
     }
   }
 
