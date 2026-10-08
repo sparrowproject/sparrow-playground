@@ -25,7 +25,7 @@ extension DownloadModel {
     switch webDownloadModel?.status {
     case .starting, .downloading:
       true
-    case .completed, .failed, .none:
+    case .completed, .cancelled, .failed, .none:
       false
     }
   }

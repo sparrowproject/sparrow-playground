@@ -347,6 +347,8 @@ public final class BrowserWindowViewModel {
 
   private func handleDownloadsAction(_ action: RecentDownloadsView.Action) {
     switch action {
+    case .cancel(let downloadID):
+      dependencies.downloadsManager.cancelDownload(withID: downloadID)
     case .openFile(let downloadID):
       #if os(macOS)
       if let fileLocation = dependencies.downloadsManager.model.downloads[downloadID]?.fileLocation {

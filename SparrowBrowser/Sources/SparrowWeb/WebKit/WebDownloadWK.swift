@@ -19,7 +19,7 @@ final class WebDownloadWK: NSObject, WebDownload {
 
     download.cancel()
 
-    model.status = .failed
+    model.status = .cancelled
   }
 
   private let download: WKDownload

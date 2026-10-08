@@ -5,6 +5,7 @@ import SparrowUI
 
 public struct RecentDownloadsView: View {
   public enum Action {
+    case cancel(DownloadID)
     case openFile(for: DownloadID)
     case openFolder(for: DownloadID)
   }
@@ -47,6 +48,8 @@ public struct RecentDownloadsView: View {
 
   private func handleDownloadAction(_ action: RecentDownloadView.Action, for download: DownloadModel) {
     switch action {
+    case .cancel:
+      self.action(.cancel(download.id))
     case .openFile:
       self.action(.openFile(for: download.id))
     case .openFolder:

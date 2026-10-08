@@ -155,7 +155,12 @@ public struct ContentToolbarView: View {
     PopoverButton(
       content: { controller in
         RecentDownloadsView(viewModel: viewModel.recentDownloadsViewModel) {
-          controller.dismiss()
+          switch $0 {
+          case .cancel:
+            break
+          case .openFile, .openFolder:
+            controller.dismiss()
+          }
           action(.downloads($0))
         }
       },

@@ -21,5 +21,6 @@ public enum WebDownloadStatus {
   case starting
   case downloading
   case completed
+  case cancelled
   case failed
 }

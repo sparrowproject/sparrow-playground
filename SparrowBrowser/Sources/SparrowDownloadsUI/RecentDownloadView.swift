@@ -5,6 +5,7 @@ import SparrowUI
 
 struct RecentDownloadView: View {
   enum Action {
+    case cancel
     case openFile
     case openFolder
   }
@@ -38,11 +39,17 @@ struct RecentDownloadView: View {
           }
           .width(cardWidth(for: geom, config: config))
 
-          showInFolderButton
-            .width(folderButtonSize(for: geom))
-            .height(folderButtonSize(for: geom))
+          cancelButton
+            .width(buttonSize(for: geom))
+            .height(buttonSize(for: geom))
             .alignment(.trailing)
-            .visible(config.isHovered)
+            .visible(config.isHovered && download.isPending)
+
+          showInFolderButton
+            .width(buttonSize(for: geom))
+            .height(buttonSize(for: geom))
+            .alignment(.trailing)
+            .visible(config.isHovered && !download.isPending)
         }
         .padding(.all, Metrics.padding)
       }
@@ -73,6 +80,16 @@ struct RecentDownloadView: View {
   @State private var detailToApply: String = ""
   @State private var detailTask: Task<Void, Never>?
 
+  private var cancelButton: some View {
+    Button {
+      action(.cancel)
+    } label: {
+      Symbol(source: cancelButtonSymbol)
+        .tintColor(.primaryText)
+    }
+    .buttonStyle(.standard)
+  }
+
   private var showInFolderButton: some View {
     Button {
       action(.openFolder)
@@ -83,6 +100,14 @@ struct RecentDownloadView: View {
     .buttonStyle(.standard)
   }
 
+  private var cancelButtonSymbol: SymbolSource {
+    #if os(macOS)
+    .init(systemName: "xmark", size: 9)
+    #elseif os(Windows)
+    .init(glyph: "\u{e711}", size: 9) // Cancel
+    #endif
+  }
+
   private var folderButtonSymbol: SymbolSource {
     #if os(macOS)
     .init(systemName: "folder", size: 9)
@@ -91,23 +116,23 @@ struct RecentDownloadView: View {
     #endif
   }
 
-  private func folderButtonSize(for geom: GeometryProxy) -> CGFloat {
+  private func buttonSize(for geom: GeometryProxy) -> CGFloat {
     geom.height - 2 * Metrics.padding
   }
 
   private func filenameHeight(for geom: GeometryProxy) -> CGFloat {
-    let availableHeight = folderButtonSize(for: geom)
+    let availableHeight = buttonSize(for: geom)
     return availableHeight * 0.55
   }
 
   private func detailHeight(for geom: GeometryProxy) -> CGFloat {
-    let availableHeight = folderButtonSize(for: geom)
+    let availableHeight = buttonSize(for: geom)
     return availableHeight * 0.45
   }
 
   private func cardWidth(for geom: GeometryProxy, config: ButtonConfig) -> CGFloat {
     if config.isHovered {
-      geom.width - folderButtonSize(for: geom) - 3 * Metrics.padding
+      geom.width - buttonSize(for: geom) - 3 * Metrics.padding
     } else {
       geom.width - 2 * Metrics.padding
     }
@@ -127,6 +152,8 @@ extension DownloadModel {
         progressDescription
       case .completed:
         "Done"
+      case .cancelled:
+        "Cancelled"
       case .failed:
         "Failed"
       }
