@@ -133,12 +133,12 @@ extension DownloadModel {
     if webDownloadModel.status == .failed {
       return displayStatus
     }
-    return "\(prettyPrintBytes(webDownloadModel.bytesReceived)) - \(displayStatus)"
+    return "\(displayStatus) - \(prettyPrintBytes(webDownloadModel.bytesReceived))"
   }
   
   fileprivate var progressDescription: String {
     if
-      let estimatedTimeRemaining = webDownloadModel?.estimatedTimeRemaining,
+      let estimatedTimeRemaining,
       let intervalAsString = prettyPrintInterval(estimatedTimeRemaining)
     {
       return "\(intervalAsString) remaining"
@@ -153,9 +153,9 @@ private func prettyPrintBytes(_ bytes: Int64) -> String {
 
 private func prettyPrintInterval(_ interval: TimeInterval) -> String? {
   let formatter = DateComponentsFormatter()
-  formatter.allowedUnits = [.minute, .second]
-  formatter.unitsStyle = .positional
-  formatter.zeroFormattingBehavior = .pad
+  formatter.allowedUnits = [.hour, .minute, .second]
+  formatter.unitsStyle = abs(interval) < 60 ? .full : .positional
+  formatter.zeroFormattingBehavior = .dropLeading
 
   return formatter.string(from: interval)
 }

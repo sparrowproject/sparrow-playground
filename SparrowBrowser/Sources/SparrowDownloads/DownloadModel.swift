@@ -39,6 +39,21 @@ extension DownloadModel {
   }
 
   public var estimatedTimeRemaining: TimeInterval? {
-    // TODO: Implement me!
+    guard
+      isPending,
+      let webDownloadModel,
+      let totalBytes = webDownloadModel.totalBytesToReceive,
+      totalBytes > 0,
+      webDownloadModel.bytesReceived > 0
+    else { return nil }
+
+    let bytesReceived = webDownloadModel.bytesReceived
+    guard bytesReceived < totalBytes else { return 0 }
+
+    let elapsedTime = Date.now.timeIntervalSince(creationTime)
+    guard elapsedTime > 0 else { return nil }
+
+    let averageBytesPerSecond = Double(bytesReceived) / elapsedTime
+    return Double(totalBytes - bytesReceived) / averageBytesPerSecond
   }
 }
