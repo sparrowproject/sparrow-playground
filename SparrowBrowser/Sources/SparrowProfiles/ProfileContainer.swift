@@ -166,6 +166,13 @@ struct IncognitoProfileContainer: LiveContainer, ProfileContainer {
 
     let webHistory = Factory<WebHistory>.makeInMemoryInstance()
 
+    let downloadsManager = {
+      @MainActor
+      struct Container: DownloadsManagerDependencies {}
+      let container = Container()
+      return Factory<DownloadsManager>.makeDefaultInstance(dependencies: container)
+    }()
+
     let networkService = {
       @MainActor
       struct Container: NetworkServiceDependencies {}
@@ -214,7 +221,7 @@ struct IncognitoProfileContainer: LiveContainer, ProfileContainer {
 
     // Store exported modules:
 
-    downloadsManager = normalContainer.downloadsManager
+    self.downloadsManager = downloadsManager
     self.networkService = networkService
     self.spaceGridModel = spaceGridModel
     self.suggestService = suggestService

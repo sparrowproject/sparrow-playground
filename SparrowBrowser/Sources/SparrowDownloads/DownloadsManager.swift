@@ -1,3 +1,4 @@
+import Observation
 import SparrowTabs
 import SparrowToolbelt
 import SparrowWeb
@@ -6,7 +7,10 @@ import SparrowWeb
 public protocol DownloadsManager {
   var model: DownloadsModel { get }
 
-  func startDownload(_: WebDownload, forTab: TabID)
+  @discardableResult
+  func startDownload(_: WebDownload, forTab: TabID) -> DownloadID
+
+  func cancelDownload(withID: DownloadID)
 }
 
 public protocol DownloadsManagerProviding {
@@ -30,7 +34,7 @@ final class DefaultDownloadsManager: DownloadsManager {
 
   let model = DownloadsModel()
 
-  func startDownload(_ webDownload: WebDownload, forTab tabID: TabID) {
+  func startDownload(_ webDownload: WebDownload, forTab tabID: TabID) -> DownloadID {
     let id = DownloadID()
 
     let downloadModel = DownloadModel(id: id)
@@ -39,23 +43,22 @@ final class DefaultDownloadsManager: DownloadsManager {
     model.downloads[id] = downloadModel
     activeDownloads[id] = webDownload
 
-    print(">>> should call startDownloading")
+    // Monitor the download to determine when it is no longer active.
+    Task<Void, Never> {
+      for await isPending in Observations({ downloadModel.isPending }) {
+        if !isPending {
+          activeDownloads.removeValue(forKey: id)          
+        }
+      }
+    }
 
-    // let fileLocation = generateFileLocation(for: webDownload)
+    return id
+  }
 
-    // webDownload.startDownloading(to: fileLocation)
+  func cancelDownload(withID id: DownloadID) {
+    activeDownloads.removeValue(forKey: id)?.cancel()
   }
 
   private let dependencies: DownloadsManagerDependencies
   private var activeDownloads = [DownloadID: WebDownload]()
-
-  // private func generateFileLocation(for webDownload: WebDownload) -> URL {
-  //   let downloadsURL = FileManager.default.url(
-  //     for: .downloadsDirectory,
-  //     in: .userDomainMask,
-  //     appropriateFor: nil,
-  //     create: false
-  //   )
-  //   return downloadsURL.appendPathComponent(webDownload.suggestedFilename)
-  // }
 }

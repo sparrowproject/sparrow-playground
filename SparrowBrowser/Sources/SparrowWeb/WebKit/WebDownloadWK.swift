@@ -44,7 +44,14 @@ extension WebDownloadWK: WKDownloadDelegate {
   ) {
     print(">>> download decideDestinationUsing, suggestedFilename: \(suggestedFilename)")
 
-    let fileLocation = buildFileLocation(using: suggestedFilename)
+    let fileLocation: URL
+    do {
+      fileLocation = try buildFileLocation(using: suggestedFilename)
+    } catch {
+      completionHandler(nil)
+      model.status = .failed
+      return
+    }
 
     completionHandler(fileLocation)
 
@@ -68,18 +75,28 @@ extension WebDownloadWK: WKDownloadDelegate {
 }
 
 // TODO: Call this on a background thread instead!
-private func buildFileLocation(using suggestedFilename: String) -> URL {
-  let downloadsURL = FileManager.default.url(
+private func buildFileLocation(using suggestedFilename: String) throws -> URL {
+  let fileManager = FileManager.default
+  let downloadsURL = try fileManager.url(
     for: .downloadsDirectory,
     in: .userDomainMask,
     appropriateFor: nil,
     create: false
   )
 
-  // TODO: Implement this function. Ensure that the generated file path does not already exist.
-  // Use the standard scheme of appending " (1)", " (2)", etc. until a free path is found.
+  let originalURL = downloadsURL.appendingPathComponent(suggestedFilename)
+  let fileExtension = originalURL.pathExtension
+  let basename = originalURL.deletingPathExtension().lastPathComponent
+  var result = originalURL
+  var suffix = 1
 
-  var result: URL = ...
+  while fileManager.fileExists(atPath: result.path) {
+    result = downloadsURL.appendingPathComponent("\(basename) (\(suffix))")
+    if !fileExtension.isEmpty {
+      result.appendPathExtension(fileExtension)
+    }
+    suffix += 1
+  }
 
   return result
 }
