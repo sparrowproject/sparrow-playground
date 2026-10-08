@@ -7,6 +7,8 @@ final class WebDownloadWK: NSObject, WebDownload {
     super.init()
 
     download.delegate = self
+
+    setUpObservers()
   }
 
   let model = WebDownloadModel()
@@ -21,6 +23,32 @@ final class WebDownloadWK: NSObject, WebDownload {
 
   private let download: WKDownload
   private var destinationDecisionCompletion: (@MainActor @Sendable (URL?) -> Void)?
+  private var completedObservation: NSKeyValueObservation?
+  private var totalObservation: NSKeyValueObservation?
+
+  private func setUpObservers() {
+    let progress = download.progress
+
+    completedObservation = progress.observe(
+      \.completedUnitCount,
+      options: [.initial, .new]
+    ) { [weak self] progress, _ in
+      guard let self else { return }
+      MainActor.assumeIsolated {
+        model.bytesReceived = progress.completedUnitCount
+      }
+    }
+
+    totalObservation = progress.observe(
+      \.totalUnitCount,
+      options: [.initial, .new]
+    ) { [weak self] progress, _ in
+      guard let self else { return }
+      MainActor.assumeIsolated {
+        model.totalBytesToReceive = progress.totalUnitCount
+      }
+    }
+  }
 }
 
 extension WebDownloadWK: WKDownloadDelegate {
