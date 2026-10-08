@@ -13,6 +13,7 @@ public final class WebDownloadModel {
 
   public var bytesReceived: Int64 = 0
   public var totalBytesToReceive: Int64?
+  public var estimatedTimeRemaining: TimeInterval?
 
   init() {}
 }
