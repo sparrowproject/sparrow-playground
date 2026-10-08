@@ -124,7 +124,7 @@ extension DownloadModel {
     let displayStatus =
       switch webDownloadModel.status {
       case .starting, .downloading:
-        "Downloading" // TODO: Add completion time estimation here.
+        progressDescription
       case .completed:
         "Done"
       case .failed:
@@ -135,8 +135,27 @@ extension DownloadModel {
     }
     return "\(prettyPrintBytes(webDownloadModel.bytesReceived)) - \(displayStatus)"
   }
+  
+  fileprivate var progressDescription: String {
+    if
+      let estimatedTimeRemaining = webDownloadModel?.estimatedTimeRemaining,
+      let intervalAsString = prettyPrintInterval(estimatedTimeRemaining)
+    {
+      return "\(intervalAsString) remaining"
+    }
+    return "Downloading"
+  }
 }
 
 private func prettyPrintBytes(_ bytes: Int64) -> String {
   ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
+}
+
+private func prettyPrintInterval(_ interval: TimeInterval) -> String? {
+  let formatter = DateComponentsFormatter()
+  formatter.allowedUnits = [.minute, .second]
+  formatter.unitsStyle = .positional
+  formatter.zeroFormattingBehavior = .pad
+
+  return formatter.string(from: interval)
 }

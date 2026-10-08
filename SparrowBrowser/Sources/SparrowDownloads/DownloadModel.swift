@@ -37,4 +37,8 @@ extension DownloadModel {
   public var size: Int64 {
     webDownloadModel?.bytesReceived ?? 0
   }
+
+  public var estimatedTimeRemaining: TimeInterval? {
+    // TODO: Implement me!
+  }
 }

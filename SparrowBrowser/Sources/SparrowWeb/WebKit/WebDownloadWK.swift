@@ -1,4 +1,5 @@
 #if os(macOS)
+import Combine
 import WebKit
 
 final class WebDownloadWK: NSObject, WebDownload {
@@ -24,8 +25,6 @@ final class WebDownloadWK: NSObject, WebDownload {
   private let download: WKDownload
   private var destinationDecisionCompletion: (@MainActor @Sendable (URL?) -> Void)?
   private var bag = Set<AnyCancellable>()
-  // private var completedObservation: NSKeyValueObservation?
-  // private var totalObservation: NSKeyValueObservation?
 
   private func setUpObservers() {
     let progress = download.progress
@@ -38,6 +37,7 @@ final class WebDownloadWK: NSObject, WebDownload {
 
     progress.publisher(for: \.totalUnitCount, options: [.initial, .new])
       .sink { [model] in
+        print(">>> totalUnitCount: \($0)")
         model.totalBytesToReceive = $0
       }
       .store(in: &bag)
