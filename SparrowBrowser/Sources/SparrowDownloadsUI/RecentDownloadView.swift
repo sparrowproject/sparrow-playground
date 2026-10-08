@@ -65,3 +65,7 @@ extension DownloadModel {
     
   // }
 }
+
+private func prettyPrintBytes(_ bytes: Int) -> String {
+  // TODO: Convert a byte count into a display string (e.g., 1200 becomes "1.2 KB").
+}

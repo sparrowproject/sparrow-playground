@@ -11,16 +11,8 @@ public final class WebDownloadModel {
   /// is called. It will also be `nil` if `WebDownload.cancel` is called.
   public var fileLocation: URL?
 
-  public var bytesReceived: Int64 = 0 {
-    didSet {
-      print(">>> bytesReceived: \(bytesReceived)")
-    }
-  }
-  public var totalBytesToReceive: Int64? {
-    didSet {
-      print(">>> totalBytesToReceive: \(totalBytesToReceive)")
-    }
-  }
+  public var bytesReceived: Int64 = 0
+  public var totalBytesToReceive: Int64?
 
   init() {}
 }
