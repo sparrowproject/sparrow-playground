@@ -16,6 +16,7 @@ target_link_libraries(SparrowDownloads PUBLIC
 if(WIN32)
 target_link_libraries(SparrowDownloads PRIVATE
   CWinRT
+  WinAppSupport
   WindowsFoundation
 )
 endif()

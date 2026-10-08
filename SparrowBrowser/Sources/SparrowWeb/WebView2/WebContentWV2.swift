@@ -187,6 +187,10 @@ final class WebContentWV2: NSObject, WebContent {
       self?.handleNewWindowRequested(args: args!)
     }
 
+    coreWebView.downloadStarting.addHandler { [weak self] _, args in
+      self?.handleDownloadStarting(args: args!)
+    }
+
     if let pendingURL {
       self.pendingURL = nil
       load(url: pendingURL)
@@ -297,6 +301,12 @@ final class WebContentWV2: NSObject, WebContent {
     }
 
     action(.createdNew(webContent))
+  }
+
+  private func handleDownloadStarting(args: CoreWebView2DownloadStartingEventArgs) {
+    print(">>> downloadStarting!")
+    args.handled = true
+    action?(.downloadStarting(WebDownloadWV2(download: args.downloadOperation)))
   }
 }
 

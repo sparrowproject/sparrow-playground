@@ -1,4 +1,5 @@
 import Foundation
+import Observation
 import SparrowDownloads
 import SparrowStorageBase
 import SparrowToolbelt
