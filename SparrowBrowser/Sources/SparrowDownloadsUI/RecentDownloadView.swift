@@ -1,3 +1,4 @@
+import Foundation
 import SparrowDesignSystem
 import SparrowDownloads
 import SparrowUI
@@ -67,5 +68,5 @@ extension DownloadModel {
 }
 
 private func prettyPrintBytes(_ bytes: Int) -> String {
-  // TODO: Convert a byte count into a display string (e.g., 1200 becomes "1.2 KB").
+  ByteCountFormatter.string(fromByteCount: Int64(bytes), countStyle: .file)
 }
