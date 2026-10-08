@@ -180,13 +180,6 @@ private func prettyPrintBytes(_ bytes: Int64) -> String {
 }
 
 private func prettyPrintInterval(_ interval: TimeInterval) -> String? {
-  // let formatter = DateComponentsFormatter()
-  // formatter.allowedUnits = [.hour, .minute, .second]
-  // formatter.unitsStyle = abs(interval) < 60 ? .full : .positional
-  // formatter.zeroFormattingBehavior = .dropLeading
-
-  // return formatter.string(from: interval)
-
   Duration.seconds(interval).formatted(
     .units(
       allowed: [.hours, .minutes, .seconds],
