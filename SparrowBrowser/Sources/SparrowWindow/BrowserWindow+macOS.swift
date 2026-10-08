@@ -335,9 +335,9 @@ public final class BrowserWindow: NSWindow, Sendable {
   }
 
   private func willClose() {
-    isClosed = true
-
     action(.closed)
+
+    isClosed = true
 
     // Try to discard resources even if the window itself leaks...
     browserWindowView.tearDown()

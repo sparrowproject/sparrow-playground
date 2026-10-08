@@ -68,18 +68,6 @@ public final class NSHostingView<Content: View>: NSView {
     .init(top: 0, left: 0, bottom: 0, right: 0)
   }
 
-  public override func becomeFirstResponder() -> Bool {
-    let result = super.becomeFirstResponder()
-    print(">>> NSHostingView @\(ObjectIdentifier(self)) became first responder!")
-    return result
-  }
-
-  public override func resignFirstResponder() -> Bool {
-    let result = super.resignFirstResponder()
-    print(">>> NSHostingView @\(ObjectIdentifier(self)) resigned first responder!")
-    return result
-  }
-
   public override func acceptsFirstMouse(for event: NSEvent?) -> Bool {
     true
   }
@@ -465,10 +453,7 @@ extension NSHostingView: CoreViewContext.Delegate {
   }
 
   public func updateEmbeddedViews(_ views: [NSView]) {
-    print(">>> updateEmbeddedViews, views.count: \(views.count)")
-
     let viewsBeingRemoved = subviews.filter { !views.contains($0) }
-    print(">>> viewsBeingRemoved.count: \(viewsBeingRemoved.count)")
 
     let moveFirstResponder = {
       if let firstResponder = window?.firstResponder as? NSView {
@@ -483,16 +468,9 @@ extension NSHostingView: CoreViewContext.Delegate {
 
     subviews = views
 
-    print(">>> should move first responder: \(moveFirstResponder)")
-
     if moveFirstResponder, let window {
       window.makeFirstResponder(self)
-      // updateTrackingAreas()
-
-      print(">>> window.firstResponder: \(window.firstResponder.flatMap { ObjectIdentifier($0) }), window is key: \(window.isKeyWindow)")
     }
-
-    // subviews = views
   }
 }
 
