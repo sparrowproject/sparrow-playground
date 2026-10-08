@@ -57,4 +57,12 @@ public enum StandardSymbols {
     .init(glyph: "\u{e8a9}", size: 12) // ViewAll
     #endif
   }
+
+  public static var download: SymbolSource {
+    #if os(macOS)
+    .init(systemName: "arrow.down.to.line", size: 12)
+    #elseif os(Windows)
+    .init(glyph: "\u{e896}", size: 12) // Download
+    #endif
+  }
 }

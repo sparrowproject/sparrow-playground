@@ -10,6 +10,7 @@ set_target_properties(SparrowContentToolbar PROPERTIES
 target_link_libraries(SparrowContentToolbar PUBLIC
   SparrowAddressBar
   SparrowCommands
+  SparrowDownloadsUI
   SparrowNetwork
   SparrowSpaces
   SparrowSpacesUI

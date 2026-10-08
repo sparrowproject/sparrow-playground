@@ -19,18 +19,6 @@ final class WebDownloadWK: NSObject, WebDownload {
     model.status = .failed
   }
 
-  // func startDownloading(to destination: URL) {
-  //   assert(model.status == .starting)
-
-  //   if let destinationDecisionCompletion {
-  //     destinationDecisionCompletion(destination)
-  //     self.destinationDecisionCompletion = nil
-  //   }
-
-  //   model.status = .downloading
-  //   model.fileLocation = destination
-  // }
-
   private let download: WKDownload
   private var destinationDecisionCompletion: (@MainActor @Sendable (URL?) -> Void)?
 }

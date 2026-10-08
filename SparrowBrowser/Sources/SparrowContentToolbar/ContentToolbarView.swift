@@ -2,6 +2,7 @@ import Foundation
 import SparrowAddressBar
 import SparrowCommands
 import SparrowDesignSystem
+import SparrowDownloadsUI
 import SparrowSpacesUI
 import SparrowUI
 
@@ -14,6 +15,7 @@ public struct ContentToolbarView: View {
     case command(SparrowCommand.ID)
     case addressBar(AddressBarView.Action)
     case spaceSelector(SpaceSelectorView.Action)
+    case downloads(RecentDownloadsView.Action)
   }
 
   public enum Metrics {
@@ -46,6 +48,11 @@ public struct ContentToolbarView: View {
         addressBar
           .offset(x: addressBarOffsetX(for: geom))
           .width(addressBarWidth(for: geom))
+
+        recentDownloadsButton
+          .width(buttonSize(for: geom))
+          .offset(x: geom.width - 3 * (Metrics.buttonPadding + buttonSize(for: geom)))
+          .visible(!viewModel.recentDownloadsViewModel.isEmpty)
 
         menuButton
           .width(buttonSize(for: geom))
@@ -144,6 +151,23 @@ public struct ContentToolbarView: View {
     }
   }
 
+  private var recentDownloadsButton: some View {
+    PopoverButton(
+      content: { controller in
+        RecentDownloadsView(viewModel: viewModel.recentDownloadsViewModel) {
+          controller.dismiss()
+          action(.downloads($0))
+        }
+      },
+      label: { _ in
+        Symbol(source: StandardSymbols.download)
+          .tintColor(.primaryText)
+      }
+    )
+    .buttonStyle(.standard)
+    .popoverPlacement(.below(alignment: .trailing))
+  }
+
   private var menuButton: some View {
     PopoverButton(
       content: { controller in
@@ -207,7 +231,9 @@ public struct ContentToolbarView: View {
   // TODO: should be centered within outer group actually.
 
   private func addressBarWidth(for geom: GeometryProxy) -> CGFloat {
-    let availableWidth = geom.width - 5 * buttonSize(for: geom) - 7 * Metrics.buttonPadding
+    let hasRecentDownloads = !viewModel.recentDownloadsViewModel.isEmpty
+    let numButtons = CGFloat(5 + (hasRecentDownloads ? 1 : 0))
+    let availableWidth = geom.width - numButtons * buttonSize(for: geom) - (numButtons + 2) * Metrics.buttonPadding
     return min(Metrics.addressBarMaxWidth, availableWidth)
   }
 

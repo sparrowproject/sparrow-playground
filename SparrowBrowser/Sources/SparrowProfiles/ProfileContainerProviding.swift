@@ -1,3 +1,4 @@
+import SparrowDownloads
 import SparrowNetwork
 import SparrowProfileModel
 import SparrowSpaces
@@ -12,6 +13,12 @@ public protocol ProfileContainerProviding {
   var profileContainer: ProfileContainer { get }
 }
 
+extension LiveContainer where Self: ProfileContainerProviding & DownloadsManagerProviding {
+  @MainActor
+  public var downloadsManager: DownloadsManager {
+    profileContainer.downloadsManager
+  }
+}
 extension LiveContainer where Self: ProfileContainerProviding & NetworkServiceProviding {
   @MainActor
   public var networkService: NetworkService {

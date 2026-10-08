@@ -9,6 +9,7 @@ set_target_properties(SparrowContent PROPERTIES
 )
 target_link_libraries(SparrowContent PUBLIC
   SparrowContentToolbar
+  SparrowDownloads
   SparrowSuggest
   SparrowWeb
 )

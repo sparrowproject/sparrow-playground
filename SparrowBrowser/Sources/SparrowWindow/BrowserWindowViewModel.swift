@@ -4,6 +4,8 @@ import SparrowAddressBar
 import SparrowCommands
 import SparrowContent
 import SparrowContentToolbar
+import SparrowDownloads
+import SparrowDownloadsUI
 import SparrowProfileModel
 import SparrowTabs
 import SparrowTabsUI
@@ -13,9 +15,14 @@ import SparrowUICore
 import SparrowUIFoundation
 import SparrowWeb
 
+#if os(macOS)
+import AppKit
+#endif
+
 public typealias BrowserWindowViewModelDependencies
   = BrowserWindowOverlayViewModelDependencies
   & ContentViewModelDependencies
+  & DownloadsManagerProviding
   & ProfileIDProviding
   & SideTabsViewModelDependencies
   & TabSystemProviding
@@ -181,6 +188,8 @@ public final class BrowserWindowViewModel {
       return handleAddressBarAction(addressBarAction)
     case .toolbar(.spaceSelector(let spaceSelectorAction)):
       return .spaceSelector(spaceSelectorAction)
+    case .toolbar(.downloads(let downloadsAction)):
+      handleDownloadsAction(downloadsAction)
     }
     return nil
   }
@@ -334,6 +343,23 @@ public final class BrowserWindowViewModel {
       contentViewModel.contentBodyViewModel.webContentViewModel.inputDisabled = true
     }
     return nil
+  }
+
+  private func handleDownloadsAction(_ action: RecentDownloadsView.Action) {
+    switch action {
+    case .openFile(let downloadID):
+      #if os(macOS)
+      if let fileLocation = dependencies.downloadsManager.model.downloads[downloadID]?.fileLocation {
+        NSWorkspace.shared.open(fileLocation)
+      }
+      #endif
+    case .openFolder(let downloadID):
+      #if os(macOS)
+      if let fileLocation = dependencies.downloadsManager.model.downloads[downloadID]?.fileLocation {
+        NSWorkspace.shared.activateFileViewerSelecting([fileLocation])
+      }
+      #endif
+    }
   }
 
   private func handleAddressBarEditorAction(_ action: AddressBarEditorView.Action) -> BrowserWindowView.Action? {

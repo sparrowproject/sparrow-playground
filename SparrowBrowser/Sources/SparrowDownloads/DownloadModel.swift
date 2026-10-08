@@ -1,6 +1,7 @@
 import Foundation
 import Observation
 import SparrowWeb
+import Tagged
 
 @Observable
 @MainActor
@@ -17,8 +18,10 @@ public final class DownloadModel {
   }
 }
 
+extension DownloadModel: Identifiable {}
+
 extension DownloadModel {
-  var isPending: Bool {
+  public var isPending: Bool {
     switch webDownloadModel?.status {
     case .starting, .downloading:
       true
@@ -27,11 +30,11 @@ extension DownloadModel {
     }
   }
 
-  var fileLocation: URL? {
+  public var fileLocation: URL? {
     webDownloadModel?.fileLocation
   }
 
-  var size: Int64 {
+  public var size: Int64 {
     webDownloadModel?.bytesReceived ?? 0
   }
 }

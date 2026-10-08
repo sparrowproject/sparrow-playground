@@ -1,6 +1,7 @@
 import Foundation
 import Observation
 import SparrowAddressBar
+import SparrowDownloadsUI
 import SparrowProfileModel
 import SparrowSpacesUI
 import SparrowTabs
@@ -12,6 +13,7 @@ import SparrowWeb
 public typealias ContentToolbarViewModelDependencies
   = AddressBarViewModelDependencies
   & ProfileIDProviding
+  & RecentDownloadsViewModelDependencies
   & SpaceSelectorViewModelDependencies
   & TabSystemProviding
 
@@ -23,11 +25,13 @@ public final class ContentToolbarViewModel {
 
     addressBarViewModel = .init(dependencies: dependencies)
     spaceSelectorViewModel = .init(dependencies: dependencies, groupModel: groupModel)
+    recentDownloadsViewModel = .init(dependencies: dependencies)
   }
 
   public let groupModel: Handle<TabGroupModel>
   public let addressBarViewModel: AddressBarViewModel
   public let spaceSelectorViewModel: SpaceSelectorViewModel
+  public let recentDownloadsViewModel: RecentDownloadsViewModel
 
   // Optional insets to allow content to be overlaid on top of the content toolbar (e.g., window buttons).
   public var insets: EdgeInsets = .zero

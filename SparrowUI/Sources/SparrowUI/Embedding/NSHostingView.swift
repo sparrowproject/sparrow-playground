@@ -367,7 +367,6 @@ public final class NSHostingView<Content: View>: NSView {
   }
 
   private func handleAnyMouseDown(with event: NSEvent) -> Bool {
-    print(">>> handleAnyMouseDown")
     guard !suppressPointerUpdates else { return true }
 
     let coreEvent = CorePointerEvent(

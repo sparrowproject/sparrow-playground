@@ -57,7 +57,7 @@ public struct TabView: View {
       }
       .width(intendedSize().width)
       .height(intendedSize().height)
-      .alignment(contentAlignment()) // .leading)
+      .alignment(contentAlignment())
     }
     .clipped()
     .onAppear {
