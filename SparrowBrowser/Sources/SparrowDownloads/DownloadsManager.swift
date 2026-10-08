@@ -40,7 +40,7 @@ final class DefaultDownloadsManager: DownloadsManager {
     let downloadModel = DownloadModel(id: id)
     downloadModel.webDownloadModel = webDownload.model
 
-    model.downloads[id] = downloadModel
+    model.downloads.updateValue(downloadModel, forKey: id, insertingAt: 0)
     activeDownloads[id] = webDownload
 
     // Monitor the download to determine when it is no longer active.
