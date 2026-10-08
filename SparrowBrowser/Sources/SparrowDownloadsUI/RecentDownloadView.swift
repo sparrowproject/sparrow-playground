@@ -16,25 +16,62 @@ struct RecentDownloadView: View {
     Button {
       action(.openFile)
     } label: { config in
-      Group {
+      Group { geom in
         Group {
-          Text(download.filename)
-            .font(.system(size: 12))
-            .elideWithGradientMask()
+          Group {
+            Group {
+              Text(download.filename)
+                .font(.system(size: Metrics.filenameFontSize))
+                .foregroundColor(.primaryText)
+                .elideWithGradientMask()
+            }
+            .height(filenameHeight(for: geom))
+            
+            Group {
+              Text(detail)
+                .font(.system(size: Metrics.detailFontSize))
+                .foregroundColor(.primaryText.opacity(0.8))
+                .elideWithGradientMask()
+            }
+            .offset(y: filenameHeight(for: geom))
+            .height(detailHeight(for: geom))
+          }
+          .width(cardWidth(for: geom, config: config))
 
           showInFolderButton
+            .width(folderButtonSize(for: geom))
+            .height(folderButtonSize(for: geom))
             .alignment(.trailing)
             .visible(config.isHovered)
         }
-        .padding(.horizontal, StandardMetrics.buttonCornerRadius)
+        .padding(.all, Metrics.padding)
       }
     }
     .buttonStyle(.standard)
+    .onChange(
+      of: download.detail,
+      perform: { detail in
+        // Debounce
+        detailToApply = detail
+        guard detailTask == nil else { return }
+        detailTask = Task<Void, Never> {
+          try? await Task.sleep(for: .milliseconds(200))
+          self.detail = detailToApply
+          detailTask = nil
+        }
+      }
+    )
   }
 
   private enum Metrics {
-    static let folderButtonSize = 4 * StandardMetrics.buttonCornerRadius
+    static let padding = StandardMetrics.buttonCornerRadius
+    static let filenameFontSize: CGFloat = 11
+    static let detailFontSize: CGFloat = 9
   }
+
+  @State private var detail: String = ""
+  @State private var detailToApply: String = ""
+  @State private var detailTask: Task<Void, Never>?
 
   private var showInFolderButton: some View {
     Button {
@@ -44,16 +81,36 @@ struct RecentDownloadView: View {
         .tintColor(.primaryText)
     }
     .buttonStyle(.standard)
-    .width(Metrics.folderButtonSize)
-    .height(Metrics.folderButtonSize)
   }
 
   private var folderButtonSymbol: SymbolSource {
     #if os(macOS)
     .init(systemName: "folder", size: 9)
     #elseif os(Windows)
-    // XXX  .init(glyph: "\u{e711}", size: 9) // Cancel
+    .init(glyph: "\u{e8b7}", size: 9) // Folder
     #endif
+  }
+
+  private func folderButtonSize(for geom: GeometryProxy) -> CGFloat {
+    geom.height - 2 * Metrics.padding
+  }
+
+  private func filenameHeight(for geom: GeometryProxy) -> CGFloat {
+    let availableHeight = folderButtonSize(for: geom)
+    return availableHeight * 0.55
+  }
+
+  private func detailHeight(for geom: GeometryProxy) -> CGFloat {
+    let availableHeight = folderButtonSize(for: geom)
+    return availableHeight * 0.45
+  }
+
+  private func cardWidth(for geom: GeometryProxy, config: ButtonConfig) -> CGFloat {
+    if config.isHovered {
+      geom.width - folderButtonSize(for: geom) - 3 * Metrics.padding
+    } else {
+      geom.width - 2 * Metrics.padding
+    }
   }
 }
 
@@ -62,11 +119,24 @@ extension DownloadModel {
     fileLocation?.lastPathComponent ?? ""
   }
 
-  // fileprivate var detail: String {
-    
-  // }
+  fileprivate var detail: String {
+    guard let webDownloadModel else { return "" }
+    let displayStatus =
+      switch webDownloadModel.status {
+      case .starting, .downloading:
+        "Downloading" // TODO: Add completion time estimation here.
+      case .completed:
+        "Done"
+      case .failed:
+        "Failed"
+      }
+    if webDownloadModel.status == .failed {
+      return displayStatus
+    }
+    return "\(prettyPrintBytes(webDownloadModel.bytesReceived)) - \(displayStatus)"
+  }
 }
 
-private func prettyPrintBytes(_ bytes: Int) -> String {
-  ByteCountFormatter.string(fromByteCount: Int64(bytes), countStyle: .file)
+private func prettyPrintBytes(_ bytes: Int64) -> String {
+  ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
 }

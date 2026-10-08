@@ -29,7 +29,7 @@ public struct RecentDownloadsView: View {
 
   private enum Metrics {
     static let width: CGFloat = 250
-    static let itemHeight: CGFloat = 36
+    static let itemHeight: CGFloat = 40
     static let itemPadding = StandardMetrics.buttonCornerRadius
   }
 

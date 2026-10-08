@@ -145,6 +145,19 @@ extension WebContentWK: WKNavigationDelegate {
 
   func webView(
     _ webView: WKWebView,
+    decidePolicyFor navigationResponse: WKNavigationResponse,
+    decisionHandler: @escaping @MainActor @Sendable (WKNavigationResponsePolicy) -> Void
+  ) {
+    print(">>> decidePolicyFor navigationResponse, canShowMIMEType: \(navigationResponse.canShowMIMEType)")
+    if navigationResponse.canShowMIMEType {
+      decisionHandler(.allow)
+    } else {
+      decisionHandler(.download)
+    }
+  }
+
+  func webView(
+    _ webView: WKWebView,
     didCommit navigation: WKNavigation!
   ) {
     // print(">>> committed:", webView.url as Any)
@@ -179,6 +192,7 @@ extension WebContentWK: WKNavigationDelegate {
     navigationResponse: WKNavigationResponse,
     didBecome download: WKDownload
   ) {
+    print(">>> navigationResponse didBecome download")
     action?(.downloadStarting(WebDownloadWK(download: download)))
   }
 
@@ -187,6 +201,7 @@ extension WebContentWK: WKNavigationDelegate {
     navigationAction: WKNavigationAction,
     didBecome download: WKDownload
   ) {
+    print(">>> navigationAction didBecome download")
     action?(.downloadStarting(WebDownloadWK(download: download)))
   }
 
