@@ -13,6 +13,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, SparrowApp {
 
   func applicationWillFinishLaunching(_: Notification) {
     NSApp.mainMenu = AppMenu.build()
+
+    if let url = Bundle.main.url(
+      forResource: "SparrowBrowser",
+      withExtension: "icns"
+    ), let image = NSImage(contentsOf: url) {
+      NSApp.applicationIconImage = image
+    }
   }
 
   func applicationDidFinishLaunching(_: Notification) {
