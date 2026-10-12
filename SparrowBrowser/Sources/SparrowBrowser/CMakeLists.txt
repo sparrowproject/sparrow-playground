@@ -34,6 +34,13 @@ add_custom_command(TARGET SparrowBrowser POST_BUILD
           "$<TARGET_BUNDLE_CONTENT_DIR:SparrowBrowser>/Resources"
 )
 endif()
+if(EXISTS "${CMAKE_SOURCE_DIR}/SparrowBrowser/Sources/SparrowBrowser/SparrowBrowser.icns")
+add_custom_command(TARGET SparrowBrowser POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_if_different
+          "${CMAKE_SOURCE_DIR}/SparrowBrowser/Sources/SparrowBrowser/SparrowBrowser.icns"
+          "$<TARGET_BUNDLE_CONTENT_DIR:SparrowBrowser>/Resources/SparrowBrowser.icns"
+)
+endif()
 
 # Xcode applies CODE_SIGN_ENTITLEMENTS during its normal signing phase. Other
 # generators need to re-sign the completed bundle with its entitlements after
