@@ -6,6 +6,7 @@ import SparrowContent
 import SparrowContentToolbar
 import SparrowDownloads
 import SparrowDownloadsUI
+import SparrowFindInPage
 import SparrowProfileModel
 import SparrowTabs
 import SparrowTabsUI
@@ -41,6 +42,7 @@ public final class BrowserWindowViewModel {
     contentViewModel = .init(dependencies: dependencies, groupModel: groupModel)
     topTabsViewModel = .init(dependencies: dependencies, groupModel: groupModel)
     sideTabsViewModel = .init(dependencies: dependencies, groupModel: groupModel)
+    findInPageViewModel = .init(dependencies: dependencies, groupModel: groupModel)
 
     print(">>> BrowserWindowViewModel created @ \(ObjectIdentifier(self))")
   }
@@ -59,6 +61,7 @@ public final class BrowserWindowViewModel {
   let contentViewModel: ContentViewModel
   let topTabsViewModel: TopTabsViewModel
   let sideTabsViewModel: SideTabsViewModel
+  let findInPageViewModel: FindInPageViewModel
 
   // Non-nil if the overlay should be presented.
   private(set) var overlayViewModel: BrowserWindowOverlayViewModel?
@@ -254,6 +257,14 @@ public final class BrowserWindowViewModel {
       return .quit
     case .openLocation:
       focusAddressBarEditor(blank: false)
+    case .find:
+      findInPageViewModel.showFindEditor()
+      let overlayViewModel = ensureOverlayViewModel()
+      overlayViewModel.findInPageViewModel = findInPageViewModel
+    case .findNext:
+      findInPageViewModel.findNext()
+    case .findPrevious:
+      findInPageViewModel.findPrevious()
     case .newTab:
       makeNewTab()
     case .newWindow:
@@ -266,7 +277,7 @@ public final class BrowserWindowViewModel {
       dependencies.tabSystem.liveTab(forTab: tabID)?.webContent.reload()
     case .duplicateTab:
       withAnimation {
-        dependencies.tabSystem.duplicateTab(groupModel.selectedTabModel.id)
+        dependencies.tabSystem.duplicateTab(tabID)
       }
     case .pinTab:
       print(">>> implement me!")

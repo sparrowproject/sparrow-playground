@@ -25,4 +25,5 @@ public protocol WebContent: AnyObject {
   func goTo(_: any WebContentBackForwardListItem)
   func reload()
   func stop()
+  func find(_: String, backwards: Bool, completion: @escaping (Bool) -> Void)
 }

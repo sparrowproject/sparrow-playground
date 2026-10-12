@@ -1,6 +1,7 @@
 import Foundation
 import Observation
 import SparrowAddressBar
+import SparrowFindInPage
 import SparrowTabs
 import SparrowToolbelt
 import SparrowUIFoundation
@@ -17,6 +18,7 @@ final class BrowserWindowOverlayViewModel {
     self.groupModel = groupModel
   }
 
+  var findInPageViewModel: FindInPageViewModel?
   var addressBarViewModel: AddressBarViewModel?
 
   var contentToolbarHeight: CGFloat = 0

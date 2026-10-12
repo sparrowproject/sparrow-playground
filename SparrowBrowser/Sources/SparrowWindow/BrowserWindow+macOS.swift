@@ -132,8 +132,6 @@ public final class BrowserWindow: NSWindow, Sendable {
   }
 
   public override func performKeyEquivalent(with event: NSEvent) -> Bool {
-    print(">>> performKeyEquivalent, characters: \(event.charactersIgnoringModifiers)")
-
     defer {
       // Flush any updates immediately in response to a keybinding press.
       // This is especially needed in case keybindings are being spammed.
@@ -150,6 +148,7 @@ public final class BrowserWindow: NSWindow, Sendable {
         SparrowCommand.browserReservedIDs.contains($0)
       }) ?? false
       if isReservedCommandID {
+        print(">>> performKeyEquivalent for reserved keybinding, characters: \(event.charactersIgnoringModifiers)")
         return mainMenu.performKeyEquivalent(with: event)
       }
     }

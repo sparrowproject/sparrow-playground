@@ -19,6 +19,10 @@ public enum SparrowCommands {
   // public static var copy: SparrowCommand { .init(id: .copy, title: "Copy", keybinding: .copy) }
   // public static var paste: SparrowCommand { .init(id: .paste, title: "Paste", keybinding: .paste) }
 
+  public static var find: SparrowCommand { .init(id: .find, title: "Find...", keybinding: .find) }
+  public static var findNext: SparrowCommand { .init(id: .findNext, title: "Find Next", keybinding: .findNext) }
+  public static var findPrevious: SparrowCommand { .init(id: .findPrevious, title: "Find Previous", keybinding: .findPrevious) }
+
   public static var reloadTab: SparrowCommand { .init(id: .reloadTab, title: "Reload", keybinding: .reloadTab) }
   public static var duplicateTab: SparrowCommand { .init(id: .duplicateTab, title: "Duplicate") }
   public static var pinTab: SparrowCommand { .init(id: .pinTab, title: "Pin") }
@@ -101,29 +105,29 @@ extension Keybinding {
     #endif
   }
 
-  // fileprivate static var cut: Self {
-  //   #if os(macOS)
-  //   .init(keyEquivalent: "x", modifiers: [.command])
-  //   #elseif os(Windows)
-  //   .init(virtualKey: .x, modifiers: [.control])
-  //   #endif
-  // }
+  fileprivate static var find: Self {
+    #if os(macOS)
+    .init(keyEquivalent: "f", modifiers: [.command])
+    #elseif os(Windows)
+    .init(virtualKey: .f, modifiers: [.control])
+    #endif
+  }
 
-  // fileprivate static var copy: Self {
-  //   #if os(macOS)
-  //   .init(keyEquivalent: "c", modifiers: [.command])
-  //   #elseif os(Windows)
-  //   .init(virtualKey: .c, modifiers: [.control])
-  //   #endif
-  // }
+  fileprivate static var findNext: Self {
+    #if os(macOS)
+    .init(keyEquivalent: "g", modifiers: [.command])
+    #elseif os(Windows)
+    .init(virtualKey: .g, modifiers: [.control]) // TODO
+    #endif
+  }
 
-  // fileprivate static var paste: Self {
-  //   #if os(macOS)
-  //   .init(keyEquivalent: "v", modifiers: [.command])
-  //   #elseif os(Windows)
-  //   .init(virtualKey: .v, modifiers: [.control])
-  //   #endif
-  // }
+  fileprivate static var findPrevious: Self {
+    #if os(macOS)
+    .init(keyEquivalent: "g", modifiers: [.command, .shift])
+    #elseif os(Windows)
+    .init(virtualKey: .g, modifiers: [.control, .shift]) // TODO
+    #endif
+  }
 
   fileprivate static var print: Self {
     #if os(macOS)
@@ -138,14 +142,6 @@ extension Keybinding {
     .init(keyEquivalent: ",", modifiers: [.command])
     #elseif os(Windows)
     nil
-    #endif
-  }
-
-  fileprivate static var find: Self {
-    #if os(macOS)
-    .init(keyEquivalent: "f", modifiers: [.command])
-    #elseif os(Windows)
-    .init(virtualKey: .f, modifiers: [.control])
     #endif
   }
 

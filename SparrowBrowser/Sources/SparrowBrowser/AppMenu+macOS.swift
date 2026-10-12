@@ -119,7 +119,28 @@ enum AppMenu {
       editMenu.addItem($0)
     }
 
+    editMenu.addItem(.separator())
+
+    editMenu.addItem(buildFindMenu())
+
     return editMenuItem
+  }
+
+  private static func buildFindMenu() -> NSMenuItem {
+    let findMenuItem = NSMenuItem(
+      title: "Find",
+      action: nil,
+      keyEquivalent: "",
+    )
+
+    let findMenu = NSMenu()
+    findMenuItem.submenu = findMenu
+
+    findMenu.addCommand(SparrowCommands.find)
+    findMenu.addCommand(SparrowCommands.findNext)
+    findMenu.addCommand(SparrowCommands.findPrevious)
+
+    return findMenuItem
   }
 
   private static func buildHistoryMenu() -> NSMenuItem {

@@ -89,6 +89,20 @@ final class WebContentWK: NSObject, WebContent {
     webView.stopLoading()
   }
 
+  func find(_ string: String, backwards: Bool, completion: @escaping (Bool) -> Void) {
+    let config = WKFindConfiguration()
+    config.backwards = backwards
+    config.caseSensitive = false
+    config.wraps = true
+    webView.find(
+      string,
+      configuration: config,
+      completionHandler: { result in
+        completion(result.matchFound)
+      },
+    )
+  }
+
   private var bag = Set<AnyCancellable>()
   private let dependencies: Dependencies
 

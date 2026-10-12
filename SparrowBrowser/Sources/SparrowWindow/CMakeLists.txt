@@ -21,6 +21,7 @@ target_link_libraries(SparrowWindow PUBLIC
   SparrowWindowModel
 )
 target_link_libraries(SparrowWindow PRIVATE
+  SparrowFindInPage
   SparrowTabs
   SparrowToolbelt
   SparrowUI

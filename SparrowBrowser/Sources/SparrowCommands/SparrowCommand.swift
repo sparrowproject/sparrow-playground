@@ -10,6 +10,9 @@ public final class SparrowCommand: Command {
     // case copy
     // case cut
     case duplicateTab
+    case find
+    case findNext
+    case findPrevious
     case openLocation
     case muteTab
     case newTab
