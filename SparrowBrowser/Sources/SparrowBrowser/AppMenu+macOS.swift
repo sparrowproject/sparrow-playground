@@ -102,6 +102,15 @@ enum AppMenu {
     }
 
     with(NSMenuItem(
+      title: "Paste and Match Style",
+      action: #selector(EditingSupport.pasteAsPlainText),
+      keyEquivalent: "v",
+    )) {
+      $0.keyEquivalentModifierMask = [.command, .shift]
+      editMenu.addItem($0)
+    }
+
+    with(NSMenuItem(
       title: "Select All",
       action: #selector(EditingSupport.selectAll),
       keyEquivalent: "a",
@@ -188,6 +197,7 @@ private protocol EditingSupport {
   func cut(_: Any?)
   func copy(_: Any?)
   func paste(_: Any?)
+  func pasteAsPlainText(_: Any?)
   func selectAll(_: Any?)
 }
 
