@@ -197,6 +197,8 @@ public final class BrowserWindowViewModel {
     switch action {
     case .addressBarEditor(let addressBarEditorAction):
       handleAddressBarEditorAction(addressBarEditorAction)
+    case .findInPageEditor(let findInPageEditorAction):
+      handleFindInPageEditorAction(findInPageEditorAction)
     case .spaceSelector(let spaceSelectorAction):
       .spaceSelector(spaceSelectorAction)
     }
@@ -258,7 +260,7 @@ public final class BrowserWindowViewModel {
     case .openLocation:
       focusAddressBarEditor(blank: false)
     case .find:
-      findInPageViewModel.showFindEditor()
+      findInPageViewModel.showEditor()
       let overlayViewModel = ensureOverlayViewModel()
       overlayViewModel.findInPageViewModel = findInPageViewModel
     case .findNext:
@@ -394,6 +396,15 @@ public final class BrowserWindowViewModel {
       // TODO: In the future there may be other reasons why the overlay should be open.
       print(">>> address bar editor dismissed...")
       dismiss()
+    }
+    return nil
+  }
+
+  private func handleFindInPageEditorAction(_ action: FindInPageEditorView.Action) -> BrowserWindowView.Action? {
+    switch action {
+    case .dismiss:
+      findInPageViewModel.hideEditor()
+      overlayViewModel = nil
     }
     return nil
   }

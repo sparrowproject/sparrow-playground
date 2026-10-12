@@ -15,5 +15,7 @@ target_link_libraries(SparrowFindInPage PUBLIC
   SparrowUIFoundation
 )
 target_link_libraries(SparrowFindInPage PRIVATE
+  SparrowDesignSystem
   SparrowStorageBase
+  SparrowWeb
 )

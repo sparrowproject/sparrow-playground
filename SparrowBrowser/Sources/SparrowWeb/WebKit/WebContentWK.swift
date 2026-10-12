@@ -90,6 +90,11 @@ final class WebContentWK: NSObject, WebContent {
   }
 
   func find(_ string: String, backwards: Bool, completion: @escaping (Bool) -> Void) {
+    guard !string.isEmpty else {
+      // TODO: Clear the selection!
+      completion(false)
+      return
+    }
     let config = WKFindConfiguration()
     config.backwards = backwards
     config.caseSensitive = false

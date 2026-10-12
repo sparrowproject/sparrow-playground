@@ -1,5 +1,6 @@
 import SparrowAddressBar
 import SparrowDesignSystem
+import SparrowFindInPage
 import SparrowSpacesUI
 import SparrowUI
 
@@ -14,6 +15,7 @@ import WinUI
 struct BrowserWindowOverlayView: View {
   enum Action {
     case addressBarEditor(AddressBarEditorView.Action)
+    case findInPageEditor(FindInPageEditorView.Action)
     case spaceSelector(SpaceSelectorView.Action)
   }
 
@@ -24,9 +26,15 @@ struct BrowserWindowOverlayView: View {
     Group {
       Group { geom in
         modalCover
+
+        IfLet(viewModel.findInPageViewModel) {
+          findInPageEditorView(for: $0)
+        }
+
         // TODO: insert other UI anchored to the content area
       }
       .padding(webContentInsets)
+      .clipped()
 
       IfLet(viewModel.addressBarViewModel) {
         addressBarEditorView(for: $0)
@@ -60,6 +68,12 @@ struct BrowserWindowOverlayView: View {
   private func addressBarEditorView(for addressBarViewModel: AddressBarViewModel) -> some View {
     AddressBarEditorView(viewModel: addressBarViewModel) {
       action(.addressBarEditor($0))
+    }
+  }
+
+  private func findInPageEditorView(for findInPageViewModel: FindInPageViewModel) -> some View {
+    FindInPageEditorView(viewModel: findInPageViewModel) {
+      action(.findInPageEditor($0))
     }
   }
 

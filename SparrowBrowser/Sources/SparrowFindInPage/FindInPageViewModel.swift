@@ -1,6 +1,7 @@
 import Observation
 import SparrowTabs
 import SparrowToolbelt
+import SparrowWeb
 
 public typealias FindInPageViewModelDependencies
   = TabSystemProviding
@@ -14,21 +15,42 @@ public final class FindInPageViewModel {
   }
 
   public internal(set) var isEditorVisible = false
-  public internal(set) var searchString: String = ""
+  public internal(set) var isEditorFocused: Bool?
 
-  public func showFindEditor() {
-    print(">>> showFindEditor")
-    isEditorVisible = true
+  public internal(set) var searchString: String = "" {
+    didSet {
+      findNext()
+    }
+  }
+
+  public func showEditor() {
+    if isEditorVisible {
+      isEditorFocused = true
+    } else {
+      isEditorVisible = true
+    }
+  }
+
+  public func hideEditor() {
+    isEditorVisible = false
   }
 
   public func findNext() {
-    print(">>> findNext")
+    webContent?.find(searchString, backwards: false) { _ in }
   }
 
   public func findPrevious() {
-    print(">>> findPrevious")
+    webContent?.find(searchString, backwards: true) { _ in }
   }
 
   private let dependencies: FindInPageViewModelDependencies
   private let groupModel: Handle<TabGroupModel>
+
+  private var webContent: WebContent? {
+    dependencies.tabSystem.liveTab(forTab: groupModel.selectedTabModel.value)?.webContent
+  }
+}
+
+extension FindInPageViewModel: @MainActor Identifiable {
+  public var id: ObjectIdentifier { .init(self) }
 }

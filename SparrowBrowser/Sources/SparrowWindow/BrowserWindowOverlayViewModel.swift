@@ -18,8 +18,21 @@ final class BrowserWindowOverlayViewModel {
     self.groupModel = groupModel
   }
 
-  var findInPageViewModel: FindInPageViewModel?
-  var addressBarViewModel: AddressBarViewModel?
+  var findInPageViewModel: FindInPageViewModel? {
+    didSet {
+      if findInPageViewModel != nil {
+        addressBarViewModel = nil
+      }
+    }
+  }
+
+  var addressBarViewModel: AddressBarViewModel? {
+    didSet {
+      if addressBarViewModel != nil {
+        findInPageViewModel = nil
+      }
+    }
+  }
 
   var contentToolbarHeight: CGFloat = 0
   var contentViewInsets = EdgeInsets.zero
