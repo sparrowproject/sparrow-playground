@@ -61,14 +61,14 @@ extension TabSystem {
     return load(.init(url: tabModel.url ?? URL(string: "about:blank")!), afterTab: tabID)
   }
 
-  public func selectNextTab(forGroup groupModel: TabGroupModel) {
-    guard let index = groupModel.tabIDs.firstIndex(of: groupModel.selectedTabModel.id) else { return }
+  public func nextTab(forGroup groupModel: TabGroupModel) -> TabID? {
+    guard let index = groupModel.tabIDs.firstIndex(of: groupModel.selectedTabModel.id) else { return nil }
     let nextIndex = (index + 1) % groupModel.tabIDs.count
-    select(tabAtIndex: nextIndex, inGroup: groupModel)
+    return groupModel.tabIDs[nextIndex]
   }
 
-  public func selectPreviousTab(forGroup groupModel: TabGroupModel) {
-    guard let index = groupModel.tabIDs.firstIndex(of: groupModel.selectedTabModel.id) else { return }
+  public func previousTab(forGroup groupModel: TabGroupModel) -> TabID? {
+    guard let index = groupModel.tabIDs.firstIndex(of: groupModel.selectedTabModel.id) else { return nil }
     var previousIndex = index - 1
     if previousIndex < 0 {
       if groupModel.tabIDs.count > 0 {
@@ -77,11 +77,12 @@ extension TabSystem {
         previousIndex = 0
       }
     }
-    select(tabAtIndex: previousIndex, inGroup: groupModel)
+    return groupModel.tabIDs[previousIndex]
   }
 
-  public func select(tabAtIndex index: Int, inGroup groupModel: TabGroupModel) {
-    let tabID = groupModel.tabIDs[index]
-    select(tab: tabID)
+  public func nextSelectedTabAfterRemovalOfSelectedTab(forGroup groupModel: TabGroupModel) -> TabID? {
+    let policy = policy(forGroup: groupModel.id)
+    let index = policy.decideNextSelectionIndexAfterRemovalOfSelectedTab(inGroup: groupModel)
+    return index.flatMap { groupModel.tabIDs[$0] }
   }
 }
