@@ -76,7 +76,7 @@ public struct BrowserWindowView: View {
         }
       }
     }
-    .readSize(to: $size)
+    .readSize(to: .binding(for: \.size, on: viewModel))
     .onChange(of: viewModel.forcedColorScheme) {
       action(.applyColorScheme($0))
     }
@@ -103,9 +103,13 @@ public struct BrowserWindowView: View {
   private let viewModel: BrowserWindowViewModel
   private let action: (Action) -> Void
 
-  @State private var size = CGSize.zero
+  // @State private var size = CGSize.zero
   @State private var sideTabsDesiredWidth: CGFloat?
   @State private var resizingSideTabs = false
+
+  private var size: CGSize {
+    viewModel.size
+  }
 
   private var backgroundTint: some View {
     Color(light: .blue.opacity(0.05), dark: .black.opacity(0.5))

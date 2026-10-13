@@ -21,7 +21,7 @@ final class ObjectWriter<T: Codable & Sendable & Equatable> {
 
       // Avoid redundant writes.
       if pendingObject != currentObject {
-        print(">>> writeObject, toFile: \(fileURL)")
+        // print(">>> writeObject, toFile: \(fileURL)")
         dispatchQueue.async { [pendingObject, fileURL] in
           writeObject(pendingObject, toFile: fileURL)
         }
@@ -69,7 +69,7 @@ final class ObjectWriter<T: Codable & Sendable & Equatable> {
 }
 
 private func writeObject<T: Codable>(_ obj: T, toFile fileURL: URL) {
-  print(">>> writeObject to: \(fileURL)")
+  // print(">>> writeObject to: \(fileURL)")
   do {
     let encoder = JSONEncoder()
     let data = try encoder.encode(obj)

@@ -62,6 +62,7 @@ public final class BrowserWindowViewModel {
   let topTabsViewModel: TopTabsViewModel
   let sideTabsViewModel: SideTabsViewModel
   let findInPageViewModel: FindInPageViewModel
+  var size = CGSize.zero
 
   // Non-nil if the overlay should be presented.
   private(set) var overlayViewModel: BrowserWindowOverlayViewModel?
@@ -218,6 +219,35 @@ public final class BrowserWindowViewModel {
     return .easeOut(duration: 0.2)
   }
 
+  private func animationForSelectTabHack(_ tabID: TabID) -> CoreViewAnimation? {
+    guard
+      let indexOfCurrentSelectedTab = groupModel.tabIDs.firstIndex(of: groupModel.selectedTabModel.id),
+      let indexOfFutureSelectedTab = groupModel.tabIDs.firstIndex(of: tabID)
+    else {
+      return nil
+    }
+
+    let numTabs = groupModel.tabIDs.count
+    let numTabsTraversed = abs(indexOfCurrentSelectedTab - indexOfFutureSelectedTab)
+    let maxTabsTraversed = 3
+    let perceivedDuration: TimeInterval = 0.2
+
+    let duration: TimeInterval
+    let timeOffset: TimeInterval
+
+    if numTabsTraversed <= maxTabsTraversed {
+      duration = perceivedDuration
+      timeOffset = 0
+    } else {
+      duration = perceivedDuration * Double(numTabsTraversed) / Double(maxTabsTraversed)
+      timeOffset = Double(numTabsTraversed - maxTabsTraversed) * duration / Double(numTabsTraversed)
+    }
+
+    print(">>> animating tab selection...")
+
+    return .easeOut(duration: duration, timeOffset: timeOffset)
+  }
+
   private var selectedTabID: TabID? {
     let tabID = groupModel.selectedTabModel.id
     return tabID == .invalid ? nil : tabID
@@ -235,7 +265,8 @@ public final class BrowserWindowViewModel {
   private func handleTabAction(_ action: TabView.Action, for tabID: TabID) -> BrowserWindowView.Action? {
     switch action {
     case .select:
-      withAnimation(animationForSelectTab) {
+      print(">>> select tab!")
+      withAnimation(animationForSelectTabHack(tabID)) {
         dependencies.tabSystem.select(tab: tabID)
       }
     case .close:

@@ -101,9 +101,7 @@ public struct SideTabsView: View {
 
   private var newTabButton: some View {
     Button {
-      withAnimation {
-        action(.newTab)
-      }
+      action(.newTab)
     } label: { _ in
       // TODO: Looks like a use case for HStack!
       Group {
@@ -208,9 +206,7 @@ public struct SideTabsView: View {
   }
 
   private func handleTabAction(_ action: TabView.Action, for tabID: TabID) {
-    withAnimation {
-      self.action(.tab(action, for: tabID))
-    }
+    self.action(.tab(action, for: tabID))
   }
 
   private func clampedScrollOffset(_ scrollOffset: CGFloat) -> CGFloat {

@@ -26,10 +26,8 @@ final class WebContentWK: NSObject, WebContent {
 
     switch initializationParams {
     case .url(let url):
-      print(">>> navigating newly created webview to: \(url)")
       load(url: url)
     case .interactionState(let data):
-      print(">>> assigning interactionState to newly created webview!")
       webView.interactionState = data
     case .none:
       break
@@ -167,7 +165,6 @@ extension WebContentWK: WKNavigationDelegate {
     decidePolicyFor navigationResponse: WKNavigationResponse,
     decisionHandler: @escaping @MainActor @Sendable (WKNavigationResponsePolicy) -> Void
   ) {
-    print(">>> decidePolicyFor navigationResponse, canShowMIMEType: \(navigationResponse.canShowMIMEType)")
     if navigationResponse.canShowMIMEType {
       decisionHandler(.allow)
     } else {
