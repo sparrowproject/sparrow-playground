@@ -35,7 +35,7 @@ final class TabViewModel {
   }
 
   var titleText: String {
-    tabModel.title ?? tabModel.url?.host() ?? ""
+    tabModel.title?.nilIfEmpty ?? tabModel.url?.host() ?? ""
   }
 
   var isSelected: Bool {
