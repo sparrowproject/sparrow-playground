@@ -761,11 +761,11 @@ open class CoreView {
       let position = CGPoint(x: layer.position.x + offsetX, y: layer.position.y + offsetY)
 
       if let animation {
-        let animation = CABasicAnimation()
-        animation.fromValue = layer.presentation()?.position ?? oldValue
-        animation.toValue = position
-        animation.keyPath = "position"
-        layer.add(animation, forKey: "position")
+        layer.add(with(animation.toBasicAnimation()) {
+          $0.fromValue = layer.presentation()?.position ?? oldValue
+          $0.toValue = position
+          $0.keyPath = "position"
+        }, forKey: "position")
       }
       layer.position = position
       #elseif os(Windows)
