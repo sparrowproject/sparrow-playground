@@ -252,8 +252,7 @@ public final class BrowserWindowViewModel {
   }
 
   private var selectedTab: LiveTab? {
-    print(">>> BrowserWindowViewModel.selectedTab:")
-    return dependencies.tabSystem.liveTab(forTab: groupModel.selectedTabModel.value)
+    dependencies.tabSystem.liveTab(forTab: groupModel.selectedTabModel.value)
   }
 
   private var newTabNavigation: TabNavigation {
@@ -263,7 +262,6 @@ public final class BrowserWindowViewModel {
   private func handleTabAction(_ action: TabView.Action, for tabID: TabID) -> BrowserWindowView.Action? {
     switch action {
     case .select:
-      print(">>> select tab!")
       withAnimation(animationForSelectTab(tabID)) {
         dependencies.tabSystem.select(tab: tabID)
       }
