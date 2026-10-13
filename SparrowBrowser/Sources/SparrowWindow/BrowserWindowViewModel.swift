@@ -212,15 +212,10 @@ public final class BrowserWindowViewModel {
     defer {
       timeSinceLastSelectTabCommand = now
     }
-    if let timeSinceLastSelectTabCommand {
-      if now - timeSinceLastSelectTabCommand > .milliseconds(200) {
-        return .default
-      } else {
-        return nil
-      }
-    } else {
-      return .default
+    if let timeSinceLastSelectTabCommand, now - timeSinceLastSelectTabCommand < .milliseconds(200) {
+      return nil
     }
+    return .easeOut(duration: 0.2)
   }
 
   private var selectedTabID: TabID? {
@@ -240,11 +235,11 @@ public final class BrowserWindowViewModel {
   private func handleTabAction(_ action: TabView.Action, for tabID: TabID) -> BrowserWindowView.Action? {
     switch action {
     case .select:
-      withAnimation {
+      withAnimation(animationForSelectTab) {
         dependencies.tabSystem.select(tab: tabID)
       }
     case .close:
-      withAnimation {
+      withAnimation(animationForSelectTab) {
         dependencies.tabSystem.remove(tab: tabID)
       }
     case .command(let commandID):

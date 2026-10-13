@@ -7,7 +7,12 @@ import AppKit
 @MainActor
 public enum CoreViewAnimation {
   case `default`
-  case easeInOut(duration: TimeInterval = 0.3)
+  case linear(duration: TimeInterval = Self.defaultDuration)
+  case easeIn(duration: TimeInterval = Self.defaultDuration)
+  case easeOut(duration: TimeInterval = Self.defaultDuration)
+  case easeInOut(duration: TimeInterval = Self.defaultDuration)
+
+  public nonisolated static var defaultDuration: TimeInterval { 0.3 }
 }
 
 @MainActor
