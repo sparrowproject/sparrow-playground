@@ -52,12 +52,28 @@ public final class NSHostingView<Content: View>: NSView {
     }
   }
 
+  public var isUserInteractionEnabled = true {
+    didSet {
+      if let window, window.firstResponder === self {
+        // Search for an ancestor that can become first responder.
+        var parent = superview
+        while parent != nil {
+          if parent?.acceptsFirstResponder == true {
+            window.makeFirstResponder(parent)
+            break
+          }
+          parent = parent?.superview
+        }
+      }
+    }
+  }
+
   public override var isFlipped: Bool {
     true
   }
 
   public override var acceptsFirstResponder: Bool {
-    true
+    isUserInteractionEnabled
   }
 
   public override var mouseDownCanMoveWindow: Bool {
@@ -69,7 +85,7 @@ public final class NSHostingView<Content: View>: NSView {
   }
 
   public override func acceptsFirstMouse(for event: NSEvent?) -> Bool {
-    true
+    isUserInteractionEnabled
   }
 
   public override func makeBackingLayer() -> CALayer {
@@ -126,6 +142,11 @@ public final class NSHostingView<Content: View>: NSView {
     CATransaction.commit()
 
     debugButton.frame = .init(x: 5, y: 0, width: 80, height: 32)
+  }
+
+  public override func hitTest(_ point: NSPoint) -> NSView? {
+    guard isUserInteractionEnabled else { return nil }
+    return super.hitTest(point)
   }
 
   // TODO: Add support for event bubbling and suppression.

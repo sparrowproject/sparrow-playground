@@ -98,7 +98,6 @@ public final class CoreShapeView: CoreView {
       let cgPath = _path?.cgPath
       if let animation {
         shapeLayer.add(with(animation.toBasicAnimation()) {
-          print(">>> applying path animation w/ duration: \($0.duration), timeOffset: \($0.timeOffset)")
           $0.fromValue = shapeLayer.presentation()?.path ?? oldValue?.cgPath
           $0.toValue = cgPath
           $0.keyPath = "path"

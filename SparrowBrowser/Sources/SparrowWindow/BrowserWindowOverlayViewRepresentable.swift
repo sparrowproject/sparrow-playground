@@ -1,4 +1,5 @@
 import SparrowUI
+import SparrowUICore
 
 // This representable serves to provide a native UI surface above other native UI components
 // that make up the browser window (e.g., the native web view).
@@ -12,10 +13,18 @@ struct BrowserWindowOverlayViewRepresentable: NSViewRepresentable {
   let viewModel: BrowserWindowOverlayViewModel
   let action: (BrowserWindowOverlayView.Action) -> Void
 
-  func makeNSView() -> NSViewType {
-    NSHostingView(
+  func makeNSView(context: CoreViewContext, associatedView _: CoreView) -> NSViewType {
+    let view = NSHostingView(
       content: BrowserWindowOverlayView(viewModel: viewModel, action: action)
     )
+
+    context.scheduler.onChange(
+      of: { viewModel.needsHitTesting },
+      perform: { [weak view] in view?.isUserInteractionEnabled = $0 },
+      cancelWhen: { [weak view] in view == nil },
+    )
+
+    return view
   }
 
   static func tearDownNSView(_ view: NSViewType) {
@@ -24,7 +33,6 @@ struct BrowserWindowOverlayViewRepresentable: NSViewRepresentable {
 }
 
 #elseif os(Windows)
-import SparrowUICore
 import WinUI
 
 struct BrowserWindowOverlayViewRepresentable: WinUIElementRepresentable {

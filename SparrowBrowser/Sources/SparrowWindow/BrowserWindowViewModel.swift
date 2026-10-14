@@ -397,6 +397,7 @@ public final class BrowserWindowViewModel {
     let tabModel = groupModel.selectedTabModel
 
     func dismiss() {
+      overlayViewModel.addressBarViewModel = nil
       contentViewModel.contentBodyViewModel.webContentViewModel.inputDisabled = false
       contentViewModel.contentToolbarViewModel.addressBarViewModel.handleURLChanged(tabModel.url)
     }
@@ -427,6 +428,7 @@ public final class BrowserWindowViewModel {
     switch action {
     case .dismiss:
       findInPageViewModel.hideEditor()
+      overlayViewModel.findInPageViewModel = nil
     }
     return nil
   }
