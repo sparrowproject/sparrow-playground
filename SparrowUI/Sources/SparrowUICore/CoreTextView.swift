@@ -70,7 +70,11 @@ open class CoreTextView: CoreView {
 
   #if os(macOS)
   override func makeLayer() -> CALayer {
-    CoreTextLayer()
+    let layer = CALayer()
+    // Use a separate text layer so that we can precisely control when the layer is resized.
+    // This allows `self` to be resized independently from the text content.
+    layer.addSublayer(textLayer)
+    return layer
   }
   #elseif os(Windows)
   override func contentBrush() -> CompositionBrush? {
@@ -101,7 +105,6 @@ open class CoreTextView: CoreView {
       guard _string != oldValue else { return }
 
       #if os(macOS)
-      let textLayer = layer as! CoreTextLayer
       textLayer.text = _string
       #elseif os(Windows)
       // print(">>> _string value changed, from: \(oldValue), to: \(_string)")
@@ -116,7 +119,6 @@ open class CoreTextView: CoreView {
       guard _font != oldValue else { return }
 
       #if os(macOS)
-      let textLayer = layer as! CoreTextLayer
       textLayer.font = _font
       #elseif os(Windows)
       // print(">>> _font value changed")
@@ -131,7 +133,6 @@ open class CoreTextView: CoreView {
       guard _foregroundColor != oldValue else { return }
 
       #if os(macOS)
-      let textLayer = layer as! CoreTextLayer
       textLayer.foregroundColor = _foregroundColor
       #elseif os(Windows)
       // print(">>> _foregroundColor value changed")
@@ -144,7 +145,6 @@ open class CoreTextView: CoreView {
     didSet {
       guard _backingScaleFactor != oldValue else { return }
       #if os(macOS)
-      let textLayer = layer as! CoreTextLayer
       textLayer.backingScaleFactor = _backingScaleFactor
       #elseif os(Windows)
       #endif
@@ -163,8 +163,9 @@ open class CoreTextView: CoreView {
   }
 
   #if os(macOS)
+  private lazy var textLayer = CoreTextLayer()
+
   private func renderText() {
-    let textLayer = layer as! CoreTextLayer
     textLayer.renderText()
   }
   #endif
@@ -254,7 +255,6 @@ private final class CoreTextLayer: CALayer {
   override init() {
     super.init()
     isGeometryFlipped = true
-    needsDisplayOnBoundsChange = true
   }
 
   // This needs to be implemented to avoid a crash.
@@ -269,7 +269,7 @@ private final class CoreTextLayer: CALayer {
   override func draw(in cgContext: CGContext) {
     super.draw(in: cgContext)
 
-    let lineBuilder = TextLineBuilder(text: text, font: font)
+    guard let lineBuilder else { return }
 
     cgContext.saveGState()
     cgContext.textMatrix = .identity
@@ -282,9 +282,17 @@ private final class CoreTextLayer: CALayer {
   }
 
   func renderText() {
+    let lineBuilder = TextLineBuilder(text: text, font: font)
+    self.lineBuilder = lineBuilder
+
     contentsScale = backingScaleFactor
+
+    frame = .init(x: 0, y: 0, width: lineBuilder.width, height: lineBuilder.height)
+
     setNeedsDisplay()
     displayIfNeeded()
   }
+
+  private var lineBuilder: TextLineBuilder?
 }
 #endif

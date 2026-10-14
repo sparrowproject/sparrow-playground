@@ -140,6 +140,7 @@ public struct TabView: View {
     Text(viewModel.titleText)
       .font(Metrics.titleFont)
       .foregroundColor(.primaryText)
+      .alignment(.leading)
       .elideWithGradientMask()
   }
 
