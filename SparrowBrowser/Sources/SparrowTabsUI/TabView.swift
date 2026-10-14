@@ -129,9 +129,7 @@ public struct TabView: View {
   }
 
   private var icon: some View {
-    Image(source: viewModel.icon ?? StandardImages.defaultFavicon)
-      .resizable()
-      .tintColor(viewModel.icon == nil ? .primaryText.opacity(0.4) : nil)
+    FaviconView(source: viewModel.icon)
       .width(Metrics.iconSize)
       .height(Metrics.iconSize)
   }

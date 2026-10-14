@@ -92,9 +92,7 @@ struct SpaceChipView: View {
   }
 
   private func groupDetail(for groupModel: TabGroupModel) -> some View {
-    Image(source: groupModel.selectedTabModel.favicon ?? StandardImages.defaultFavicon)
-      .resizable()
-      .tintColor(groupModel.selectedTabModel.favicon == nil ? .primaryText.opacity(0.4) : nil)
+    FaviconView(source: groupModel.selectedTabModel.favicon)
       .width(StandardMetrics.iconSize)
       .height(StandardMetrics.iconSize)
       .opacity(viewModel.hideSpace ? 0 : 1)
