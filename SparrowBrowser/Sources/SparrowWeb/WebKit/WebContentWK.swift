@@ -322,7 +322,7 @@ extension WebContentWK: WKIconLoadingDelegate {
         // Avoid redundant work. Assume the data for a given favicon URL is idempotent.
         if await dependencies.webHistory.queryImage(forFaviconURL: faviconURL) == nil {
           dependencies.webHistory.storeImage(
-            ImageFromDataProvider(data: data),
+            DecodingImageProvider(data: data, codec: ImageCodecs.lossless),
             forFaviconURL: faviconURL
           )
         }
@@ -334,14 +334,6 @@ extension WebContentWK: WKIconLoadingDelegate {
         model.faviconURL = faviconURL
       }
     }
-  }
-}
-
-private struct ImageFromDataProvider: ImageProvider {
-  let data: Data
-
-  func getImage() async -> ImageRef? {
-    .init(data: data)
   }
 }
 
