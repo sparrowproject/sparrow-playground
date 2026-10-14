@@ -42,6 +42,7 @@ public final class BrowserWindowViewModel {
     contentViewModel = .init(dependencies: dependencies, groupModel: groupModel)
     topTabsViewModel = .init(dependencies: dependencies, groupModel: groupModel)
     sideTabsViewModel = .init(dependencies: dependencies, groupModel: groupModel)
+    overlayViewModel = .init(dependencies: dependencies, groupModel: groupModel)
     findInPageViewModel = .init(dependencies: dependencies, groupModel: groupModel)
 
     print(">>> BrowserWindowViewModel created @ \(ObjectIdentifier(self))")
@@ -61,11 +62,9 @@ public final class BrowserWindowViewModel {
   let contentViewModel: ContentViewModel
   let topTabsViewModel: TopTabsViewModel
   let sideTabsViewModel: SideTabsViewModel
+  let overlayViewModel: BrowserWindowOverlayViewModel
   let findInPageViewModel: FindInPageViewModel
   var size = CGSize.zero
-
-  // Non-nil if the overlay should be presented.
-  private(set) var overlayViewModel: BrowserWindowOverlayViewModel?
 
   var titleBarInsets: EdgeInsets = .zero {
     didSet {
@@ -285,7 +284,6 @@ public final class BrowserWindowViewModel {
       focusAddressBarEditor(blank: false)
     case .find:
       findInPageViewModel.showEditor()
-      let overlayViewModel = ensureOverlayViewModel()
       overlayViewModel.findInPageViewModel = findInPageViewModel
     case .findNext:
       findInPageViewModel.findNext()
@@ -374,8 +372,6 @@ public final class BrowserWindowViewModel {
   private func handleAddressBarAction(_ action: AddressBarView.Action) -> BrowserWindowView.Action? {
     switch action {
     case .showEditorInOverlay:
-      print(">>> showEditorInOverlay")
-      let overlayViewModel = ensureOverlayViewModel()
       overlayViewModel.addressBarViewModel = contentViewModel.contentToolbarViewModel.addressBarViewModel
       contentViewModel.contentBodyViewModel.webContentViewModel.inputDisabled = true
     }
@@ -401,7 +397,6 @@ public final class BrowserWindowViewModel {
     let tabModel = groupModel.selectedTabModel
 
     func dismiss() {
-      overlayViewModel = nil
       contentViewModel.contentBodyViewModel.webContentViewModel.inputDisabled = false
       contentViewModel.contentToolbarViewModel.addressBarViewModel.handleURLChanged(tabModel.url)
     }
@@ -432,18 +427,8 @@ public final class BrowserWindowViewModel {
     switch action {
     case .dismiss:
       findInPageViewModel.hideEditor()
-      overlayViewModel = nil
     }
     return nil
-  }
-
-  private func ensureOverlayViewModel() -> BrowserWindowOverlayViewModel {
-    if let overlayViewModel {
-      return overlayViewModel
-    }
-    let overlayViewModel = BrowserWindowOverlayViewModel(dependencies: dependencies, groupModel: groupModel)
-    self.overlayViewModel = overlayViewModel
-    return overlayViewModel
   }
 
   private func makeNewTab() {

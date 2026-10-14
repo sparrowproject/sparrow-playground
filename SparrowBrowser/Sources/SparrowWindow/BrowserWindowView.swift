@@ -70,10 +70,8 @@ public struct BrowserWindowView: View {
       .width(160)
       .alignment(.center)
 
-      IfLet(viewModel.overlayViewModel) {
-        BrowserWindowOverlayViewRepresentable(viewModel: $0) {
-          viewModel.handleOverlayAction($0).flatMap { action($0) }
-        }
+      BrowserWindowOverlayViewRepresentable(viewModel: viewModel.overlayViewModel) {
+        viewModel.handleOverlayAction($0).flatMap { action($0) }
       }
     }
     .readSize(to: .binding(for: \.size, on: viewModel))
@@ -87,11 +85,11 @@ public struct BrowserWindowView: View {
         action(.close)
       }
     }
-    .onChange(of: (viewModel.overlayViewModel, contentViewInsets)) {
-      $0?.contentViewInsets = $1
+    .onChange(of: contentViewInsets) {
+      viewModel.overlayViewModel.contentViewInsets = $0
     }
-    .onChange(of: (viewModel.overlayViewModel, viewModel.contentViewModel.toolbarHeight)) {
-      $0?.contentToolbarHeight = $1
+    .onChange(of: viewModel.contentViewModel.toolbarHeight) {
+      viewModel.overlayViewModel.contentToolbarHeight = $0
     }
     #if os(Windows)
     .onChange(of: computeNonClientPassthroughRects()) {

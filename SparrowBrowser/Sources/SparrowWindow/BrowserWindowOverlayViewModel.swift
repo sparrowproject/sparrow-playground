@@ -34,14 +34,14 @@ final class BrowserWindowOverlayViewModel {
     }
   }
 
+  var needsHitTesting: Bool {
+    (findInPageViewModel != nil) || (addressBarViewModel != nil)
+  }
+
   var contentToolbarHeight: CGFloat = 0
   var contentViewInsets = EdgeInsets.zero
 
   var showModalCover: Bool {
-    addressBarViewModel != nil
-  }
-
-  var needsHitTesting: Bool {
     addressBarViewModel != nil
   }
 

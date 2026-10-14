@@ -40,6 +40,7 @@ struct BrowserWindowOverlayView: View {
         addressBarEditorView(for: $0)
       }
     }
+    .allowsHitTesting(viewModel.needsHitTesting)
     .onPointerDown {
       if let addressBarViewModel = viewModel.addressBarViewModel {
         addressBarViewModel.dismissEditor()
