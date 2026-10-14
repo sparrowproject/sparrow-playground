@@ -1,3 +1,4 @@
+import SparrowUIFoundation
 import SparrowWeb
 
 typealias LiveTabsManagerDependencies
@@ -6,7 +7,7 @@ typealias LiveTabsManagerDependencies
 @MainActor
 final class LiveTabsManager {
   enum Action {
-    case createNewTabWithContent(WebContent, requestingTab: TabID)
+    case createNewTabWithContent(WebContent, modifierFlags: Keystroke.ModifierFlags, requestingTab: TabID)
     case startDownload(WebDownload, requestingTab: TabID)
   }
 
@@ -53,8 +54,8 @@ final class LiveTabsManager {
 
   private func handleWebContentAction(_ action: WebContentAction, tabID: TabID) {
     switch action {
-    case .createdNew(let webContent):
-      self.action?(.createNewTabWithContent(webContent, requestingTab: tabID))
+    case .createdNew(let webContent, let modifierFlags):
+      self.action?(.createNewTabWithContent(webContent, modifierFlags: modifierFlags, requestingTab: tabID))
     case .downloadStarting(let webDownload):
       self.action?(.startDownload(webDownload, requestingTab: tabID))
     }

@@ -162,6 +162,30 @@ extension WebContentWK: WKNavigationDelegate {
 
   func webView(
     _ webView: WKWebView,
+    decidePolicyFor navigationAction: WKNavigationAction,
+    decisionHandler: @escaping @MainActor @Sendable (WKNavigationActionPolicy) -> Void
+  ) {
+    // Redirect Cmd/Shift link clicks.
+    if
+      navigationAction.navigationType == .linkActivated,
+      navigationAction.targetFrame === navigationAction.sourceFrame,
+      (navigationAction.modifierFlags.contains(.command) || navigationAction.modifierFlags.contains(.shift))
+    {
+      decisionHandler(.cancel)
+      let newWebView = (self as WKUIDelegate).webView?(
+        webView,
+        createWebViewWith: webView.configuration,
+        for: navigationAction,
+        windowFeatures: WKWindowFeatures(),
+      )
+      newWebView?.load(navigationAction.request)
+    } else { 
+      decisionHandler(.allow)
+    }
+  }
+
+  func webView(
+    _ webView: WKWebView,
     decidePolicyFor navigationResponse: WKNavigationResponse,
     decisionHandler: @escaping @MainActor @Sendable (WKNavigationResponsePolicy) -> Void
   ) {
@@ -258,7 +282,7 @@ extension WebContentWK: WKUIDelegate {
       configuration: configuration,
       initializationParams: nil,
     )
-    action(.createdNew(webContent))
+    action(.createdNew(webContent, modifierFlags: navigationAction.modifierFlags))
     return webContent.webView
   }
 }

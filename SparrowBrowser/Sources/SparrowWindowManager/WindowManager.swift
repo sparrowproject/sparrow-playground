@@ -259,9 +259,17 @@ final class DefaultWindowManager: WindowManager {
 
   private func handleTabSystemAction(_ action: TabSystemAction, for profileID: ProfileID) {
     switch action {
-    case .newTabRequested(_, let completion):
-      withAnimation {
-        completion(.continue)
+    case .newTabRequested(_, let modifierFlags, let completion):
+      print(">>> newTabRequested w/ modifierFlags: \(modifierFlags)")
+      if modifierFlags.contains(.shift) {
+        let groupID = TabGroupID.newSpace()
+        // Call the completion to populate the new space.
+        completion(.continueWithGroup(groupID))
+        createBrowserWindow(forGroup: groupID, inProfile: profileID)
+      } else {
+        withAnimation {
+          completion(.continue)
+        }
       }
     case .startDownload(let webDownload, let tabID):
       print(">>> handling .startDownload")

@@ -1,4 +1,5 @@
 import SparrowToolbelt
+import SparrowUIFoundation
 import SparrowWeb
 
 @MainActor
@@ -41,14 +42,15 @@ public typealias TabSystemDependencies
 
 @MainActor
 public enum TabSystemAction {
-  case newTabRequested(byTab: TabID, completion: (TabSystemNewTabPolicy) -> Void)
+  case newTabRequested(byTab: TabID, modifierFlags: Keystroke.ModifierFlags, completion: (TabSystemNewTabPolicy) -> Void)
   case startDownload(WebDownload, fromTab: TabID)
 }
 
 @MainActor
-public enum TabSystemNewTabPolicy {
+public enum TabSystemNewTabPolicy: Equatable {
   case cancel
   case `continue`
+  case continueWithGroup(TabGroupID)
 }
 
 extension Factory where Interface == TabSystem {
@@ -246,28 +248,51 @@ final class DefaultTabSystem: TabSystem {
 
   private func handleLiveTabsManagerAction(_ action: LiveTabsManager.Action) {
     switch action {
-    case .createNewTabWithContent(let webContent, let openerTabID):
-      self.action?(handleCreateNewTab(withWebContent: webContent, openerTabID: openerTabID))
+    case .createNewTabWithContent(let webContent, let modifierFlags, let openerTabID):
+      self.action?(handleCreateNewTab(
+        withWebContent: webContent,
+        modifierFlags: modifierFlags,
+        openerTabID: openerTabID,
+      ))
     case .startDownload(let webDownload, let openerTabID):
       self.action?(.startDownload(webDownload, fromTab: openerTabID))
     }
   }
 
-  private func handleCreateNewTab(withWebContent webContent: WebContent, openerTabID: TabID) -> TabSystemAction {
+  private func handleCreateNewTab(
+    withWebContent webContent: WebContent,
+    modifierFlags: Keystroke.ModifierFlags,
+    openerTabID: TabID
+  ) -> TabSystemAction {
     .newTabRequested(
       byTab: openerTabID,
+      modifierFlags: modifierFlags,
       completion: { [weak self] newTabPolicy in
-        guard newTabPolicy == .continue, let self else { return }
+        guard let self else { return }
 
-        let openerTabModel = model(forTab: openerTabID)
-        let groupID = openerTabModel.groupID
+        let groupID: TabGroupID? =
+          switch newTabPolicy {
+          case .cancel:
+            nil
+          case .continue:
+            model(forTab: openerTabID).groupID
+          case .continueWithGroup(let groupID):
+            groupID
+          }
+        guard let groupID else { return }
+
         let groupModel = model(forGroup: groupID)
         let groupPolicy = policy(forGroup: groupID)
 
-        let index = groupPolicy.decideInsertionIndexForNewlyOpenedTab(
-          inGroup: groupModel,
-          openerTabID: openerTabID,
-        )
+        let index: Int =
+          if newTabPolicy == .continue {
+            groupPolicy.decideInsertionIndexForNewlyOpenedTab(
+              inGroup: groupModel,
+              openerTabID: openerTabID,
+            )
+          } else {
+            groupPolicy.decideInsertionIndexForNewTab(inGroup: groupModel)
+          }
 
         let tabID = TabID()
         let tabModel = makeTabModel(tabID: tabID, groupID: groupID)
