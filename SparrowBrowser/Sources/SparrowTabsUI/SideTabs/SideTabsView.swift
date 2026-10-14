@@ -120,24 +120,25 @@ public struct SideTabsView: View {
     .buttonStyle(.standard)
   }
 
-  private var tabVisor: some View {
+  private func tabVisor(withShadow: Bool) -> some View {
     RoundedRectangle(cornerRadius: StandardMetrics.buttonCornerRadius)
       .fill(.primaryBackground)
-      // .stroke(.primaryText.opacity(0.2))
-      .shadow(color: StandardColors.shadow, radius: StandardMetrics.shadowRadius)
+      .shadow(color: withShadow ? StandardColors.shadow : .clear, radius: StandardMetrics.shadowRadius)
       .height(viewModel.tabHeight - Metrics.padding)
       .padding(.horizontal, Metrics.padding)
       .padding(.vertical, Metrics.padding / 2)
+      .offset(y: draggedTabOffsetY ?? viewModel.selectedTabViewModel.flatMap { offsetY(for: $0.tabID) } ?? 0)
   }
 
   private var selectedTabView: some View {
-    IfLet(viewModel.selectedTabViewModel, id: \.tabID) { tabViewModel in
-      Group {
-        tabVisor
+    Group {
+      tabVisor(withShadow: true)
+      IfLet(viewModel.selectedTabViewModel, id: \.tabID) { tabViewModel in
         tabView(for: tabViewModel)
           .height(height(for: tabViewModel))
+          .offset(y: draggedTabOffsetY ?? viewModel.selectedTabViewModel.flatMap { offsetY(for: $0.tabID) } ?? 0)
       }
-      .offset(y: draggedTabOffsetY ?? offsetY(for: tabViewModel.tabID))
+      .mask(tabVisor(withShadow: false))
     }
     .onChange(of: viewModel.draggedTabViewModel) { tabViewModel in
       guard dragTabID != tabViewModel?.tabID else { return }
