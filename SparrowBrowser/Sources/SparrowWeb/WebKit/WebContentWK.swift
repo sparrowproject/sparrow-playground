@@ -271,10 +271,6 @@ extension WebContentWK: WKUIDelegate {
     for navigationAction: WKNavigationAction,
     windowFeatures: WKWindowFeatures
   ) -> WKWebView? {
-    print("New web view requested")
-    print("URL:", navigationAction.request.url as Any)
-    print("targetFrame:", navigationAction.targetFrame as Any)
-
     guard let action else { return nil }
 
     let webContent = WebContentWK(

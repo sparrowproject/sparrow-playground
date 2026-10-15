@@ -35,7 +35,11 @@ final class TabViewModel {
   }
 
   var titleText: String {
-    tabModel.title?.nilIfEmpty ?? tabModel.url?.host() ?? ""
+    if tabModel.isLoading {
+      "Loading..."
+    } else {
+      tabModel.title?.nilIfEmpty ?? tabModel.url?.host() ?? ""
+    }
   }
 
   var isSelected: Bool {
