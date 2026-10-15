@@ -320,6 +320,8 @@ extension WebContentWK: WKIconLoadingDelegate {
 
       Task<Void, Never> {
         // Avoid redundant work. Assume the data for a given favicon URL is idempotent.
+        // TODO: Figure out a way to ensure that old images get replaced, and minimize
+        // the work done here.
         if await dependencies.webHistory.queryImage(forFaviconURL: faviconURL) == nil {
           dependencies.webHistory.storeImage(
             DecodingImageProvider(data: data, codec: ImageCodecs.lossless),
