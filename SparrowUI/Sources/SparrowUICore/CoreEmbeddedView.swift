@@ -91,6 +91,8 @@ public final class CoreEmbeddedView: CoreView {
             $0.target = "Translation"
           }
         )
+
+        // TODO: Add AnimationController?
       }
       #endif
     }

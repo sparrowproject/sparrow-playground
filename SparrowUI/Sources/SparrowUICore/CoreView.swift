@@ -774,6 +774,7 @@ open class CoreView {
         try! visual.startAnimation(
           "Offset",
           animation.toCompositionAnimation(withTargetValue: newValue, compositor: context.compositor),
+          animation.toAnimationController(compositor: context.compositor),
         )
       } else {
         visual.offset = newValue
@@ -815,18 +816,22 @@ open class CoreView {
         try! visual.startAnimation(
           "Size",
           animation.toCompositionAnimation(withTargetValue: newValue, compositor: context.compositor),
+          animation.toAnimationController(compositor: context.compositor),
         )
         try! contentVisual?.startAnimation(
           "Size",
           animation.toCompositionAnimation(withTargetValue: newValue, compositor: context.compositor),
+          animation.toAnimationController(compositor: context.compositor),
         )
         try! contentVisualSurface?.startAnimation(
           "SourceSize",
           animation.toCompositionAnimation(withTargetValue: newValue, compositor: context.compositor),
+          animation.toAnimationController(compositor: context.compositor),
         )
         try! maskVisualSurface?.startAnimation(
           "SourceSize",
           animation.toCompositionAnimation(withTargetValue: newValue, compositor: context.compositor),
+          animation.toAnimationController(compositor: context.compositor),
         )
       } else {
         visual.size = newValue
@@ -869,6 +874,7 @@ open class CoreView {
         try! visual.startAnimation(
           "Opacity",
           animation.toCompositionAnimation(withTargetValue: newValue, compositor: context.compositor),
+          animation.toAnimationController(compositor: context.compositor),
         )
       } else {
         visual.opacity = newValue
@@ -896,6 +902,7 @@ open class CoreView {
         try! visual.startAnimation(
           "Scale",
           animation.toCompositionAnimation(withTargetValue: newValue, compositor: context.compositor),
+          animation.toAnimationController(compositor: context.compositor),
         )
       } else {
         visual.scale = newValue

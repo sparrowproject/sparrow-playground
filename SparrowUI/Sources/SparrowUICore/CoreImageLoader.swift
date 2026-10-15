@@ -41,7 +41,6 @@ public final class CoreImageLoader {
 
     if case .symbol = source {
       preconditionFailure("Unexpected symbol source!") // Should have been handled at a higher level.
-      return nil
     }
     
     // TODO: Add support for image formats other than SVG!

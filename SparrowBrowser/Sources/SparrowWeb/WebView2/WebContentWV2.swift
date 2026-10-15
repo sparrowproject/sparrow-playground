@@ -92,6 +92,10 @@ final class WebContentWV2: NSObject, WebContent {
     try! coreWebView?.stop()
   }
 
+  func find(_: String, backwards: Bool, completion: @escaping (Bool) -> Void) {
+    // TODO: Hook this up.
+  }
+
   private enum NavigationState: Equatable {
     case starting
     case domContentLoaded
@@ -300,7 +304,11 @@ final class WebContentWV2: NSObject, WebContent {
       try! deferral.complete()
     }
 
-    action(.createdNew(webContent))
+    // This is an approximation as WebView2 does not tell us the modifier flags
+    // at the time of the actual click.
+    let modifierFlags = Keystroke.ModifierFlags.current
+
+    action(.createdNew(webContent, modifierFlags: modifierFlags))
   }
 
   private func handleDownloadStarting(args: CoreWebView2DownloadStartingEventArgs) {

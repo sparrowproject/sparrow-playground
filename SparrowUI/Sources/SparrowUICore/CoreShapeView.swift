@@ -109,7 +109,8 @@ public final class CoreShapeView: CoreView {
       if let animation, let newValue {
         try! geometry.startAnimation(
           "Path",
-          animation.toCompositionAnimation(withTargetValue: newValue, compositor: context.compositor)
+          animation.toCompositionAnimation(withTargetValue: newValue, compositor: context.compositor),
+          animation.toAnimationController(compositor: context.compositor),
         )
       } else {
         // The path previously specified via animation will override until stopped explicitly.
@@ -159,8 +160,16 @@ public final class CoreShapeView: CoreView {
         withTargetValue: newValue,
         compositor: context.compositor,
       )
-      try! shapeVisual.startAnimation("Size", compositionAnimation)
-      try! visualSurface.startAnimation("SourceSize", compositionAnimation)
+      try! shapeVisual.startAnimation(
+        "Size",
+        compositionAnimation,
+        animation.toAnimationController(compositor: context.compositor),
+      )
+      try! visualSurface.startAnimation(
+        "SourceSize",
+        compositionAnimation,
+        animation.toAnimationController(compositor: context.compositor),
+      )
     } else {
       shapeVisual.size = newValue
       visualSurface.sourceSize = newValue
@@ -189,6 +198,7 @@ public final class CoreShapeView: CoreView {
         try! fillBrush.startAnimation(
           "Color",
           animation.toCompositionAnimation(withTargetValue: newValue, compositor: context.compositor),
+          animation.toAnimationController(compositor: context.compositor),
         )
       } else {
         fillBrush.color = newValue
@@ -218,6 +228,7 @@ public final class CoreShapeView: CoreView {
         try! strokeBrush.startAnimation(
           "Color",
           animation.toCompositionAnimation(withTargetValue: newValue, compositor: context.compositor),
+          animation.toAnimationController(compositor: context.compositor),
         )
       } else {
         strokeBrush.color = newValue

@@ -2,6 +2,7 @@
 import AppKit
 #elseif os(Windows)
 import UWP
+import WinSDK
 #endif
 
 public struct Keystroke: Sendable, Hashable, Equatable {
@@ -48,6 +49,22 @@ extension Keystroke {
 extension VirtualKeyModifiers {
   public init(_ modifiers: Keystroke.ModifierFlags) {
     self.init(rawValue: modifiers.rawValue)
+  }
+}
+
+extension Keystroke.ModifierFlags {
+  public static var current: Self {
+    var modifiers = Keystroke.ModifierFlags()
+    if (Int(GetKeyState(VK_CONTROL)) & 0x8000) != 0 {
+      modifiers.insert(.control)
+    }
+    if (Int(GetKeyState(VK_SHIFT)) & 0x8000) != 0 {
+      modifiers.insert(.shift)
+    }
+    if (Int(GetKeyState(VK_MENU)) & 0x8000) != 0 {
+      modifiers.insert(.alt)
+    }
+    return modifiers
   }
 }
 #endif

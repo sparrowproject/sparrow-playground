@@ -70,17 +70,8 @@ private let _hookProc: HOOKPROC = { (code: Int32, wParam: WPARAM, lParam: LPARAM
     switch Int32(msg.message) {
     case WM_KEYDOWN, WM_SYSKEYDOWN: // , WM_KEYUP, WM_SYSKEYUP:
       let virtualKey = VirtualKey(rawValue: Int32(msg.wParam))
+      let modifiers = Keystroke.ModifierFlags.current
 
-      var modifiers = Keystroke.ModifierFlags()
-      if (Int(GetKeyState(VK_CONTROL)) & 0x8000) != 0 {
-        modifiers.insert(.control)
-      }
-      if (Int(GetKeyState(VK_SHIFT)) & 0x8000) != 0 {
-        modifiers.insert(.shift)
-      }
-      if (Int(GetKeyState(VK_MENU)) & 0x8000) != 0 {
-        modifiers.insert(.alt)
-      }
       if App.instance.handleKeystroke(.init(virtualKey: virtualKey), modifiers: modifiers) {
         print(">>> --- intercepted key event: \(virtualKey), modifiers: \(modifiers)")
         msg.message = UINT(WM_NULL)

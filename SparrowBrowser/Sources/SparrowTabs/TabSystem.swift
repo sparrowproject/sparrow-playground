@@ -294,7 +294,13 @@ final class DefaultTabSystem: TabSystem {
         if newTabPolicy == .continue {
           groupModel.extendMiniGroup(from: openerTabID, adding: tabID)
 
-          if !modifierFlags.contains(.command) { // TODO: Windows
+          #if os(macOS)
+          let openAsBackgroundTab = modifierFlags.contains(.command)
+          #elseif os(Windows)
+          let openAsBackgroundTab = modifierFlags.contains(.control)
+          #endif
+
+          if !openAsBackgroundTab {
             select(tab: tabID)
           }
         }
