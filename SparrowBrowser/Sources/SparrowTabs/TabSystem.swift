@@ -83,10 +83,7 @@ final class DefaultTabSystem: TabSystem {
   }
 
   func load(_ navigation: TabNavigation, inTab targetTabID: TabID) -> LiveTab {
-    print(">>> load in tab")
-
     let tabModel = model(forTab: targetTabID)
-    // tabModel.url = navigation.url
 
     let liveTab = liveTabsManager.getOrCreate(forModel: tabModel)!
     liveTab.load(navigation)
@@ -96,7 +93,6 @@ final class DefaultTabSystem: TabSystem {
   func load(_ navigation: TabNavigation, inGroup targetGroupID: TabGroupID, atIndex index: Int?) -> LiveTab {
     let tabID = TabID()
     let tabModel = makeTabModel(tabID: tabID, groupID: targetGroupID)
-    // tabModel.url = navigation.url
 
     let groupModel = model(forGroup: targetGroupID)
 
@@ -164,8 +160,6 @@ final class DefaultTabSystem: TabSystem {
   }
 
   func remove(tab tabID: TabID) {
-    print(">>> remove tab!")
-
     guard let tabModel = model.tabs[tabID] else {
       assertionFailure("Unknown TabID!")
       return
@@ -176,12 +170,10 @@ final class DefaultTabSystem: TabSystem {
     }
 
     if groupModel.selectedTabModel.id == tabID {
-      print(">>> Updating the selected tab")
-
       let policy = policy(forGroup: tabModel.groupID)
-      let index = policy.decideNextSelectionIndexAfterRemovalOfSelectedTab(inGroup: groupModel)
+      let nextTabID = policy.decideNextSelectedTabAfterRemovalOfSelectedTab(inGroup: groupModel)
 
-      groupModel.selectedTabModel.value = index.flatMap { model.tabs[groupModel.tabIDs[$0]] } ?? .invalid
+      groupModel.selectedTabModel.value = nextTabID.flatMap { model.tabs[$0] } ?? .invalid
     }
 
     groupModel.tabIDs.remove(tabID)
@@ -195,8 +187,6 @@ final class DefaultTabSystem: TabSystem {
   }
 
   func remove(group groupID: TabGroupID) {
-    print(">>> remove group!")
-
     guard let groupModel = model.groups[groupID] else {
       // Silently ignore removals of groups that are already removed.
       return
@@ -301,9 +291,13 @@ final class DefaultTabSystem: TabSystem {
 
         _ = liveTabsManager.create(forModel: tabModel, withWebContent: webContent)!
 
-        // Select this newly created tab.
-        // TODO: make this configurable!
-        select(tab: tabID)
+        if newTabPolicy == .continue {
+          groupModel.extendMiniGroup(from: openerTabID, adding: tabID)
+
+          if !modifierFlags.contains(.command) { // TODO: Windows
+            select(tab: tabID)
+          }
+        }
       }
     )
   }

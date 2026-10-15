@@ -82,7 +82,6 @@ extension TabSystem {
 
   public func nextSelectedTabAfterRemovalOfSelectedTab(forGroup groupModel: TabGroupModel) -> TabID? {
     let policy = policy(forGroup: groupModel.id)
-    let index = policy.decideNextSelectionIndexAfterRemovalOfSelectedTab(inGroup: groupModel)
-    return index.flatMap { groupModel.tabIDs[$0] }
+    return policy.decideNextSelectedTabAfterRemovalOfSelectedTab(inGroup: groupModel)
   }
 }

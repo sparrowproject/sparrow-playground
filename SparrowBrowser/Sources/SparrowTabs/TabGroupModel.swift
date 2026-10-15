@@ -10,12 +10,15 @@ public final class TabGroupModel {
   }
 
   public let id: TabGroupID
-  public internal(set) var tabIDs: OrderedSet<TabID> = []
-  public internal(set) var selectedTabModel: Handle<TabModel> = .init(.invalid)
+  public internal(set) var tabIDs = OrderedSet<TabID>() {
+    didSet {
+      updateMiniGroup()
+    }
+  }
+  public internal(set) var selectedTabModel = Handle<TabModel>(.invalid)
 
-  // Are these the right states?
-  // public internal(set) var isPinned = false
-  // public internal(set) var isHidden = false
+  /// Not persisted. This represents a group of tabs opened from the first tab.
+  public internal(set) var miniGroup = OrderedSet<TabID>()
 }
 
 extension TabGroupModel {
@@ -23,3 +26,37 @@ extension TabGroupModel {
 }
 
 extension TabGroupModel: Identifiable {}
+
+extension TabGroupModel {
+  func extendMiniGroup(from openerTabID: TabID, adding tabID: TabID) {
+    let openerIndex = tabIDs.firstIndex(of: openerTabID)!
+    let tabIndex = tabIDs.firstIndex(of: tabID)!
+
+    if miniGroup.first == openerTabID {
+      miniGroup.insert(tabID, at: tabIndex - openerIndex)
+    } else {
+      miniGroup = [openerTabID, tabID]
+    }
+
+    // Assert that `miniGroup` is a contiguous subset of `tabIDs`:
+    for i in 0..<miniGroup.count {
+      assert(tabIDs[openerIndex + i] == miniGroup[i])
+    }
+  }
+
+  private func updateMiniGroup() {
+    for tabID in miniGroup {
+      if tabIDs.contains(tabID) {
+        continue
+      }
+      if tabID == miniGroup.first {
+        miniGroup = []
+        break
+      }
+      miniGroup.remove(tabID)
+    }
+    if miniGroup.count == 1 {
+      miniGroup = []
+    }
+  }
+}

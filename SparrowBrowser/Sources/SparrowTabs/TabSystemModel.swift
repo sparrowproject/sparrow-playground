@@ -6,11 +6,7 @@ public final class TabSystemModel {
   public internal(set) var tabs: [TabID: TabModel] = [:]
   public internal(set) var groups: [TabGroupID: TabGroupModel] = [:]
 
-  var liveTabs = [TabID: LiveTab]() {
-    didSet {
-      print(">>> liveTabs exist for: \(liveTabs.keys)")
-    }
-  }
+  var liveTabs = [TabID: LiveTab]()
 }
 
 extension TabSystemModel {
