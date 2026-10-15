@@ -5,8 +5,6 @@ import SparrowUIFoundation
 extension CoreViewAnimation {
   func toBasicAnimation() -> CABasicAnimation {
     switch self {
-    case .default:
-      CABasicAnimation()
     case .linear(let duration, let timeOffset):
       with(CABasicAnimation()) {
         $0.duration = duration
