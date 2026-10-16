@@ -13,7 +13,7 @@ public protocol SuggestServiceProviding {
 }
 
 public typealias SuggestServiceDependencies
-  = NetworkServiceProviding
+  = WebSearchSuggestQueryDependencies
 
 extension Factory where Interface == SuggestService {
   public static func makeDefaultInstance(dependencies: SuggestServiceDependencies) -> SuggestService {
@@ -27,17 +27,11 @@ final class DefaultSuggestService: SuggestService {
   }
 
   func queryCompletions(for input: String) -> SuggestQuery {
-    var components = URLComponents(
-      string: "https://suggestqueries.google.com/complete/search"
-    )!
-    components.queryItems = [
-      URLQueryItem(name: "client", value: "firefox"),
-      URLQueryItem(name: "q", value: input)
-    ]
-
-    let networkRequest = dependencies.networkService.load(url: components.url!)
-
-    return DefaultSuggestQuery(input: input, networkRequest: networkRequest)
+    let input = input.trimmingCharacters(in: .whitespacesAndNewlines)
+    return MergedSuggestQuery(
+      input: input,
+      webSearchSuggestQuery: WebSearchSuggestQuery(dependencies: dependencies, input: input),
+    )
   }
 
   private let dependencies: SuggestServiceDependencies
