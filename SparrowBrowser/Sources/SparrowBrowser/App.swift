@@ -13,7 +13,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, SparrowApp {
 
   func applicationWillFinishLaunching(_: Notification) {
     NSApp.mainMenu = AppMenu.build()
-    
+
   }
 
   func applicationDidFinishLaunching(_: Notification) {
@@ -22,15 +22,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, SparrowApp {
 
   func applicationShouldTerminate(_ app: NSApplication) -> NSApplication.TerminateReply{
     guard let task = shutdown() else {
-      print(">>> shutting down now")
       return .terminateNow
     }
     Task<Void, Never> {
       await task.value
-      print(">>> resuming shutdown")
       app.reply(toApplicationShouldTerminate: true)
     }
-    print(">>> deferring shutdown...")
     return .terminateLater
   }
 
@@ -60,7 +57,6 @@ final class App: SwiftApplication, SparrowApp, Sendable {
   }
 
   override func onShutdown(exitCode: Int32) {
-    print(">>> App.onShutdown")
     MainActor.assumeIsolated {
       guard let shutdownTask = shutdown() else { return }
 
@@ -97,8 +93,6 @@ protocol SparrowApp: AnyObject, Sendable {
 
 extension SparrowApp {
   func initialize() {
-    print(">>> SparrowApp.initialize()")
-
     initializationTask = .init {
       defer { initializationTask = nil }
 
@@ -113,8 +107,6 @@ extension SparrowApp {
 
       // await appContainer.profileSystem.initialize()
       guard !Task.isCancelled else { return }
-
-      print(">>> SparrowApp done initializing storage system")
 
       if appContainer.windowManager.restoreBrowserWindows().isEmpty {
         appContainer.windowManager.createBrowserWindow(inProfile: .default)

@@ -148,7 +148,6 @@ public final class BrowserWindow: NSWindow, Sendable {
         SparrowCommand.browserReservedIDs.contains($0)
       }) ?? false
       if isReservedCommandID {
-        print(">>> performKeyEquivalent for reserved keybinding, characters: \(event.charactersIgnoringModifiers)")
         return mainMenu.performKeyEquivalent(with: event)
       }
     }
@@ -164,10 +163,8 @@ public final class BrowserWindow: NSWindow, Sendable {
     Self.restorableWindows = []
     for restorableWindow in restorableWindows {
       if let window = windows[restorableWindow.windowID] {
-        print(">>> restoring window w/ id: \(restorableWindow.windowID)")
         restorableWindow.completionHandler(window, nil)
       } else {
-        print(">>> no group data found for restorable window w/ id: \(restorableWindow.windowID)")
         restorableWindow.completionHandler(nil, nil)
       }
     }
@@ -395,8 +392,6 @@ private final class BrowserWindowRestoration: NSObject, NSWindowRestoration {
     state: NSCoder,
     completionHandler: @escaping (NSWindow?, Error?) -> Void
   ) {
-    print(">>> restoreWindow, identifier: \(identifier)")
-
     guard let windowID = UUID(uuidString: identifier.rawValue).flatMap({ WindowID($0) }) else {
       completionHandler(nil, nil)
       return
