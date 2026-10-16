@@ -39,6 +39,7 @@ public protocol TabSystemProviding {
 
 public typealias TabSystemDependencies
   = LiveTabDependencies
+  & TabUndoManagerProviding
 
 @MainActor
 public enum TabSystemAction {
@@ -170,6 +171,9 @@ final class DefaultTabSystem: TabSystem {
       return
     }
 
+    willRemove(tabModel, from: groupModel)
+    defer { didRemove(tabModel, from: groupModel) }
+
     if groupModel.selectedTabModel.id == tabID {
       let policy = policy(forGroup: tabModel.groupID)
       let nextTabID = policy.decideNextSelectedTabAfterRemovalOfSelectedTab(inGroup: groupModel)
@@ -183,6 +187,7 @@ final class DefaultTabSystem: TabSystem {
     liveTabsManager.remove(byID: tabID)
 
     if groupModel.tabIDs.isEmpty {
+      print(">>> group is empty, removing group: \(groupModel.id)")
       model.groups.removeValue(forKey: groupModel.id)
     }
   }
@@ -193,9 +198,14 @@ final class DefaultTabSystem: TabSystem {
       return
     }
 
+    willRemove(groupModel)
+    defer { didRemove(groupModel) }
+
     for tabID in groupModel.tabIDs {
       remove(tab: tabID)
     }
+
+    assert(!model.groups.keys.contains(groupID))
   }
 
   func select(tab tabID: TabID) {
@@ -235,6 +245,22 @@ final class DefaultTabSystem: TabSystem {
     let tabModel = TabModel(id: tabID, groupID: groupID)
     model.tabs[tabID] = tabModel
     return tabModel
+  }
+
+  private func willRemove(_ tabModel: TabModel, from groupModel: TabGroupModel) {
+    dependencies.tabUndoManager.willRemoveTab(tabModel, from: groupModel)
+  }
+
+  private func didRemove(_ tabModel: TabModel, from groupModel: TabGroupModel) {
+    dependencies.tabUndoManager.didRemoveTab(tabModel.id, from: groupModel.id)
+  }
+
+  private func willRemove(_ groupModel: TabGroupModel) {
+    dependencies.tabUndoManager.willRemoveTabGroup(groupModel)
+  }
+
+  private func didRemove(_ groupModel: TabGroupModel) {
+    dependencies.tabUndoManager.didRemoveTabGroup(groupModel.id)
   }
 
   private func handleLiveTabsManagerAction(_ action: LiveTabsManager.Action) {
