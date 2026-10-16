@@ -61,9 +61,33 @@ public struct AddressBarEditorView: View {
       viewModel.querySuggestions(for: buffer)
     })
     .onChange(of: viewModel.content.editorValue) {
+      guard buffer != viewModel.content.editorValue else { return }
       buffer = $0
       selection = nil
     }
+    .onChange(of: selectedSuggestionRow, perform: { index in
+      if let index {
+        let suggestion = suggestion(at: index)
+        guard buffer != suggestion else { return }
+        buffer = suggestion
+        viewModel.content.editorValue = suggestion
+        // // Update selection to preserve cursor.
+        // selection = selection.flatMap { $0.lowerBound..<suggestion.endIndex }
+        selection = nil
+      }
+    })
+    .onChange(of: viewModel.suggestQueryModel?.completions, perform: { completions in
+      print(">>> buffer: \"\(buffer)\", completions: \(completions)")
+      let index: Int? =
+        if let completions {
+          completions.firstIndex(of: buffer.trimmingCharacters(in: .whitespacesAndNewlines))
+        } else {
+          nil
+        }
+      if selectedSuggestionRow != index {
+        selectedSuggestionRow = index
+      }
+    })
     .onChange(of: viewModel.mode) { mode in
       withAnimation(mode == .editor ? .default : nil) {
         showEditorHighlight = (mode == .editor)
@@ -121,7 +145,7 @@ public struct AddressBarEditorView: View {
       } label: { config in
         Group {
           Rectangle()
-            .fill(suggestionRowFillColor(at: index, with: config))
+            .fill(suggestionRowFillColor(at: index, config: config))
           Text(suggestion(at: index))
             .font(.system(size: 13, weight: .light))
             .padding(.horizontal, StandardMetrics.buttonCornerRadius)
@@ -133,11 +157,11 @@ public struct AddressBarEditorView: View {
     }
   }
 
-  private func suggestionRowFillColor(at index: Int, with config: ButtonConfig) -> Color {
+  private func suggestionRowFillColor(at index: Int, config: ButtonConfig) -> Color {
     if index == selectedSuggestionRow {
       StandardColors.highlight.opacity(0.7)
     } else if config.isHovered {
-      StandardColors.highlight.opacity(0.5)
+      StandardColors.highlight.opacity(0.3)
     } else {
       .clear
     }
