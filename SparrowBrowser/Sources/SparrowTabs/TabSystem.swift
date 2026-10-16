@@ -171,6 +171,7 @@ final class DefaultTabSystem: TabSystem {
       return
     }
 
+    // Map removal of the last tab in a group to removal of the group.
     if groupModel.tabIDs.count == 1 {
       assert(groupModel.tabIDs[0] == tabID)
       remove(group: groupModel.id)
@@ -188,9 +189,7 @@ final class DefaultTabSystem: TabSystem {
     }
 
     groupModel.tabIDs.remove(tabID)
-
-    model.tabs.removeValue(forKey: tabID)
-    liveTabsManager.remove(byID: tabID)
+    removeTabInternal(tabID)
   }
 
   func remove(group groupID: TabGroupID) {
@@ -202,9 +201,10 @@ final class DefaultTabSystem: TabSystem {
     willRemove(groupModel)
     defer { didRemove(groupModel) }
 
+    // NOTE: Purposefully avoid mutating the TabGroupModel.
+
     for tabID in groupModel.tabIDs {
-      model.tabs.removeValue(forKey: tabID)
-      liveTabsManager.remove(byID: tabID)
+      removeTabInternal(tabID)
     }
 
     model.groups.removeValue(forKey: groupID)
@@ -247,6 +247,11 @@ final class DefaultTabSystem: TabSystem {
     let tabModel = TabModel(id: tabID, groupID: groupID)
     model.tabs[tabID] = tabModel
     return tabModel
+  }
+
+  private func removeTabInternal(_ tabID: TabID) {
+    model.tabs.removeValue(forKey: tabID)
+    liveTabsManager.remove(byID: tabID)
   }
 
   private func willRemove(_ tabModel: TabModel, from groupModel: TabGroupModel) {
