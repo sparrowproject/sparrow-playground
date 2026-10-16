@@ -20,7 +20,6 @@ final class WebSearchSuggestQuery: SuggestQuery {
 
     queryTask = .init { [networkRequest] in
       guard !Task.isCancelled, model.status == .pending else {
-        print(">>> task cancelled at A")
         return
       }
 
@@ -28,13 +27,11 @@ final class WebSearchSuggestQuery: SuggestQuery {
         networkRequest.model.status
       }) {
         if status == .done {
-          print(">>> network request is done, data.count: \(networkRequest.model.data?.count ?? 0)")
           break
         }
       }
 
       guard !Task.isCancelled, model.status == .pending else {
-        print(">>> task cancelled at B")
         return
       }
 
@@ -50,11 +47,8 @@ final class WebSearchSuggestQuery: SuggestQuery {
         }
 
       guard !Task.isCancelled, model.status == .pending else {
-        print(">>> task cancelled at C")
         return
       }
-
-      print(">>> got completions: \(model.completions)")
 
       model.completions = completions
       model.status = .done

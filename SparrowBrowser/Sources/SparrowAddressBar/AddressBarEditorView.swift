@@ -77,7 +77,6 @@ public struct AddressBarEditorView: View {
       }
     })
     .onChange(of: viewModel.suggestQueryModel?.completions, perform: { completions in
-      print(">>> buffer: \"\(buffer)\", completions: \(completions)")
       let index: Int? =
         if let completions {
           completions.firstIndex(of: buffer.trimmingCharacters(in: .whitespacesAndNewlines))

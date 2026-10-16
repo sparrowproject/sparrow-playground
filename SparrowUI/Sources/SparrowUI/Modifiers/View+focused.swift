@@ -30,14 +30,8 @@ extension _FocusedModifier: PrimitiveViewModifier {
       },
       perform: { [weak view] in
         guard let view else { return }
-        if $0 {
-          print(">>> observing focus binding set to \(value)")
-          if let focusableView = view.findFocusableView() {
-            print(">>> setting focusedView for: \(value)")
-            view.context.focusedView = focusableView
-          } else {
-            print(">>> no focusable view found!")
-          }
+        if $0, let focusableView = view.findFocusableView() {
+          view.context.focusedView = focusableView
         }
       },
       cancellable: false,
@@ -58,7 +52,6 @@ extension _FocusedModifier: PrimitiveViewModifier {
         var focusedView: CoreView? = $0
         while focusedView != nil {
           if focusedView === view {
-            print(">>> focusedView changed to: \(value)")
             binding.set(value)
             break
           }

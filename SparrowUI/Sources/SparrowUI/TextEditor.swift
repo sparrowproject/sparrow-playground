@@ -390,7 +390,6 @@ final class CustomTextView: NSTextView {
   var lostFocus: (@MainActor () -> Void)?
 
   override func becomeFirstResponder() -> Bool {
-    print(">>> CustomTextView @\(ObjectIdentifier(self)) became first responder!")
     let result = super.becomeFirstResponder()
     if result {
       gotFocus?()
@@ -399,7 +398,6 @@ final class CustomTextView: NSTextView {
   }
 
   override func resignFirstResponder() -> Bool {
-    print(">>> CustomTextView @\(ObjectIdentifier(self)) resigned first responder!")
     let result = super.resignFirstResponder()
     if result {
       lostFocus?()

@@ -212,7 +212,7 @@ public final class BrowserWindowViewModel {
     defer {
       timeSinceLastSelectTabCommand = now
     }
-    if let timeSinceLastSelectTabCommand, now - timeSinceLastSelectTabCommand < .milliseconds(200) {
+    if let timeSinceLastSelectTabCommand, now - timeSinceLastSelectTabCommand < .milliseconds(50) {
       return nil
     }
 
