@@ -80,7 +80,7 @@ public struct BrowserWindowView: View {
     }
     .registerCustomImageSource(viewModel.dependencies.webHistory.faviconImageSource)
     .registerCustomImageSource(viewModel.dependencies.webHistory.pageFaviconImageSource)
-    .onChange(of: viewModel.groupModel.tabIDs.isEmpty) {
+    .onChange(of: viewModel.shouldClose) {
       if $0 {
         action(.close)
       }

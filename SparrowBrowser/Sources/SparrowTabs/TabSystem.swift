@@ -171,6 +171,12 @@ final class DefaultTabSystem: TabSystem {
       return
     }
 
+    if groupModel.tabIDs.count == 1 {
+      assert(groupModel.tabIDs[0] == tabID)
+      remove(group: groupModel.id)
+      return
+    }
+
     willRemove(tabModel, from: groupModel)
     defer { didRemove(tabModel, from: groupModel) }
 
@@ -182,14 +188,9 @@ final class DefaultTabSystem: TabSystem {
     }
 
     groupModel.tabIDs.remove(tabID)
+
     model.tabs.removeValue(forKey: tabID)
-
     liveTabsManager.remove(byID: tabID)
-
-    if groupModel.tabIDs.isEmpty {
-      print(">>> group is empty, removing group: \(groupModel.id)")
-      model.groups.removeValue(forKey: groupModel.id)
-    }
   }
 
   func remove(group groupID: TabGroupID) {
@@ -202,10 +203,11 @@ final class DefaultTabSystem: TabSystem {
     defer { didRemove(groupModel) }
 
     for tabID in groupModel.tabIDs {
-      remove(tab: tabID)
+      model.tabs.removeValue(forKey: tabID)
+      liveTabsManager.remove(byID: tabID)
     }
 
-    assert(!model.groups.keys.contains(groupID))
+    model.groups.removeValue(forKey: groupID)
   }
 
   func select(tab tabID: TabID) {

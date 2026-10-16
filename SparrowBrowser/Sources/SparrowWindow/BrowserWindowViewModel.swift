@@ -137,6 +137,10 @@ public final class BrowserWindowViewModel {
     (dependencies.profileID.kind == .incognito) ? .dark : nil
   }
 
+  var shouldClose: Bool {
+    !dependencies.tabSystem.model.groups.keys.contains(groupModel.id)
+  }
+
   #if os(Windows)
   var updateNonClientPassthroughRects: (([CGRect]) -> Void)?
   #endif

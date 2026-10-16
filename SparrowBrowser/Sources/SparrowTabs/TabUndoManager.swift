@@ -44,8 +44,6 @@ final class DefaultTabUndoManager: TabUndoManager {
 
   func willRemoveTab(_ tabModel: TabModel, from groupModel: TabGroupModel) {
     print(">>> willRemoveTab, id: \(tabModel.id), from: \(groupModel.id)")
-
-    // Special case if this is the last tab in the group!
   }
 
   func didRemoveTab(_ tabID: TabID, from groupID: TabGroupID) {
