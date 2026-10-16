@@ -12,7 +12,7 @@ public protocol TabSystem: AnyObject {
   @discardableResult
   func load(_ navigation: TabNavigation, inTab: TabID) -> LiveTab
   @discardableResult
-  func load(_ navigation: TabNavigation, inGroup: TabGroupID, atIndex: Int?) -> LiveTab
+  func load(_ navigation: TabNavigation, inGroup: TabGroupID, atIndex: Int?, select: Bool) -> LiveTab
 
   // TODO: think about the lifecycle of a tab and group...
 
@@ -90,7 +90,7 @@ final class DefaultTabSystem: TabSystem {
     return liveTab
   }
 
-  func load(_ navigation: TabNavigation, inGroup targetGroupID: TabGroupID, atIndex index: Int?) -> LiveTab {
+  func load(_ navigation: TabNavigation, inGroup targetGroupID: TabGroupID, atIndex index: Int?, select: Bool) -> LiveTab {
     let tabID = TabID()
     let tabModel = makeTabModel(tabID: tabID, groupID: targetGroupID)
 
@@ -104,8 +104,9 @@ final class DefaultTabSystem: TabSystem {
     let liveTab = liveTabsManager.getOrCreate(forModel: tabModel)!
     liveTab.load(navigation)
 
-    // Select this newly created tab.
-    select(tab: tabID)
+    if select {
+      self.select(tab: tabID)
+    }
 
     return liveTab
   }

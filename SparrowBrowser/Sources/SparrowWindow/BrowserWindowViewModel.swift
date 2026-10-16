@@ -433,18 +433,18 @@ public final class BrowserWindowViewModel {
     return nil
   }
 
-  private func makeNewTab() {
-    withAnimation {
-      dependencies.tabSystem.load(newTabNavigation, inGroup: groupModel.id)
+  private func makeNewTab(atIndex index: Int? = nil) {
+    let liveTab = withAnimation {
+      dependencies.tabSystem.load(newTabNavigation, inGroup: groupModel.id, atIndex: index, select: false)
+    }
+    withAnimation(animationForSelectTab(liveTab.tabID)) {
+      dependencies.tabSystem.select(tab: liveTab.tabID)
     }
     focusAddressBarEditor(blank: true)
   }
 
   private func makeNewTab(after tabID: TabID) {
-    withAnimation {
-      dependencies.tabSystem.load(newTabNavigation, afterTab: tabID)
-    }
-    focusAddressBarEditor(blank: true)
+    makeNewTab(atIndex: groupModel.tabIDs.firstIndex(of: tabID).flatMap { $0 + 1 })
   }
 
   private func focusAddressBarEditor(blank: Bool) {

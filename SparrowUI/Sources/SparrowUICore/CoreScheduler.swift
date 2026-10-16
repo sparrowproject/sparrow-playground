@@ -8,10 +8,12 @@ import AppKit
 public final class CoreScheduler {
   public init() {}
 
-  public static func withAnimation(_ animation: CoreViewAnimation?, _ body: () -> Void) {
+  @discardableResult
+  public static func withAnimation<R>(_ animation: CoreViewAnimation?, _ body: () -> R) -> R {
     animationStack.append(animation.flatMap { .init(animation: $0) })
-    body()
+    let result = body()
     animationStack.removeLast()
+    return result
   }
 
   public func scheduleUpdate(perform work: @MainActor @escaping () -> Void) {

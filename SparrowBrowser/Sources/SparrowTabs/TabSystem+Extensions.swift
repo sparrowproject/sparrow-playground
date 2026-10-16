@@ -42,15 +42,15 @@ extension TabSystem {
   }
 
   @discardableResult
-  public func load(_ navigation: TabNavigation, inGroup groupID: TabGroupID) -> LiveTab {
-    load(navigation, inGroup: groupID, atIndex: nil)
+  public func load(_ navigation: TabNavigation, inGroup groupID: TabGroupID, select: Bool = true) -> LiveTab {
+    load(navigation, inGroup: groupID, atIndex: nil, select: select)
   }
 
   @discardableResult
-  public func load(_ navigation: TabNavigation, afterTab tabID: TabID) -> LiveTab {
+  public func load(_ navigation: TabNavigation, afterTab tabID: TabID, select: Bool = true) -> LiveTab {
     let groupModel = groupModel(forTab: tabID)
     let index = groupModel.tabIDs.firstIndex(of: tabID)!
-    return load(navigation, inGroup: groupModel.id, atIndex: index + 1)
+    return load(navigation, inGroup: groupModel.id, atIndex: index + 1, select: select)
   }
 
   @discardableResult
