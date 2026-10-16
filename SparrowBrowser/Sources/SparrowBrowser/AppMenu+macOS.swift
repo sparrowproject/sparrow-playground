@@ -177,7 +177,7 @@ enum AppMenu {
     windowMenu.addItem(.separator())
     windowMenu.addCommand(SparrowCommands.selectNextTab)
     windowMenu.addCommand(SparrowCommands.selectPreviousTab)
-    for index in 0...9 {
+    for index in 1...9 {
       windowMenu.addHiddenCommand(SparrowCommands.selectTabAt(index: index))
     }
     windowMenu.addCommand(SparrowCommands.duplicateTab)

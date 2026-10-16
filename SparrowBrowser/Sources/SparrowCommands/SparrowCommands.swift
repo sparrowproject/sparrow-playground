@@ -237,7 +237,7 @@ extension Keybinding {
 
   fileprivate static func selectTabAt(index: Int) -> Self {
     #if os(macOS)
-    .init(keyEquivalent: "\(index)", modifiers: [.control])
+    .init(keyEquivalent: "\(index)", modifiers: [.command])
     #elseif os(Windows)
     .init(virtualKey: .numberKey(for: index), modifiers: [.control])
     #endif

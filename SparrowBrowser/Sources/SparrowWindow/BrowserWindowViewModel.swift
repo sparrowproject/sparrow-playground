@@ -345,8 +345,6 @@ public final class BrowserWindowViewModel {
           dependencies.tabSystem.select(tab: previousTabID)
         }
       }
-    case .selectTabAt0:
-      selectTabAt(index: 0)
     case .selectTabAt1:
       selectTabAt(index: 1)
     case .selectTabAt2:
@@ -455,7 +453,7 @@ public final class BrowserWindowViewModel {
   private func selectTabAt(index: Int) {
     let index =
       if groupModel.tabIDs.count > 0 {
-        if index == 0 { // Identifies the last tab.
+        if index == 9 { // Identifies the last tab.
           groupModel.tabIDs.count - 1
         } else {
           clamp(index - 1, 0, groupModel.tabIDs.count - 1)

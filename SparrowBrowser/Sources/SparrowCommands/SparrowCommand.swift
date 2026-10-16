@@ -30,7 +30,6 @@ public final class SparrowCommand: Command {
     case goForward
     case selectNextTab
     case selectPreviousTab
-    case selectTabAt0
     case selectTabAt1
     case selectTabAt2
     case selectTabAt3
@@ -43,7 +42,6 @@ public final class SparrowCommand: Command {
 
     static func selectTabAt(index: Int) -> Self {
       switch index {
-      case 0: .selectTabAt0
       case 1: .selectTabAt1
       case 2: .selectTabAt2
       case 3: .selectTabAt3
