@@ -6,9 +6,7 @@ public protocol TabUndoManager {
   var model: TabUndoModel { get }
 
   func willRemoveTab(_: TabModel, from: TabGroupModel)
-  func didRemoveTab(_: TabID, from: TabGroupID)
   func willRemoveTabGroup(_: TabGroupModel)
-  func didRemoveTabGroup(_: TabGroupID)
 }
 
 public protocol TabUndoManagerProviding {
@@ -32,9 +30,7 @@ final class NoOpTabUndoManager: TabUndoManager {
   let model = TabUndoModel()
 
   func willRemoveTab(_: TabModel, from: TabGroupModel) {}
-  func didRemoveTab(_: TabID, from: TabGroupID) {}
   func willRemoveTabGroup(_: TabGroupModel) {}
-  func didRemoveTabGroup(_: TabGroupID) {}
 }
 
 final class DefaultTabUndoManager: TabUndoManager {
@@ -43,18 +39,10 @@ final class DefaultTabUndoManager: TabUndoManager {
   let model = TabUndoModel()
 
   func willRemoveTab(_ tabModel: TabModel, from groupModel: TabGroupModel) {
-    print(">>> willRemoveTab, id: \(tabModel.id), from: \(groupModel.id)")
-  }
-
-  func didRemoveTab(_ tabID: TabID, from groupID: TabGroupID) {
-    print(">>> didRemoveTab, id: \(tabID), from: \(groupID)")
+    model.push(.tab(tabModel, groupID: groupModel.id, tabIDs: groupModel.tabIDs))
   }
 
   func willRemoveTabGroup(_ groupModel: TabGroupModel) {
-    print(">>> willRemoveTabGroup, id: \(groupModel.id)")
-  }
-
-  func didRemoveTabGroup(_ groupID: TabGroupID) {
-    print(">>> didRemoveTabGroup, id: \(groupID)")
+    model.push(.group(groupModel))
   }
 }

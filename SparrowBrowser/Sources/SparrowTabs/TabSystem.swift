@@ -178,8 +178,7 @@ final class DefaultTabSystem: TabSystem {
       return
     }
 
-    willRemove(tabModel, from: groupModel)
-    defer { didRemove(tabModel, from: groupModel) }
+    notifyWillRemove(tabModel, from: groupModel)
 
     if groupModel.selectedTabModel.id == tabID {
       let policy = policy(forGroup: tabModel.groupID)
@@ -198,8 +197,7 @@ final class DefaultTabSystem: TabSystem {
       return
     }
 
-    willRemove(groupModel)
-    defer { didRemove(groupModel) }
+    notifyWillRemove(groupModel)
 
     // NOTE: Purposefully avoid mutating the TabGroupModel.
 
@@ -254,20 +252,12 @@ final class DefaultTabSystem: TabSystem {
     liveTabsManager.remove(byID: tabID)
   }
 
-  private func willRemove(_ tabModel: TabModel, from groupModel: TabGroupModel) {
+  private func notifyWillRemove(_ tabModel: TabModel, from groupModel: TabGroupModel) {
     dependencies.tabUndoManager.willRemoveTab(tabModel, from: groupModel)
   }
 
-  private func didRemove(_ tabModel: TabModel, from groupModel: TabGroupModel) {
-    dependencies.tabUndoManager.didRemoveTab(tabModel.id, from: groupModel.id)
-  }
-
-  private func willRemove(_ groupModel: TabGroupModel) {
+  private func notifyWillRemove(_ groupModel: TabGroupModel) {
     dependencies.tabUndoManager.willRemoveTabGroup(groupModel)
-  }
-
-  private func didRemove(_ groupModel: TabGroupModel) {
-    dependencies.tabUndoManager.didRemoveTabGroup(groupModel.id)
   }
 
   private func handleLiveTabsManagerAction(_ action: LiveTabsManager.Action) {

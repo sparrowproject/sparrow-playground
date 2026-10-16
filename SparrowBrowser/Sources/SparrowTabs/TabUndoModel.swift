@@ -14,12 +14,16 @@ public final class TabUndoModel {
     case group(TabGroupModel)
   }
 
-  public private(set) var entries = OrderedDictionary<EntryID, Entry>()
+  public private(set) var entries = OrderedDictionary<EntryID, Entry>() {
+    didSet {
+      print(">>> undo entries: \(entries.values)")
+    }
+  }
 
   init() {}
 
   @discardableResult
-  func push(entry: Entry) -> EntryID {
+  func push(_ entry: Entry) -> EntryID {
     let id = EntryID()
     entries[id] = entry
     return id
