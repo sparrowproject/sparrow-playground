@@ -214,8 +214,8 @@ public struct TopTabsView: View {
   }
 
   private var tabVisorWidth: CGFloat {
-    guard let selectedTabViewModel = viewModel.selectedTabViewModel else { return 0 }
-    return tabWidth(for: selectedTabViewModel)
+    guard viewModel.selectedTabViewModel != nil else { return 0 }
+    return defaultTabWidth
   }
 
   private var tabVisorOffset: CGFloat {
