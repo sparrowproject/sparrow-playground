@@ -63,6 +63,9 @@ final class DefaultTabSystemInitializer: TabSystemInitializer {
           if group.selectedTabModel.id == tabModel.id {
             group.selectedTabModel.value = tabModel
           }
+        } else {
+          print(">>> Warning, unknown tab referenced by tab group!")
+          group.tabIDs.remove(tabID)
         }
       }
       setGroupModel(group)

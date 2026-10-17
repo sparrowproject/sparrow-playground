@@ -5,7 +5,9 @@ import SparrowWeb
 @MainActor
 public protocol TabSystem: AnyObject {
   var model: TabSystemModel { get }
-  var action: ((TabSystemAction) -> Void)? { get set }
+
+  /// Weakly held.
+  var delegate: TabSystemDelegate? { get set }
 
   func initialize(configure: (TabSystemInitializer) async -> Void) async
 
@@ -42,9 +44,9 @@ public typealias TabSystemDependencies
   = LiveTabDependencies
 
 @MainActor
-public enum TabSystemAction {
-  case newTabRequested(byTab: TabID, modifierFlags: Keystroke.ModifierFlags, completion: (TabSystemNewTabPolicy) -> Void)
-  case startDownload(WebDownload, fromTab: TabID)
+public protocol TabSystemDelegate: AnyObject {
+  func newTabRequested(byTab: TabID, modifierFlags: Keystroke.ModifierFlags) -> TabSystemNewTabPolicy
+  func startDownload(_: WebDownload, fromTab: TabID)
 }
 
 @MainActor
@@ -80,7 +82,7 @@ final class DefaultTabSystem: TabSystem {
   }
 
   private(set) var model: TabSystemModel
-  var action: ((TabSystemAction) -> Void)?
+  weak var delegate: TabSystemDelegate?
 
   func initialize(configure: (TabSystemInitializer) async -> Void) async {
     let initializer = DefaultTabSystemInitializer(model: model)
@@ -295,13 +297,13 @@ final class DefaultTabSystem: TabSystem {
   private func handleLiveTabsManagerAction(_ action: LiveTabsManager.Action) {
     switch action {
     case .createNewTabWithContent(let webContent, let modifierFlags, let openerTabID):
-      self.action?(handleCreateNewTab(
+      handleCreateNewTab(
         withWebContent: webContent,
         modifierFlags: modifierFlags,
         openerTabID: openerTabID,
-      ))
+      )
     case .startDownload(let webDownload, let openerTabID):
-      self.action?(.startDownload(webDownload, fromTab: openerTabID))
+      delegate?.startDownload(webDownload, fromTab: openerTabID)
     }
   }
 
@@ -309,58 +311,52 @@ final class DefaultTabSystem: TabSystem {
     withWebContent webContent: WebContent,
     modifierFlags: Keystroke.ModifierFlags,
     openerTabID: TabID
-  ) -> TabSystemAction {
-    .newTabRequested(
-      byTab: openerTabID,
-      modifierFlags: modifierFlags,
-      completion: { [weak self] newTabPolicy in
-        guard let self else { return }
+  ) {
+    let newTabPolicy = delegate?.newTabRequested(byTab: openerTabID, modifierFlags: modifierFlags) ?? .cancel
 
-        let groupID: TabGroupID? =
-          switch newTabPolicy {
-          case .cancel:
-            nil
-          case .continue:
-            model(forTab: openerTabID).groupID
-          case .continueWithGroup(let groupID):
-            groupID
-          }
-        guard let groupID else { return }
-
-        let groupModel = model(forGroup: groupID)
-        let groupPolicy = policy(forGroup: groupID)
-
-        let index: Int =
-          if newTabPolicy == .continue {
-            groupPolicy.decideInsertionIndexForNewlyOpenedTab(
-              inGroup: groupModel,
-              openerTabID: openerTabID,
-            )
-          } else {
-            groupPolicy.decideInsertionIndexForNewTab(inGroup: groupModel)
-          }
-
-        let tabID = TabID()
-        let tabModel = makeTabModel(tabID: tabID, groupID: groupID)
-
-        groupModel.tabIDs.insert(tabID, at: index)
-
-        _ = liveTabsManager.create(forModel: tabModel, withWebContent: webContent)!
-
-        if newTabPolicy == .continue {
-          groupModel.extendMiniGroup(from: openerTabID, adding: tabID)
-
-          #if os(macOS)
-          let openAsBackgroundTab = modifierFlags.contains(.command)
-          #elseif os(Windows)
-          let openAsBackgroundTab = modifierFlags.contains(.control)
-          #endif
-
-          if !openAsBackgroundTab {
-            select(tab: tabID)
-          }
-        }
+    let groupID: TabGroupID? =
+      switch newTabPolicy {
+      case .cancel:
+        nil
+      case .continue:
+        model(forTab: openerTabID).groupID
+      case .continueWithGroup(let groupID):
+        groupID
       }
-    )
+    guard let groupID else { return }
+
+    let groupModel = model(forGroup: groupID)
+    let groupPolicy = policy(forGroup: groupID)
+
+    let index: Int =
+      if newTabPolicy == .continue {
+        groupPolicy.decideInsertionIndexForNewlyOpenedTab(
+          inGroup: groupModel,
+          openerTabID: openerTabID,
+        )
+      } else {
+        groupPolicy.decideInsertionIndexForNewTab(inGroup: groupModel)
+      }
+
+    let tabID = TabID()
+    let tabModel = makeTabModel(tabID: tabID, groupID: groupID)
+
+    groupModel.tabIDs.insert(tabID, at: index)
+
+    _ = liveTabsManager.create(forModel: tabModel, withWebContent: webContent)!
+
+    if newTabPolicy == .continue {
+      groupModel.extendMiniGroup(from: openerTabID, adding: tabID)
+
+      #if os(macOS)
+      let openAsBackgroundTab = modifierFlags.contains(.command)
+      #elseif os(Windows)
+      let openAsBackgroundTab = modifierFlags.contains(.control)
+      #endif
+
+      if !openAsBackgroundTab {
+        select(tab: tabID)
+      }
+    }
   }
 }

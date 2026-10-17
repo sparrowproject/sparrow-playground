@@ -272,37 +272,15 @@ final class DefaultWindowManager: WindowManager {
     let profileID = browserWindowModel.profileID
     let container = dependencies.profileSystem.container(for: profileID)
 
-    // TODO: Would be nice to avoid setting this repeatedly.
-    container.tabSystem.action = { [weak self] in
-      self?.handleTabSystemAction($0, for: profileID)
-    }
+    // // TODO: Would be nice to avoid setting this repeatedly.
+    // container.tabSystem.action = { [weak self] in
+    //   self?.handleTabSystemAction($0, for: profileID)
+    // }
 
     return .init(browserWindowModel: browserWindowModel, profileContainer: container)
   }
 
   private let dependencies: WindowManagerDependencies
-
-  private func handleTabSystemAction(_ action: TabSystemAction, for profileID: ProfileID) {
-    switch action {
-    case .newTabRequested(_, let modifierFlags, let completion):
-      print(">>> newTabRequested w/ modifierFlags: \(modifierFlags)")
-      if modifierFlags.contains(.shift) {
-        let groupID = TabGroupID.newSpace()
-        // Call the completion to populate the new space.
-        completion(.continueWithGroup(groupID))
-        createBrowserWindow(forGroup: groupID, inProfile: profileID)
-      } else {
-        withAnimation {
-          completion(.continue)
-        }
-      }
-    case .startDownload(let webDownload, let tabID):
-      print(">>> handling .startDownload")
-      dependencies.profileSystem.container(for: profileID).downloadsManager.startDownload(
-        webDownload, forTab: tabID
-      )
-    }
-  }
 }
 
 extension BrowserWindow {

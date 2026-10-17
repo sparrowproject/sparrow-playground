@@ -110,6 +110,17 @@ struct NormalProfileContainer
       )
     }()
 
+    let tabSystemDelegate = {
+      @MainActor
+      struct Container: ProfileTabSystemDelegateDependencies {
+        let downloadsManager: DownloadsManager
+      }
+      let container = Container(
+        downloadsManager: downloadsManager,
+      )
+      return ProfileTabSystemDelegate(dependencies: container)
+    }()
+
     let tabSystem = {
       @MainActor
       struct Container: TabSystemDependencies {
@@ -120,6 +131,7 @@ struct NormalProfileContainer
       )
       return Factory<TabSystem>.makeDefaultInstance(dependencies: container)
     }()
+    tabSystem.delegate = tabSystemDelegate
 
     let tabUndoManager = {
       @MainActor
@@ -161,6 +173,7 @@ struct NormalProfileContainer
     self.storageSystem = storageSystem
     self.suggestService = suggestService
     self.tabSystem = tabSystem
+    self.tabSystemDelegate = tabSystemDelegate
     self.tabUndoManager = tabUndoManager
     self.webHistory = webHistory
     windowSystemModel = dependencies.windowSystemModel
@@ -174,6 +187,7 @@ struct NormalProfileContainer
   let storageSystem: StorageSystem
   let suggestService: SuggestService
   let tabSystem: TabSystem
+  let tabSystemDelegate: TabSystemDelegate
   let tabUndoManager: TabUndoManager
   let webHistory: WebHistory
   let windowSystemModel: WindowSystemModel
@@ -233,6 +247,17 @@ struct IncognitoProfileContainer: LiveContainer, ProfileContainer {
       )     
     }()
 
+    let tabSystemDelegate = {
+      @MainActor
+      struct Container: ProfileTabSystemDelegateDependencies {
+        let downloadsManager: DownloadsManager
+      }
+      let container = Container(
+        downloadsManager: downloadsManager,
+      )
+      return ProfileTabSystemDelegate(dependencies: container)
+    }()
+
     let tabSystem = {
       @MainActor
       struct Container: TabSystemDependencies {
@@ -243,6 +268,7 @@ struct IncognitoProfileContainer: LiveContainer, ProfileContainer {
       )
       return Factory<TabSystem>.makeDefaultInstance(dependencies: container)
     }()
+    tabSystem.delegate = tabSystemDelegate
 
     // Store exported modules:
 
@@ -251,6 +277,7 @@ struct IncognitoProfileContainer: LiveContainer, ProfileContainer {
     self.spaceGridModel = spaceGridModel
     self.suggestService = suggestService
     self.tabSystem = tabSystem
+    self.tabSystemDelegate = tabSystemDelegate
     self.webHistory = webHistory
     windowSystemModel = normalContainer.windowSystemModel
   }
@@ -261,6 +288,7 @@ struct IncognitoProfileContainer: LiveContainer, ProfileContainer {
   let spaceGridModel: SpaceGridModel
   let suggestService: SuggestService
   let tabSystem: TabSystem
+  let tabSystemDelegate: TabSystemDelegate
   let webHistory: WebHistory
   let windowSystemModel: WindowSystemModel
 
