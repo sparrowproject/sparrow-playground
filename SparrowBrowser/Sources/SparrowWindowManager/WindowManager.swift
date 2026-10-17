@@ -93,7 +93,9 @@ final class DefaultWindowManager: WindowManager {
   }
 
   func handleCommand(_ commandID: SparrowCommand.ID) {
-    if let window = lastActiveBrowserWindow {
+    if commandID == .undoClose {
+      handleUndoClose()
+    } else if let window = lastActiveBrowserWindow {
       window.viewModel.handleCommand(commandID).flatMap { handleBrowserWindowAction(.view($0), for: window) }
     } else {
       // TODO: Figure out how to handle commands when no window is open.
@@ -101,7 +103,15 @@ final class DefaultWindowManager: WindowManager {
     }
   }
 
-  private weak var lastActiveBrowserWindow: BrowserWindow?
+  private weak var lastActiveBrowserWindow: BrowserWindow? {
+    didSet {
+      if let lastActiveBrowserWindow {
+        lastActiveProfileID = lastActiveBrowserWindow.profileID
+      }
+    }
+  }
+
+  private var lastActiveProfileID: ProfileID?
 
   private func createBrowserWindow(forModel windowModel: BrowserWindowModel) -> BrowserWindow {
     let groupID = windowModel.groupID
@@ -204,6 +214,14 @@ final class DefaultWindowManager: WindowManager {
       window.viewModel.dependencies.spaceGridModel[row: row, col: col] = groupID
       activateGroup(groupID, inWindow: window)
     }
+  }
+
+  private func handleUndoClose() {
+    let profileID = lastActiveProfileID ?? .default
+
+    guard let tabUndoManager = dependencies.profileSystem.container(for: profileID).tabUndoManager else { return }
+
+    tabUndoManager.undo()
   }
 
   private func activateGroup(_ groupID: TabGroupID, inWindow window: BrowserWindow) {

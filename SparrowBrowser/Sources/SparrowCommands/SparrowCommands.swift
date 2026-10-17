@@ -54,6 +54,10 @@ public enum SparrowCommands {
   public static func selectTabAt(index: Int) -> SparrowCommand {
     .init(id: .selectTabAt(index: index), title: "", keybinding: .selectTabAt(index: index))
   }
+
+  public static var undoClose: SparrowCommand {
+    .init(id: .undoClose, title: "Reopen Closed Tab", keybinding: .undoClose)
+  }
 }
 
 extension Keybinding {
@@ -240,6 +244,14 @@ extension Keybinding {
     .init(keyEquivalent: "\(index)", modifiers: [.command])
     #elseif os(Windows)
     .init(virtualKey: .numberKey(for: index), modifiers: [.control])
+    #endif
+  }
+
+  fileprivate static var undoClose: Self {
+    #if os(macOS)
+    .init(keyEquivalent: "t", modifiers: [.command, .shift])
+    #elseif os(Windows)
+    .init(virtualKey: .t, modifiers: [.control, .shift])
     #endif
   }
 }

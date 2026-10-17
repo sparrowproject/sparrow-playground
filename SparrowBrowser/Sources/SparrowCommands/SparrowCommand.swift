@@ -7,8 +7,6 @@ public final class SparrowCommand: Command {
     case closeTab
     case closeTabsAfter
     case closeWindow
-    // case copy
-    // case cut
     case duplicateTab
     case find
     case findNext
@@ -19,7 +17,6 @@ public final class SparrowCommand: Command {
     case newIncognitoWindow
     case newTabAfter
     case newWindow
-    // case paste
     case pinTab
     case quit
     case reloadTab
@@ -39,6 +36,7 @@ public final class SparrowCommand: Command {
     case selectTabAt7
     case selectTabAt8
     case selectTabAt9
+    case undoClose
 
     static func selectTabAt(index: Int) -> Self {
       switch index {

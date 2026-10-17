@@ -367,6 +367,8 @@ public final class BrowserWindowViewModel {
       selectTabAt(index: 8)
     case .selectTabAt9:
       selectTabAt(index: 9)
+    case .undoClose:
+      print(">>> undoClose command should have already been handled!")
     }
     return nil
   }

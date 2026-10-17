@@ -161,6 +161,10 @@ enum AppMenu {
     historyMenu.addHiddenCommand(SparrowCommands.goBackAlt)
     historyMenu.addHiddenCommand(SparrowCommands.goForwardAlt)
 
+    historyMenu.addItem(.separator())
+
+    historyMenu.addCommand(SparrowCommands.undoClose)
+
     return historyMenuItem
   }
 

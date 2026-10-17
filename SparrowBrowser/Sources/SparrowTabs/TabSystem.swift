@@ -14,8 +14,6 @@ public protocol TabSystem: AnyObject {
   @discardableResult
   func load(_ navigation: TabNavigation, inGroup: TabGroupID, atIndex: Int?, select: Bool) -> LiveTab
 
-  // TODO: think about the lifecycle of a tab and group...
-
   func model(forTab tabID: TabID) -> TabModel
   func model(forGroup groupID: TabGroupID) -> TabGroupModel
 
@@ -30,6 +28,9 @@ public protocol TabSystem: AnyObject {
   func select(tab tabID: TabID)
 
   func move(tab tabID: TabID, toPositionOf otherTabID: TabID)
+
+  func addObserver(_: TabSystemObserver)
+  func removeObserver(_: TabSystemObserver)
 }
 
 public protocol TabSystemProviding {
@@ -39,7 +40,6 @@ public protocol TabSystemProviding {
 
 public typealias TabSystemDependencies
   = LiveTabDependencies
-  & TabUndoManagerProviding
 
 @MainActor
 public enum TabSystemAction {
@@ -52,6 +52,12 @@ public enum TabSystemNewTabPolicy: Equatable {
   case cancel
   case `continue`
   case continueWithGroup(TabGroupID)
+}
+
+@MainActor
+public protocol TabSystemObserver: AnyObject {
+  func willRemoveTab(_: TabModel, from: TabGroupModel)
+  func willRemoveTabGroup(_: TabGroupModel)
 }
 
 extension Factory where Interface == TabSystem {
@@ -237,9 +243,20 @@ final class DefaultTabSystem: TabSystem {
     groupModel.tabIDs.move(tabID, toPositionOf: otherTabID)
   }
 
+  func addObserver(_ observer: TabSystemObserver) {
+    observers.append(.init(observer))
+  }
+
+  func removeObserver(_ observer: TabSystemObserver) {
+    if let index = observers.firstIndex(where: { $0.value ===  observer }) {
+      observers.remove(at: index)
+    }
+  }
+
   private let dependencies: TabSystemDependencies
   private let liveTabsManager: LiveTabsManager
   private var policies: [TabGroupID: TabGroupPolicy] = [:]
+  private var observers = [Weak<TabSystemObserver>]()
 
   private func makeTabModel(tabID: TabID, groupID: TabGroupID) -> TabModel {
     let tabModel = TabModel(id: tabID, groupID: groupID)
@@ -253,11 +270,15 @@ final class DefaultTabSystem: TabSystem {
   }
 
   private func notifyWillRemove(_ tabModel: TabModel, from groupModel: TabGroupModel) {
-    dependencies.tabUndoManager.willRemoveTab(tabModel, from: groupModel)
+    for observer in observers {
+      observer.value?.willRemoveTab(tabModel, from: groupModel)
+    }
   }
 
   private func notifyWillRemove(_ groupModel: TabGroupModel) {
-    dependencies.tabUndoManager.willRemoveTabGroup(groupModel)
+    for observer in observers {
+      observer.value?.willRemoveTabGroup(groupModel)
+    }
   }
 
   private func handleLiveTabsManagerAction(_ action: LiveTabsManager.Action) {

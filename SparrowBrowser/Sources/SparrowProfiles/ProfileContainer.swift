@@ -20,7 +20,6 @@ public protocol ProfileContainer
   , SpaceGridModelProviding
   , SuggestServiceProviding
   , TabSystemProviding
-  , TabUndoManagerProviding
   , WebHistoryProviding
   , WindowSystemModelProviding
 {}
@@ -37,16 +36,24 @@ extension ProfileContainer {
   var storageSystem: StorageSystem? {
     (self as? StorageSystemProviding)?.storageSystem
   }
+
+  @MainActor
+  var tabUndoManager: TabUndoManager? {
+    (self as? TabUndoManagerProviding)?.tabUndoManager
+  }
 }
 
 @MainActor
-struct NormalProfileContainer: LiveContainer, ProfileContainer, StorageSystemProviding {
+struct NormalProfileContainer
+    : LiveContainer
+    , ProfileContainer
+    , StorageSystemProviding
+    , TabUndoManagerProviding
+{
   init(dependencies: ProfileContainerDependencies, profileModel: ProfileModel) {
     // MODULE DEPENDENCY TREE
 
     let storagePaths = ProfileStoragePaths(index: profileModel.index, rootPaths: dependencies.storagePaths)
-
-    let tabUndoManager = Factory<TabUndoManager>.makeDefaultInstance()
 
     let downloadsManager = {
       @MainActor
@@ -106,14 +113,23 @@ struct NormalProfileContainer: LiveContainer, ProfileContainer, StorageSystemPro
     let tabSystem = {
       @MainActor
       struct Container: TabSystemDependencies {
-        let tabUndoManager: TabUndoManager
         let webContentFactory: WebContentFactory
       }
       let container = Container(
-        tabUndoManager: tabUndoManager,
         webContentFactory: webContentFactory,
       )
       return Factory<TabSystem>.makeDefaultInstance(dependencies: container)
+    }()
+
+    let tabUndoManager = {
+      @MainActor
+      struct Container: TabUndoManagerDependencies {
+        let tabSystem: TabSystem
+      }
+      let container = Container(
+        tabSystem: tabSystem,
+      )
+      return Factory<TabUndoManager>.makeDefaultInstance(dependencies: container)
     }()
 
     let storageSystem = {
@@ -173,7 +189,6 @@ struct IncognitoProfileContainer: LiveContainer, ProfileContainer {
 
     let spaceGridModel = SpaceGridModel()
 
-    let tabUndoManager = Factory<TabUndoManager>.makeNoOpInstance()
     let webHistory = Factory<WebHistory>.makeInMemoryInstance()
 
     let downloadsManager = {
@@ -221,11 +236,9 @@ struct IncognitoProfileContainer: LiveContainer, ProfileContainer {
     let tabSystem = {
       @MainActor
       struct Container: TabSystemDependencies {
-        let tabUndoManager: TabUndoManager
         let webContentFactory: WebContentFactory
       }
       let container = Container(
-        tabUndoManager: tabUndoManager,
         webContentFactory: webContentFactory,
       )
       return Factory<TabSystem>.makeDefaultInstance(dependencies: container)
@@ -238,7 +251,6 @@ struct IncognitoProfileContainer: LiveContainer, ProfileContainer {
     self.spaceGridModel = spaceGridModel
     self.suggestService = suggestService
     self.tabSystem = tabSystem
-    self.tabUndoManager = tabUndoManager
     self.webHistory = webHistory
     windowSystemModel = normalContainer.windowSystemModel
   }
@@ -249,7 +261,6 @@ struct IncognitoProfileContainer: LiveContainer, ProfileContainer {
   let spaceGridModel: SpaceGridModel
   let suggestService: SuggestService
   let tabSystem: TabSystem
-  let tabUndoManager: TabUndoManager
   let webHistory: WebHistory
   let windowSystemModel: WindowSystemModel
 

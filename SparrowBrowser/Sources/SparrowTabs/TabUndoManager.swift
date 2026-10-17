@@ -5,8 +5,7 @@ import SparrowToolbelt
 public protocol TabUndoManager {
   var model: TabUndoModel { get }
 
-  func willRemoveTab(_: TabModel, from: TabGroupModel)
-  func willRemoveTabGroup(_: TabGroupModel)
+  func undo()
 }
 
 public protocol TabUndoManagerProviding {
@@ -14,30 +13,33 @@ public protocol TabUndoManagerProviding {
   var tabUndoManager: TabUndoManager { get }
 }
 
+public typealias TabUndoManagerDependencies
+  = TabSystemProviding
+
 extension Factory where Interface == TabUndoManager {
-  public static func makeDefaultInstance() -> TabUndoManager {
-    DefaultTabUndoManager()
+  public static func makeDefaultInstance(dependencies: TabUndoManagerDependencies) -> TabUndoManager {
+    DefaultTabUndoManager(dependencies: dependencies)
   }
-
-  public static func makeNoOpInstance() -> TabUndoManager {
-    NoOpTabUndoManager()
-  }
-}
-
-final class NoOpTabUndoManager: TabUndoManager {
-  init() {}
-
-  let model = TabUndoModel()
-
-  func willRemoveTab(_: TabModel, from: TabGroupModel) {}
-  func willRemoveTabGroup(_: TabGroupModel) {}
 }
 
 final class DefaultTabUndoManager: TabUndoManager {
-  init() {}
+  init(dependencies: TabUndoManagerDependencies) {
+    self.dependencies = dependencies
+
+    // TODO: Consider lifecycle implications here.
+    dependencies.tabSystem.addObserver(self)
+  }
 
   let model = TabUndoModel()
 
+  func undo() {
+    print(">>> undo!")
+  }
+
+  private let dependencies: TabUndoManagerDependencies
+}
+
+extension DefaultTabUndoManager: TabSystemObserver {
   func willRemoveTab(_ tabModel: TabModel, from groupModel: TabGroupModel) {
     model.push(.tab(tabModel, groupID: groupModel.id, tabIDs: groupModel.tabIDs))
   }
