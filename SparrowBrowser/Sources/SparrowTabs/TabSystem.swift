@@ -256,7 +256,15 @@ final class DefaultTabSystem: TabSystem {
   private let dependencies: TabSystemDependencies
   private let liveTabsManager: LiveTabsManager
   private var policies: [TabGroupID: TabGroupPolicy] = [:]
-  private var observers = [Weak<TabSystemObserver>]()
+  private var observers = [WeakObserver]()
+
+  private struct WeakObserver {
+    weak var value: (any TabSystemObserver)?
+
+    init(_ value: any TabSystemObserver) {
+      self.value = value
+    }
+  }
 
   private func makeTabModel(tabID: TabID, groupID: TabGroupID) -> TabModel {
     let tabModel = TabModel(id: tabID, groupID: groupID)

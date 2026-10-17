@@ -28,4 +28,9 @@ public final class TabUndoModel {
     entries[id] = entry
     return id
   }
+
+  func pop() -> Entry? {
+    guard !entries.isEmpty else { return nil }
+    return entries.removeLast().value
+  }
 }

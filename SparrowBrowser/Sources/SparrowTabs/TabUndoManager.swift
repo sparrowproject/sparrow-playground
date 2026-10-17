@@ -5,7 +5,10 @@ import SparrowToolbelt
 public protocol TabUndoManager {
   var model: TabUndoModel { get }
 
-  func undo()
+  var canUndo: Bool { get }
+
+  /// Returns the `Entry` that was reverted (if any).
+  func undo() -> TabUndoModel.Entry?
 }
 
 public protocol TabUndoManagerProviding {
@@ -32,8 +35,23 @@ final class DefaultTabUndoManager: TabUndoManager {
 
   let model = TabUndoModel()
 
-  func undo() {
+  var canUndo: Bool {
+    !model.entries.isEmpty
+  }
+
+  func undo() -> TabUndoModel.Entry? {
     print(">>> undo!")
+
+    guard let entry = model.pop() else { return nil }
+
+    switch entry {
+    case .tab(let tabModel, let groupID, let tabIDs):
+      break
+    case .group(let groupModel):
+      break
+    }
+
+    return entry
   }
 
   private let dependencies: TabUndoManagerDependencies

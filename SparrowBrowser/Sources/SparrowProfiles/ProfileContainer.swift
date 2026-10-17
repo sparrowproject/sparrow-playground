@@ -33,12 +33,12 @@ public typealias ProfileContainerDependencies
 
 extension ProfileContainer {
   @MainActor
-  var storageSystem: StorageSystem? {
+  public var storageSystem: StorageSystem? {
     (self as? StorageSystemProviding)?.storageSystem
   }
 
   @MainActor
-  var tabUndoManager: TabUndoManager? {
+  public var tabUndoManager: TabUndoManager? {
     (self as? TabUndoManagerProviding)?.tabUndoManager
   }
 }
