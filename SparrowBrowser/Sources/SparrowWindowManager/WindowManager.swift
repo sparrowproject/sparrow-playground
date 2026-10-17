@@ -21,20 +21,7 @@ import WinSDK
 public protocol WindowManager {
   func initialize()
 
-  @discardableResult
-  func createBrowserWindow(forGroup: TabGroupID, inProfile: ProfileID) -> BrowserWindow
-
   func handleCommand(_ commandID: SparrowCommand.ID)
-}
-
-extension WindowManager {
-  @discardableResult
-  public func createBrowserWindow(inProfile profileID: ProfileID) -> BrowserWindow {
-    createBrowserWindow(
-      forGroup: .newSpace(),
-      inProfile: profileID,
-    )
-  }
 }
 
 public protocol WindowManagerProviding {
@@ -61,27 +48,22 @@ final class DefaultWindowManager: WindowManager {
     if restoreBrowserWindows().isEmpty {
       createBrowserWindow(inProfile: .default)
     }
+
+    Task<Void, Never> {
+      for await windowModels in Observations({ [windowSystemModel = dependencies.windowSystemModel] in
+        windowSystemModel.browserWindows.values
+      }) {
+        for windowModel in windowModels where BrowserWindow.find(byID: windowModel.id) == nil {
+          createBrowserWindow(forModel: windowModel)
+        }
+      }
+    }
   }
 
-  @discardableResult
-  func createBrowserWindow(forGroup groupID: TabGroupID, inProfile profileID: ProfileID) -> BrowserWindow {
-    print(">>> createBrowserWindow for: \(groupID.id)")
-
-    let windowSystemModel = dependencies.windowSystemModel
-
-    let windowModel = BrowserWindowModel(
-      id: .init(),
-      profileID: profileID,
-      groupID: groupID,
-      scopedSpaces: [groupID],
-    )
-
-    windowSystemModel.windows[windowModel.id] = windowModel
-
-    return createBrowserWindow(forModel: windowModel)
+  func createBrowserWindow(forGroup groupID: TabGroupID = .newSpace(), inProfile profileID: ProfileID) {
+    dependencies.windowSystemModel.createBrowserWindow(forGroup: groupID, inProfile: profileID)
   }
 
-  @discardableResult
   func restoreBrowserWindows() -> [BrowserWindow] {
     let windowSystemModel = dependencies.windowSystemModel
 
@@ -117,6 +99,7 @@ final class DefaultWindowManager: WindowManager {
 
   private var lastActiveProfileID: ProfileID?
 
+  @discardableResult
   private func createBrowserWindow(forModel windowModel: BrowserWindowModel) -> BrowserWindow {
     let groupID = windowModel.groupID
 

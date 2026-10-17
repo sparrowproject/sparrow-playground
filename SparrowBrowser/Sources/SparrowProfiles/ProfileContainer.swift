@@ -114,9 +114,11 @@ struct NormalProfileContainer
       @MainActor
       struct Container: ProfileTabSystemDelegateDependencies {
         let downloadsManager: DownloadsManager
+        let windowSystemModel: WindowSystemModel
       }
       let container = Container(
         downloadsManager: downloadsManager,
+        windowSystemModel: dependencies.windowSystemModel,
       )
       return ProfileTabSystemDelegate(dependencies: container)
     }()
@@ -251,9 +253,11 @@ struct IncognitoProfileContainer: LiveContainer, ProfileContainer {
       @MainActor
       struct Container: ProfileTabSystemDelegateDependencies {
         let downloadsManager: DownloadsManager
+        let windowSystemModel: WindowSystemModel
       }
       let container = Container(
         downloadsManager: downloadsManager,
+        windowSystemModel: normalContainer.windowSystemModel,
       )
       return ProfileTabSystemDelegate(dependencies: container)
     }()

@@ -13,6 +13,7 @@ target_link_libraries(SparrowWindowModel PUBLIC
   SparrowTabs
 )
 target_link_libraries(SparrowWindowModel PRIVATE
+  SparrowSpaces
 )
 
 if(WIN32)

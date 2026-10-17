@@ -4,9 +4,11 @@ import SparrowTabs
 import SparrowToolbelt
 import SparrowUIFoundation
 import SparrowWeb
+import SparrowWindowModel
 
 typealias ProfileTabSystemDelegateDependencies
   = DownloadsManagerProviding
+  & WindowSystemModelProviding
 
 final class ProfileTabSystemDelegate: TabSystemDelegate {
   init(dependencies: ProfileTabSystemDelegateDependencies) {
