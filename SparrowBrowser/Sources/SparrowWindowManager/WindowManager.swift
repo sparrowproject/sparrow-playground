@@ -19,12 +19,10 @@ import WinSDK
 
 @MainActor
 public protocol WindowManager {
+  func initialize()
+
   @discardableResult
   func createBrowserWindow(forGroup: TabGroupID, inProfile: ProfileID) -> BrowserWindow
-
-  /// Returns true if any browser windows were restored.
-  @discardableResult
-  func restoreBrowserWindows() -> [BrowserWindow]
 
   func handleCommand(_ commandID: SparrowCommand.ID)
 }
@@ -57,6 +55,12 @@ extension Factory where Interface == WindowManager {
 final class DefaultWindowManager: WindowManager {
   init(dependencies: WindowManagerDependencies) {
     self.dependencies = dependencies
+  }
+
+  func initialize() {
+    if restoreBrowserWindows().isEmpty {
+      createBrowserWindow(inProfile: .default)
+    }
   }
 
   @discardableResult
@@ -271,11 +275,6 @@ final class DefaultWindowManager: WindowManager {
   private func browserWindowContainer(for browserWindowModel: BrowserWindowModel) -> BrowserWindowContainer {
     let profileID = browserWindowModel.profileID
     let container = dependencies.profileSystem.container(for: profileID)
-
-    // // TODO: Would be nice to avoid setting this repeatedly.
-    // container.tabSystem.action = { [weak self] in
-    //   self?.handleTabSystemAction($0, for: profileID)
-    // }
 
     return .init(browserWindowModel: browserWindowModel, profileContainer: container)
   }

@@ -108,9 +108,7 @@ extension SparrowApp {
       // await appContainer.profileSystem.initialize()
       guard !Task.isCancelled else { return }
 
-      if appContainer.windowManager.restoreBrowserWindows().isEmpty {
-        appContainer.windowManager.createBrowserWindow(inProfile: .default)
-      }
+      appContainer.windowManager.initialize()
     }
   }
 
