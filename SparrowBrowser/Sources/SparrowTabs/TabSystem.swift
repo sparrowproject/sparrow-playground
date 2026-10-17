@@ -227,6 +227,9 @@ final class DefaultTabSystem: TabSystem {
     groupModel.selectedTabModel.value = tabModel
     oldModel.isSelected = false
     tabModel.isSelected = true
+
+    // TODO: Consider adding this here.
+    // _ = liveTabsManager.getOrCreate(forModel: tabModel)!
   }
 
   func move(tab tabID: TabID, toPositionOf otherTabID: TabID) {

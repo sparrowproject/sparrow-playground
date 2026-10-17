@@ -10,8 +10,8 @@ public final class TabUndoModel {
 
   @MainActor
   public enum Entry {
-    case tab(TabModel, groupID: TabGroupID, tabIDs: OrderedSet<TabID>)
-    case group(TabGroupModel)
+    case tab(TabModel, groupID: TabGroupID, tabIDs: [TabID])
+    case group(TabGroupModel, tabModels: [TabModel])
   }
 
   public private(set) var entries = OrderedDictionary<EntryID, Entry>() {

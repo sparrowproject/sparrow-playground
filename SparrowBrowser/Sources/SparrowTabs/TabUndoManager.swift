@@ -46,23 +46,63 @@ final class DefaultTabUndoManager: TabUndoManager {
 
     switch entry {
     case .tab(let tabModel, let groupID, let tabIDs):
-      break
-    case .group(let groupModel):
-      break
+      undoRemoveTab(tabModel, groupID: groupID, tabIDs: tabIDs)
+    case .group(let groupModel, let tabModels):
+      undoRemoveGroup(groupModel, tabModels: tabModels)
     }
 
     return entry
   }
 
   private let dependencies: TabUndoManagerDependencies
+
+  private func undoRemoveTab(_ tabModel: TabModel, groupID: TabGroupID, tabIDs: [TabID]) {
+    let tabSystemModel = dependencies.tabSystem.model
+
+    guard let groupModel = tabSystemModel.groups[groupID] else {
+      print(">>> failed to undo tab removal: group model not found!")
+      return
+    }
+
+    guard let oldIndex = tabIDs.firstIndex(of: tabModel.id) else {
+      print(">>> failed to undo tab removal: tab not found in given tabIDs!")
+      return
+    }
+
+    var insertionIndex = oldIndex
+    if oldIndex > 0 {
+      // Validate / improve insertion index by inspecting nearby tabs.
+      let tabIDBefore = tabIDs[oldIndex - 1]
+      if let indexOfTabBefore = groupModel.tabIDs.firstIndex(of: tabIDBefore) {
+        insertionIndex = indexOfTabBefore + 1
+      }
+    }
+    if insertionIndex >= groupModel.tabIDs.count {
+      insertionIndex = groupModel.tabIDs.count
+    }
+
+    tabSystemModel.tabs[tabModel.id] = tabModel
+    groupModel.tabIDs.insert(tabModel.id, at: insertionIndex)
+  }
+
+  private func undoRemoveGroup(_ groupModel: TabGroupModel, tabModels: [TabModel]) {
+    let tabSystemModel = dependencies.tabSystem.model
+
+    for tabModel in tabModels {
+      tabSystemModel.tabs[tabModel.id] = tabModel
+    }
+    tabSystemModel.groups[groupModel.id] = groupModel
+  }
 }
 
 extension DefaultTabUndoManager: TabSystemObserver {
   func willRemoveTab(_ tabModel: TabModel, from groupModel: TabGroupModel) {
-    model.push(.tab(tabModel, groupID: groupModel.id, tabIDs: groupModel.tabIDs))
+    model.push(.tab(tabModel, groupID: groupModel.id, tabIDs: groupModel.tabIDs.elements))
   }
 
   func willRemoveTabGroup(_ groupModel: TabGroupModel) {
-    model.push(.group(groupModel))
+    model.push(.group(groupModel, tabModels: groupModel.tabIDs.map {
+      dependencies.tabSystem.model(forTab: $0)
+    }))
   }
 }
