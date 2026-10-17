@@ -178,8 +178,9 @@ final class DefaultTabSystem: TabSystem {
     if groupModel.selectedTabModel.id == tabID {
       let policy = policy(forGroup: tabModel.groupID)
       let nextTabID = policy.decideNextSelectedTabAfterRemovalOfSelectedTab(inGroup: groupModel)
+      selectTabInternal(nextTabID.flatMap { model.tabs[$0] }, inGroup: groupModel)
 
-      groupModel.selectedTabModel.value = nextTabID.flatMap { model.tabs[$0] } ?? .invalid
+      // groupModel.selectedTabModel.value = nextTabID.flatMap { model.tabs[$0] } ?? .invalid
     }
 
     groupModel.tabIDs.remove(tabID)
@@ -213,15 +214,7 @@ final class DefaultTabSystem: TabSystem {
       return
     }
 
-    let previousIndex = groupModel.tabIDs.firstIndex(of: groupModel.selectedTabModel.id)
-    let newIndex = groupModel.tabIDs.firstIndex(of: tabID)
-
-    let oldModel = groupModel.selectedTabModel.value
-    groupModel.selectedTabModel.value = tabModel
-    oldModel.isSelected = false
-    tabModel.isSelected = true
-
-    delegate?.didSelectTab(atIndex: newIndex, previousIndex: previousIndex)
+    selectTabInternal(tabModel, inGroup: groupModel)
   }
 
   func move(tab tabID: TabID, toPositionOf otherTabID: TabID) {
@@ -270,6 +263,18 @@ final class DefaultTabSystem: TabSystem {
   private func removeTabInternal(_ tabID: TabID) {
     model.tabs.removeValue(forKey: tabID)
     liveTabsManager.remove(byID: tabID)
+  }
+
+  func selectTabInternal(_ tabModel: TabModel?, inGroup groupModel: TabGroupModel) {
+    let previousIndex = groupModel.tabIDs.firstIndex(of: groupModel.selectedTabModel.id)
+    let newIndex = tabModel.flatMap { groupModel.tabIDs.firstIndex(of: $0.id) }
+
+    let oldModel = groupModel.selectedTabModel.value.nilIfInvalid
+    groupModel.selectedTabModel.value = tabModel ?? .invalid
+    oldModel?.isSelected = false
+    tabModel?.isSelected = true
+
+    delegate?.didSelectTab(atIndex: newIndex, previousIndex: previousIndex)
   }
 
   private func notifyWillRemove(_ tabModel: TabModel, from groupModel: TabGroupModel) {

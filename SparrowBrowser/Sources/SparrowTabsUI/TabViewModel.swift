@@ -47,7 +47,6 @@ final class TabViewModel {
   }
 
   func isCommandEnabled(_ commandID: SparrowCommand.ID) -> Bool {
-    let result: Bool = {
     switch commandID {
     case .closeOtherTabs:
       let groupModel = dependencies.tabSystem.model(forGroup: tabModel.groupID)
@@ -62,9 +61,6 @@ final class TabViewModel {
     default:
       return true
     }
-    }()
-    print(">>> isCommandEnabled: \(commandID), result: \(result)")
-    return result
   }
 
   private let dependencies: TabViewModelDependencies

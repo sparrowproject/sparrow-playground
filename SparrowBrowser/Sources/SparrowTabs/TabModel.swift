@@ -58,6 +58,8 @@ extension TabModel {
 
 extension TabModel {
   public static let invalid = TabModel(id: .invalid, groupID: .invalid)
+
+  public var nilIfInvalid: Self? { id == .invalid ? nil : self }
 }
 
 extension TabModel: Identifiable {}

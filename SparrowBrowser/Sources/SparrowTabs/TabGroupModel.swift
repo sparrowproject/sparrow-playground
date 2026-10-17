@@ -23,6 +23,8 @@ public final class TabGroupModel {
 
 extension TabGroupModel {
   public static let invalid = TabGroupModel(id: .invalid)
+
+  public var nilIfInvalid: Self? { id == .invalid ? nil : self }
 }
 
 extension TabGroupModel: Identifiable {}

@@ -24,7 +24,11 @@ public final class TopTabsViewModel {
   #endif
 
   let groupModel: Handle<TabGroupModel>
-  var tabViewModels = OrderedDictionary<TabID, TabViewModel>()
+  var tabViewModels = OrderedDictionary<TabID, TabViewModel>() {
+    didSet {
+      print(">>> didSet tabViewModels: \(tabViewModels.values.map({ (ObjectIdentifier($0), $0.tabID) }))")
+    }
+  }
   var lockedTabCount: Int?
 
   var selectedTabID: TabID {
