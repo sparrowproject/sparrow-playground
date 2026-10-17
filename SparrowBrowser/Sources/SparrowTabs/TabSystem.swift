@@ -44,19 +44,6 @@ public typealias TabSystemDependencies
   = LiveTabDependencies
 
 @MainActor
-public protocol TabSystemDelegate: AnyObject {
-  func newTabRequested(byTab: TabID, modifierFlags: Keystroke.ModifierFlags) -> TabSystemNewTabPolicy
-  func startDownload(_: WebDownload, fromTab: TabID)
-}
-
-@MainActor
-public enum TabSystemNewTabPolicy: Equatable {
-  case cancel
-  case `continue`
-  case continueWithGroup(TabGroupID)
-}
-
-@MainActor
 public protocol TabSystemObserver: AnyObject {
   func willRemoveTab(_: TabModel, from: TabGroupModel)
   func willRemoveTabGroup(_: TabGroupModel)
@@ -225,13 +212,16 @@ final class DefaultTabSystem: TabSystem {
       assertionFailure("Unknown TabGroupID!")
       return
     }
+
+    let previousIndex = groupModel.tabIDs.firstIndex(of: groupModel.selectedTabModel.id)
+    let newIndex = groupModel.tabIDs.firstIndex(of: tabID)
+
     let oldModel = groupModel.selectedTabModel.value
     groupModel.selectedTabModel.value = tabModel
     oldModel.isSelected = false
     tabModel.isSelected = true
 
-    // TODO: Consider adding this here.
-    // _ = liveTabsManager.getOrCreate(forModel: tabModel)!
+    delegate?.didSelectTab(atIndex: newIndex, previousIndex: previousIndex)
   }
 
   func move(tab tabID: TabID, toPositionOf otherTabID: TabID) {
@@ -312,50 +302,50 @@ final class DefaultTabSystem: TabSystem {
     modifierFlags: Keystroke.ModifierFlags,
     openerTabID: TabID
   ) {
-    let newTabPolicy = delegate?.newTabRequested(byTab: openerTabID, modifierFlags: modifierFlags) ?? .cancel
+    delegate?.newTabRequested(byTab: openerTabID, modifierFlags: modifierFlags) { newTabPolicy in
+      let groupID: TabGroupID? =
+        switch newTabPolicy {
+        case .cancel:
+          nil
+        case .continue:
+          model(forTab: openerTabID).groupID
+        case .continueWithGroup(let groupID):
+          groupID
+        }
+      guard let groupID else { return }
 
-    let groupID: TabGroupID? =
-      switch newTabPolicy {
-      case .cancel:
-        nil
-      case .continue:
-        model(forTab: openerTabID).groupID
-      case .continueWithGroup(let groupID):
-        groupID
-      }
-    guard let groupID else { return }
+      let groupModel = model(forGroup: groupID)
+      let groupPolicy = policy(forGroup: groupID)
 
-    let groupModel = model(forGroup: groupID)
-    let groupPolicy = policy(forGroup: groupID)
+      let index: Int =
+        if newTabPolicy == .continue {
+          groupPolicy.decideInsertionIndexForNewlyOpenedTab(
+            inGroup: groupModel,
+            openerTabID: openerTabID,
+          )
+        } else {
+          groupPolicy.decideInsertionIndexForNewTab(inGroup: groupModel)
+        }
 
-    let index: Int =
+      let tabID = TabID()
+      let tabModel = makeTabModel(tabID: tabID, groupID: groupID)
+
+      groupModel.tabIDs.insert(tabID, at: index)
+
+      _ = liveTabsManager.create(forModel: tabModel, withWebContent: webContent)!
+
       if newTabPolicy == .continue {
-        groupPolicy.decideInsertionIndexForNewlyOpenedTab(
-          inGroup: groupModel,
-          openerTabID: openerTabID,
-        )
-      } else {
-        groupPolicy.decideInsertionIndexForNewTab(inGroup: groupModel)
-      }
+        groupModel.extendMiniGroup(from: openerTabID, adding: tabID)
 
-    let tabID = TabID()
-    let tabModel = makeTabModel(tabID: tabID, groupID: groupID)
+        #if os(macOS)
+        let openAsBackgroundTab = modifierFlags.contains(.command)
+        #elseif os(Windows)
+        let openAsBackgroundTab = modifierFlags.contains(.control)
+        #endif
 
-    groupModel.tabIDs.insert(tabID, at: index)
-
-    _ = liveTabsManager.create(forModel: tabModel, withWebContent: webContent)!
-
-    if newTabPolicy == .continue {
-      groupModel.extendMiniGroup(from: openerTabID, adding: tabID)
-
-      #if os(macOS)
-      let openAsBackgroundTab = modifierFlags.contains(.command)
-      #elseif os(Windows)
-      let openAsBackgroundTab = modifierFlags.contains(.control)
-      #endif
-
-      if !openAsBackgroundTab {
-        select(tab: tabID)
+        if !openAsBackgroundTab {
+          select(tab: tabID)
+        }
       }
     }
   }

@@ -1,7 +1,10 @@
+import Foundation
 import SparrowDownloads
 import SparrowSpaces
 import SparrowTabs
 import SparrowToolbelt
+import SparrowUI
+import SparrowUICore
 import SparrowUIFoundation
 import SparrowWeb
 import SparrowWindowModel
@@ -15,15 +18,13 @@ final class ProfileTabSystemDelegate: TabSystemDelegate {
     self.dependencies = dependencies
   }
 
-  func newTabRequested(byTab: TabID, modifierFlags: Keystroke.ModifierFlags) -> TabSystemNewTabPolicy {
+  func newTabRequested(byTab: TabID, modifierFlags: Keystroke.ModifierFlags, completion: (TabSystemNewTabPolicy) -> Void) {
     if modifierFlags.contains(.shift) {
-      // let groupID = TabGroupID.newSpace()
-      // // Call the completion to populate the new space.
-      // completion(.continueWithGroup(groupID))
-      // createBrowserWindow(forGroup: groupID, inProfile: profileID)
-      .continueWithGroup(TabGroupID.newSpace())
+      completion(.continueWithGroup(TabGroupID.newSpace()))
     } else {
-      .continue
+      withAnimation {
+        completion(.continue)
+      }
     }
   }
   
@@ -31,28 +32,45 @@ final class ProfileTabSystemDelegate: TabSystemDelegate {
     dependencies.downloadsManager.startDownload(webDownload, forTab: tabID)
   }
 
+  func didSelectTab(atIndex: Int?, previousIndex: Int?) {
+    // Tweak the current animation based on frequency, distance traversed, etc.
+    if CoreScheduler.currentAnimation != nil {
+      CoreScheduler.currentAnimation = animationForSelectTab(atIndex: atIndex, previousIndex: previousIndex)
+    }
+  }
+
   private let dependencies: ProfileTabSystemDelegateDependencies
+  private var timeSinceLastSelectTabCommand: ContinuousClock.Instant?
+
+  private func animationForSelectTab(atIndex: Int?, previousIndex: Int?) -> CoreViewAnimation? {
+    let now = ContinuousClock.now
+    defer {
+      timeSinceLastSelectTabCommand = now
+    }
+    if let timeSinceLastSelectTabCommand, now - timeSinceLastSelectTabCommand < .milliseconds(50) {
+      return nil
+    }
+
+    let perceivedDuration: TimeInterval = 0.2
+
+    guard let atIndex, let previousIndex else {
+      return .easeOut(duration: perceivedDuration)
+    }
+
+    let numTabsTraversed = abs(atIndex - previousIndex)
+    let maxTabsTraversed = 3
+
+    let duration: TimeInterval
+    let timeOffset: TimeInterval
+
+    if numTabsTraversed <= maxTabsTraversed {
+      duration = perceivedDuration
+      timeOffset = 0
+    } else {
+      duration = perceivedDuration * Double(numTabsTraversed) / Double(maxTabsTraversed)
+      timeOffset = Double(numTabsTraversed - maxTabsTraversed) * duration / Double(numTabsTraversed)
+    }
+
+    return .easeOut(duration: duration, timeOffset: timeOffset)
+  }
 }
-
-
-  // private func handleTabSystemAction(_ action: TabSystemAction, for profileID: ProfileID) {
-  //   switch action {
-  //   case .newTabRequested(_, let modifierFlags, let completion):
-  //     print(">>> newTabRequested w/ modifierFlags: \(modifierFlags)")
-  //     if modifierFlags.contains(.shift) {
-  //       let groupID = TabGroupID.newSpace()
-  //       // Call the completion to populate the new space.
-  //       completion(.continueWithGroup(groupID))
-  //       createBrowserWindow(forGroup: groupID, inProfile: profileID)
-  //     } else {
-  //       withAnimation {
-  //         completion(.continue)
-  //       }
-  //     }
-  //   case .startDownload(let webDownload, let tabID):
-  //     print(">>> handling .startDownload")
-  //     dependencies.profileSystem.container(for: profileID).downloadsManager.startDownload(
-  //       webDownload, forTab: tabID
-  //     )
-  //   }
-  // }

@@ -208,47 +208,6 @@ public final class BrowserWindowViewModel {
     }
   }
 
-  private let clock = ContinuousClock()
-  private var timeSinceLastSelectTabCommand: ContinuousClock.Instant?
-
-  private func animationForSelectTab(_ tabID: TabID? = nil) -> CoreViewAnimation? {
-    let now = ContinuousClock.now
-    defer {
-      timeSinceLastSelectTabCommand = now
-    }
-    if let timeSinceLastSelectTabCommand, now - timeSinceLastSelectTabCommand < .milliseconds(50) {
-      return nil
-    }
-
-    let perceivedDuration: TimeInterval = 0.2
-    guard let tabID else {
-      return .easeOut(duration: perceivedDuration)
-    }
-
-    guard
-      let indexOfCurrentSelectedTab = groupModel.tabIDs.firstIndex(of: groupModel.selectedTabModel.id),
-      let indexOfFutureSelectedTab = groupModel.tabIDs.firstIndex(of: tabID)
-    else {
-      return nil
-    }
-
-    let numTabsTraversed = abs(indexOfCurrentSelectedTab - indexOfFutureSelectedTab)
-    let maxTabsTraversed = 3
-
-    let duration: TimeInterval
-    let timeOffset: TimeInterval
-
-    if numTabsTraversed <= maxTabsTraversed {
-      duration = perceivedDuration
-      timeOffset = 0
-    } else {
-      duration = perceivedDuration * Double(numTabsTraversed) / Double(maxTabsTraversed)
-      timeOffset = Double(numTabsTraversed - maxTabsTraversed) * duration / Double(numTabsTraversed)
-    }
-
-    return .easeOut(duration: duration, timeOffset: timeOffset)
-  }
-
   private var selectedTabID: TabID? {
     let tabID = groupModel.selectedTabModel.id
     return tabID == .invalid ? nil : tabID
@@ -265,13 +224,11 @@ public final class BrowserWindowViewModel {
   private func handleTabAction(_ action: TabView.Action, for tabID: TabID) -> BrowserWindowView.Action? {
     switch action {
     case .select:
-      withAnimation(animationForSelectTab(tabID)) {
+      withAnimation {
         dependencies.tabSystem.select(tab: tabID)
       }
     case .close:
-      withAnimation(animationForSelectTab(
-        dependencies.tabSystem.nextSelectedTabAfterRemovalOfSelectedTab(forGroup: groupModel.value)
-      )) {
+      withAnimation {
         dependencies.tabSystem.remove(tab: tabID)
       }
     case .command(let commandID):
@@ -338,16 +295,12 @@ public final class BrowserWindowViewModel {
     case .goForward:
       dependencies.tabSystem.liveTab(forTab: tabID)?.webContent.goForward()
     case .selectNextTab:
-      if let nextTabID = dependencies.tabSystem.nextTab(forGroup: groupModel.value) {
-        withAnimation(animationForSelectTab(nextTabID)) {
-          dependencies.tabSystem.select(tab: nextTabID)
-        }
+      withAnimation {
+        dependencies.tabSystem.selectNextTab(forGroup: groupModel.value)
       }
     case .selectPreviousTab:
-      if let previousTabID = dependencies.tabSystem.previousTab(forGroup: groupModel.value) {
-        withAnimation(animationForSelectTab(previousTabID)) {
-          dependencies.tabSystem.select(tab: previousTabID)
-        }
+      withAnimation {
+        dependencies.tabSystem.selectPreviousTab(forGroup: groupModel.value)
       }
     case .selectTabAt1:
       selectTabAt(index: 1)
@@ -438,11 +391,8 @@ public final class BrowserWindowViewModel {
   }
 
   private func makeNewTab(atIndex index: Int? = nil) {
-    let liveTab = withAnimation {
-      dependencies.tabSystem.load(newTabNavigation, inGroup: groupModel.id, atIndex: index, select: false)
-    }
-    withAnimation(animationForSelectTab(liveTab.tabID)) {
-      dependencies.tabSystem.select(tab: liveTab.tabID)
+    withAnimation {
+      dependencies.tabSystem.load(newTabNavigation, inGroup: groupModel.id, atIndex: index, select: true)
     }
     focusAddressBarEditor(blank: true)
   }
@@ -467,9 +417,8 @@ public final class BrowserWindowViewModel {
       } else {
         0
       }
-    let tabID = groupModel.tabIDs[index]
-    withAnimation(animationForSelectTab(tabID)) {
-      dependencies.tabSystem.select(tab: tabID)
+    withAnimation {
+      dependencies.tabSystem.select(tab: groupModel.tabIDs[index])
     }
   }
 

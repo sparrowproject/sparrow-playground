@@ -26,7 +26,9 @@ final class CoreViewAnimationInstance: NSObject {
   }
 
   let id: ID
-  let animation: CoreViewAnimation
+
+  /// This is intentionally mutable. With great power, comes great responsibility!
+  var animation: CoreViewAnimation?
 
   func sample<Value>(from fromValue: Value, to toValue: Value, context: CoreViewContext, apply: @escaping (Value) -> Void) where Value: Lerpable {
     if !sampling {

@@ -208,14 +208,12 @@ final class DefaultWindowManager: WindowManager {
 
     guard let tabUndoManager = dependencies.profileSystem.container(for: profileID).tabUndoManager else { return }
 
-    guard let entry = tabUndoManager.undo() else { return }
-
-    switch entry {
-    case .tab:
-      break
-    case .group(let groupModel, _):
-      createBrowserWindow(forGroup: groupModel.id, inProfile: profileID)
+    let entry = withAnimation {
+      tabUndoManager.undo()
     }
+
+    guard case .group(let groupModel, _) = entry else { return }
+    createBrowserWindow(forGroup: groupModel.id, inProfile: profileID)
   }
 
   private func activateGroup(_ groupID: TabGroupID, inWindow window: BrowserWindow) {

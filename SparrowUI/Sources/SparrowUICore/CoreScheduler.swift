@@ -8,22 +8,32 @@ import AppKit
 public final class CoreScheduler {
   public init() {}
 
+  public static var currentAnimation: CoreViewAnimation? {
+    get {
+      currentAnimationInstance()?.animation
+    }
+    set {
+      assert(newValue == nil || currentAnimationInstance() != nil)
+      currentAnimationInstance()?.animation = newValue
+    }
+  }
+
   @discardableResult
   public static func withAnimation<R>(_ animation: CoreViewAnimation?, _ body: () -> R) -> R {
-    animationStack.append(animation.flatMap { .init(animation: $0) })
+    animationInstanceStack.append(animation.flatMap { .init(animation: $0) })
     let result = body()
-    animationStack.removeLast()
+    animationInstanceStack.removeLast()
     return result
   }
 
   public func scheduleUpdate(perform work: @MainActor @escaping () -> Void) {
-    let workItem = WorkItem(animationInstance: Self.currentAnimation(), work: work)
+    let workItem = WorkItem(animationInstance: Self.currentAnimationInstance(), work: work)
     updateQueue.append(workItem)
     scheduleUpdateTaskIfNeeded()
   }
 
   public func scheduleDeferredUpdate(perform work: @MainActor @escaping () -> Void) {
-    let workItem = WorkItem(animationInstance: Self.currentAnimation(), work: work)
+    let workItem = WorkItem(animationInstance: Self.currentAnimationInstance(), work: work)
     deferredUpdateQueue.append(workItem)
     scheduleUpdateTaskIfNeeded()
   }
@@ -42,9 +52,9 @@ public final class CoreScheduler {
         animationInstance = item.animationInstance
 
         // Make sure any resulting mutations pick up the same animation instance by default.
-        Self.animationStack.append(animationInstance)
+        Self.animationInstanceStack.append(animationInstance)
         item.work()
-        Self.animationStack.removeLast()
+        Self.animationInstanceStack.removeLast()
       }
     }
 
@@ -71,10 +81,10 @@ public final class CoreScheduler {
 
   private(set) var animationInstance: CoreViewAnimationInstance?
 
-  private static var animationStack: [CoreViewAnimationInstance?] = []
+  private static var animationInstanceStack: [CoreViewAnimationInstance?] = []
 
-  private static func currentAnimation() -> CoreViewAnimationInstance? {
-    animationStack.last ?? nil
+  private static func currentAnimationInstance() -> CoreViewAnimationInstance? {
+    animationInstanceStack.last ?? nil
   }
 
   struct WorkItem {

@@ -78,13 +78,13 @@ public struct TopTabsView: View {
   }
 
   @MainActor
-  private struct TabLayout {
+  private struct TabLayout: Equatable {
     let offset: CGFloat
     let width: CGFloat
   }
 
   @MainActor
-  private struct Layout {
+  private struct Layout: Equatable {
     let defaultTabWidth: CGFloat
     let tabs: [TabID: TabLayout]
     let tabVisorOffset: CGFloat

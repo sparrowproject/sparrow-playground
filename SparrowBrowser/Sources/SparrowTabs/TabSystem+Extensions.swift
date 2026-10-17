@@ -80,8 +80,15 @@ extension TabSystem {
     return groupModel.tabIDs[previousIndex]
   }
 
-  public func nextSelectedTabAfterRemovalOfSelectedTab(forGroup groupModel: TabGroupModel) -> TabID? {
-    let policy = policy(forGroup: groupModel.id)
-    return policy.decideNextSelectedTabAfterRemovalOfSelectedTab(inGroup: groupModel)
+  public func selectNextTab(forGroup groupModel: TabGroupModel) {
+    if let nextTab = nextTab(forGroup: groupModel) {
+      select(tab: nextTab)
+    }
+  }
+
+  public func selectPreviousTab(forGroup groupModel: TabGroupModel) {
+    if let previousTab = previousTab(forGroup: groupModel) {
+      select(tab: previousTab)
+    }
   }
 }
