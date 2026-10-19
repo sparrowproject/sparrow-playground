@@ -13,7 +13,11 @@ public final class WebContentViewModel {
   }
 
   public var allWebContent = [WebContent]()
-  public var selectedWebContent: WebContent?
+
+  /// Weakly held since this should refer to an element of `allWebContent`, which is responsible
+  /// for keeping the `WebContent` instances alive.
+  public weak var selectedWebContent: WebContent?
+
   public var inputDisabled = false
 
   @ObservationIgnored var updateFaviconTask: Task<Void, Never>?

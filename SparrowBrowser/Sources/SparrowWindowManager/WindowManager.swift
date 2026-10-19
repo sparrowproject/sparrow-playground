@@ -244,9 +244,8 @@ final class DefaultWindowManager: WindowManager {
       forName: NSWindow.didBecomeKeyNotification,
       object: window,
       queue: .main
-    ) { notification in
-      MainActor.assumeIsolated { [weak self] in
-        // print(">>> Became key:", window)
+    ) { [weak self, weak window] _ in
+      MainActor.assumeIsolated {
         self?.lastActiveBrowserWindow = window
       }
     }

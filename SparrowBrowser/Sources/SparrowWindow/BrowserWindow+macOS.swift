@@ -35,6 +35,7 @@ public final class BrowserWindow: NSWindow, Sendable {
       backing: .buffered,
       defer: false
     )
+
     title = "Sparrow Browser"
     titlebarAppearsTransparent = true
     titleVisibility = .hidden
