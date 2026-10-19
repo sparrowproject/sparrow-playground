@@ -29,6 +29,10 @@ public final class RecentDownloadsViewModel {
     count == 0
   }
 
+  public var hasPendingDownloads: Bool {
+    downloads.values.contains(where: \.isPending)
+  }
+
   public var count: Int {
     downloads.values.count
   }

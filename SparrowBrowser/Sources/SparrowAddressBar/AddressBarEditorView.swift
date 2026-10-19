@@ -15,9 +15,11 @@ public struct AddressBarEditorView: View {
 
   public var body: some View {
     Group { geom in
+      // TODO: Extract this highlight treatment into a reusable component.
+
       RoundedRectangle(cornerRadius: StandardMetrics.buttonCornerRadius + 1)
         .fill(StandardColors.highlight)
-        .shadow(color: StandardColors.highlightShadow, radius: 10)
+        .shadow(color: StandardColors.highlightShadow, radius: StandardMetrics.highlightShadowRadius)
         .width(geom.width + 2)
         .height(geom.height + 2)
         .offset(x: -1, y: -1)

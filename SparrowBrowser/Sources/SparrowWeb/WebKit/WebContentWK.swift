@@ -165,6 +165,12 @@ extension WebContentWK: WKNavigationDelegate {
     decidePolicyFor navigationAction: WKNavigationAction,
     decisionHandler: @escaping @MainActor @Sendable (WKNavigationActionPolicy) -> Void
   ) {
+    // Make sure downloads are not interfered with.
+    guard !navigationAction.shouldPerformDownload else {
+      decisionHandler(.download)
+      return
+    }
+
     // Redirect Cmd/Shift link clicks.
     if
       navigationAction.navigationType == .linkActivated,
