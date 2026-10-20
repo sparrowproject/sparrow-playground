@@ -2,6 +2,7 @@ import Foundation
 import SparrowDesignSystem
 import SparrowSuggest
 import SparrowUI
+import SparrowWeb
 
 public struct AddressBarEditorView: View {
   public enum Action {
@@ -16,16 +17,21 @@ public struct AddressBarEditorView: View {
 
   public var body: some View {
     Group {
-      TextEditor(
-        text: $buffer,
-        selection: $selection,
-        action: handleTextEditorAction,
-      )
-      .font(.system(size: 13, weight: .light))
-      .contentAlignment(.leading)
-      .contentPadding(.horizontal, StandardMetrics.buttonCornerRadius)
+      Group {
+        suggestionIcon(for: selectedSuggestionRow)
+
+        TextEditor(
+          text: $buffer,
+          selection: $selection,
+          action: handleTextEditorAction,
+        )
+        .font(.system(size: 13, weight: .light))
+        .contentAlignment(.leading)
+        .contentPadding(.horizontal, Metrics.padding)
+        .focused(when: $focused, equals: true)
+        .padding(.leading, Metrics.padding + Metrics.iconSize)
+      }
       .height(viewModel.placeholderSize.height)
-      .focused(when: $focused, equals: true)
 
       suggestionRows
         .clipped()
@@ -34,6 +40,7 @@ public struct AddressBarEditorView: View {
     .width(layout.width)
     .height(layout.height)
     .offset(x: viewModel.placeholderPositionInHost?.x ?? 0, y: viewModel.placeholderPositionInHost?.y ?? 0)
+    .readColorScheme(to: $colorScheme)
     .onChange(of: buffer, perform: { buffer in
       guard buffer != viewModel.content.editorValue else { return }
       viewModel.querySuggestions(for: buffer)
@@ -87,6 +94,11 @@ public struct AddressBarEditorView: View {
     }
   }
 
+  private enum Metrics {
+    static let padding = StandardMetrics.buttonCornerRadius
+    static let iconSize: CGFloat = 13
+  }
+
   private struct Layout {
     let width: CGFloat
     let height: CGFloat
@@ -114,6 +126,7 @@ public struct AddressBarEditorView: View {
   @State private var showEditorHighlight = false
   @State private var layout = Layout.zero
   @State private var selectedSuggestionRow: Int? // Set by moveUp / moveDown events.
+  @State private var colorScheme = ColorScheme.light
 
   // TODO: Use a global focus state for this.
   @State private var focused: Bool?
@@ -130,15 +143,30 @@ public struct AddressBarEditorView: View {
         Group {
           Rectangle()
             .fill(suggestionRowFillColor(at: index, config: config))
+
+          suggestionIcon(for: index)
+
           Text(suggestion(at: index)?.displayString ?? "")
             .font(.system(size: 13, weight: .light))
-            .padding(.horizontal, StandardMetrics.buttonCornerRadius)
+            .padding(.leading, 2 * Metrics.padding + Metrics.iconSize)
+            .padding(.trailing, Metrics.padding)
             .alignment(.leading)
         }
       }
       .height(layout.rowHeight)
       .offset(y: layout.rowOffsetY(for: index))
     }
+  }
+
+  private func suggestionIcon(for index: @autoclosure @MainActor @escaping () -> Int?) -> some View {
+    FaviconView(source: suggestionIconSource(at: index()))
+      .width(Metrics.iconSize)
+      .height(Metrics.iconSize)
+      .padding(.leading, Metrics.padding)
+      .alignment(.leading)
+      // TODO: Consider a better way to specify this. It's a bit fragile as the goal here is to
+      // match internal behavior of `FaviconView`.
+      .opacity(suggestionIconOpacity(at: index()))
   }
 
   private func suggestionRowFillColor(at index: Int, config: ButtonConfig) -> Color {
@@ -148,6 +176,24 @@ public struct AddressBarEditorView: View {
       StandardColors.highlight.opacity(0.3)
     } else {
       .clear
+    }
+  }
+
+  private func suggestionIconSource(at index: Int?) -> ImageSource {
+    switch index.flatMap({ suggestion(at: $0) }) {
+    case .search, .none:
+      .symbol(StandardSymbols.search)
+    case .navigation(let url, _):
+      .pageFavicon(pageURL: url, colorScheme: colorScheme)
+    }
+  }
+
+  private func suggestionIconOpacity(at index: Int?) -> CGFloat {
+    switch index.flatMap({ suggestion(at: $0) }) {
+    case .search, .none:
+      0.7
+    case .navigation:
+      1
     }
   }
 

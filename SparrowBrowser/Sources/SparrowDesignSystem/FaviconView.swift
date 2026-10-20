@@ -31,7 +31,7 @@ public struct FaviconView: View {
   private var fallbackContent: some View {
     Image(source: StandardImages.defaultFavicon)
       .resizable()
-      .tintColor(.primaryText.opacity(0.4))
+      .tintColor(.primaryText.opacity(0.7))
       .opacity(showFallbackContent ? 1 : 0)
   }
 

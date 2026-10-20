@@ -6,9 +6,10 @@ import SparrowTabs
 import SparrowToolbelt
 import SparrowUIFoundation
 import SparrowSpacesUI
+import SparrowWeb
 
 public typealias BrowserWindowOverlayViewModelDependencies
-  = Any
+  = WebHistoryProviding
 
 @Observable
 @MainActor
@@ -17,6 +18,8 @@ final class BrowserWindowOverlayViewModel {
     self.dependencies = dependencies
     self.groupModel = groupModel
   }
+
+  let dependencies: BrowserWindowOverlayViewModelDependencies
 
   var findInPageViewModel: FindInPageViewModel? {
     didSet {
@@ -45,7 +48,6 @@ final class BrowserWindowOverlayViewModel {
     addressBarViewModel != nil
   }
 
-  private let dependencies: BrowserWindowOverlayViewModelDependencies
   private let groupModel: Handle<TabGroupModel>
 }
 

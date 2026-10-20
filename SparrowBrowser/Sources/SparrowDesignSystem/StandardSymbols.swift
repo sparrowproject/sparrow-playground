@@ -65,4 +65,12 @@ public enum StandardSymbols {
     .init(glyph: "\u{e896}", size: 12) // Download
     #endif
   }
+
+  public static var search: SymbolSource {
+    #if os(macOS)
+    .init(systemName: "magnifyingglass", size: 12)
+    #elseif os(Windows)
+    .init(glyph: "\u{e721}", size: 12) // Search
+    #endif
+  }
 }

@@ -15,6 +15,7 @@ target_link_libraries(SparrowAddressBar PRIVATE
   SparrowUI
   SparrowUICore
   SparrowUIFoundation
+  SparrowWeb
 )
 
 if(WIN32)

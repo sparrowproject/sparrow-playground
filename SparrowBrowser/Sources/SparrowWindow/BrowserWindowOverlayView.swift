@@ -3,6 +3,7 @@ import SparrowDesignSystem
 import SparrowFindInPage
 import SparrowSpacesUI
 import SparrowUI
+import SparrowWeb
 
 #if os(macOS)
 import AppKit
@@ -40,6 +41,8 @@ struct BrowserWindowOverlayView: View {
         addressBarEditorView(for: $0)
       }
     }
+    .registerCustomImageSource(viewModel.dependencies.webHistory.faviconImageSource)
+    .registerCustomImageSource(viewModel.dependencies.webHistory.pageFaviconImageSource)
     .allowsHitTesting(viewModel.needsHitTesting)
     .onPointerDown {
       if let addressBarViewModel = viewModel.addressBarViewModel {
