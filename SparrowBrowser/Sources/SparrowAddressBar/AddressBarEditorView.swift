@@ -14,52 +14,27 @@ public struct AddressBarEditorView: View {
   }
 
   public var body: some View {
-    Group { geom in
-      // TODO: Extract this highlight treatment into a reusable component.
-
-      RoundedRectangle(cornerRadius: StandardMetrics.buttonCornerRadius + 1)
-        .fill(StandardColors.highlight)
-        .shadow(color: StandardColors.highlightShadow, radius: StandardMetrics.highlightShadowRadius)
-        .width(geom.width + 2)
-        .height(geom.height + 2)
-        .offset(x: -1, y: -1)
-        .opacity(showEditorHighlight ? 1 : 0)
-
-      RoundedRectangle(cornerRadius: StandardMetrics.buttonCornerRadius)
-        .fill(.primaryBackground)
-        .visible(viewModel.mode == .editor)
-
-      Group {
-        TextEditor(
-          text: $buffer,
-          selection: $selection,
-          action: handleTextEditorAction,
-        )
-        .font(.system(size: 13, weight: .light))
-        .contentAlignment(.leading)
-        .contentPadding(.horizontal, StandardMetrics.buttonCornerRadius)
-        .visible(viewModel.mode == .editor)
-        .focused(when: $focused, equals: true)
-        .onAppear {
-          // TODO: Can we avoid this Task somehow?
-          Task {
-            buffer = viewModel.content.editorValue
-            selection = viewModel.content.editorSelection
-            focused = true
-            initialized = true
-          }
-        }
-      }
+    Group {
+      TextEditor(
+        text: $buffer,
+        selection: $selection,
+        action: handleTextEditorAction,
+      )
+      .font(.system(size: 13, weight: .light))
+      .contentAlignment(.leading)
+      .contentPadding(.horizontal, StandardMetrics.buttonCornerRadius)
       .height(viewModel.placeholderSize.height)
+      .focused(when: $focused, equals: true)
 
       suggestionRows
         .clipped()
     }
+    .highlightBox(when: showEditorHighlight)
     .width(layout.width)
     .height(layout.height)
     .offset(x: viewModel.placeholderPositionInHost?.x ?? 0, y: viewModel.placeholderPositionInHost?.y ?? 0)
     .onChange(of: buffer, perform: { buffer in
-      guard initialized, buffer != viewModel.content.editorValue else { return }
+      guard /*initialized,*/ buffer != viewModel.content.editorValue else { return }
       viewModel.querySuggestions(for: buffer)
     })
     .onChange(of: viewModel.content.editorValue) {
@@ -73,8 +48,6 @@ public struct AddressBarEditorView: View {
         guard buffer != suggestion else { return }
         buffer = suggestion
         viewModel.content.editorValue = suggestion
-        // // Update selection to preserve cursor.
-        // selection = selection.flatMap { $0.lowerBound..<suggestion.endIndex }
         selection = nil
       }
     })
@@ -90,16 +63,25 @@ public struct AddressBarEditorView: View {
       }
     })
     .onChange(of: viewModel.mode) { mode in
-      withAnimation(mode == .editor ? .default : nil) {
-        showEditorHighlight = (mode == .editor)
-      }
-      if initialized, mode == .placeholder {
+      if mode == .placeholder {
         action(.dismissed)
       }
     }
     .onChange(of: computeLayout()) { layout in
       withAnimation {
         self.layout = layout
+      }
+    }
+    .onAppear {
+      // TODO: Can we avoid this Task somehow?
+      Task {
+        buffer = viewModel.content.editorValue
+        selection = viewModel.content.editorSelection
+        focused = true
+
+        withAnimation {
+          showEditorHighlight = true
+        }
       }
     }
   }
@@ -125,7 +107,7 @@ public struct AddressBarEditorView: View {
   private let viewModel: AddressBarViewModel
   private let action: (Action) -> Void
 
-  @State private var initialized = false
+  // @State private var initialized = false
   @State private var buffer: String = ""
   @State private var selection: Range<String.Index>?
   @State private var showEditorHighlight = false

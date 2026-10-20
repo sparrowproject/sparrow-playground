@@ -73,7 +73,9 @@ public struct ContentToolbarView: View {
       of: viewModel.recentDownloadsViewModel.hasPendingDownloads,
       perform: {
         if $0 {
-          recentDownloadsNeedsOpen = true
+          withAnimation {
+            recentDownloadsNeedsOpen = true
+          }
         }
       }
     )
@@ -161,44 +163,29 @@ public struct ContentToolbarView: View {
   }
 
   private var recentDownloadsButton: some View {
-    Group { geom in
-      // TODO: Extract this highlight treatment into a reusable component.
-
-      RoundedRectangle(cornerRadius: StandardMetrics.buttonCornerRadius + 1)
-        .fill(StandardColors.highlight)
-        .shadow(color: StandardColors.highlightShadow, radius: StandardMetrics.highlightShadowRadius)
-        .width(geom.width + 2)
-        .height(geom.height + 2)
-        .offset(x: -1, y: -1)
-        .opacity(recentDownloadsNeedsOpen ? 1 : 0)
-
-      RoundedRectangle(cornerRadius: StandardMetrics.buttonCornerRadius)
-        .fill(.primaryBackground)
-        .visible(recentDownloadsNeedsOpen)
-
-      PopoverButton(
-        content: { controller in
-          RecentDownloadsView(viewModel: viewModel.recentDownloadsViewModel) {
-            switch $0 {
-            case .cancel:
-              break
-            case .openFile, .openFolder:
-              controller.dismiss()
-            }
-            action(.downloads($0))
+    PopoverButton(
+      content: { controller in
+        RecentDownloadsView(viewModel: viewModel.recentDownloadsViewModel) {
+          switch $0 {
+          case .cancel:
+            break
+          case .openFile, .openFolder:
+            controller.dismiss()
           }
-          .onAppear {
-            recentDownloadsNeedsOpen = false
-          }
-        },
-        label: { _ in
-          Symbol(source: StandardSymbols.download)
-            .tintColor(.primaryText)
+          action(.downloads($0))
         }
-      )
-      .buttonStyle(.standard)
-      .popoverPlacement(.below(alignment: .trailing))
-    }
+        .onAppear {
+          recentDownloadsNeedsOpen = false
+        }
+      },
+      label: { _ in
+        Symbol(source: StandardSymbols.download)
+          .tintColor(.primaryText)
+      }
+    )
+    .buttonStyle(StandardButtonStyle(backgroundColor: recentDownloadsNeedsOpen ? StandardColors.highlightFill : StandardColors.hoverBackground))
+    .popoverPlacement(.below(alignment: .trailing))
+    .highlightBox(when: recentDownloadsNeedsOpen)
   }
 
   private var menuButton: some View {
@@ -255,12 +242,6 @@ public struct ContentToolbarView: View {
     }
     .height(1.5)
     .alignment(.bottom)
-  }
-
-  private var recentDownloadsButtonShadowColor: Color {
-    let color = recentDownloadsNeedsOpen ? StandardColors.highlightShadow : .clear
-    print(">>> recentDownloadsButtonShadowColor: \(color)")
-    return color
   }
 
   private func buttonSize(for geom: GeometryProxy) -> CGFloat {

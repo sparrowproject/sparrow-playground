@@ -861,11 +861,14 @@ open class CoreView {
       let opacity = Float(_opacity)
       #if os(macOS)
       if let animation {
+        print(">>> animating opacity to: \(_opacity)")
         layer.add(with(animation.toBasicAnimation()) {
           $0.fromValue = layer.opacity
           $0.toValue = opacity
           $0.keyPath = "opacity"
         }, forKey: "opacity")
+      } else {
+        // print(">>> assigning opacity to: \(_opacity), no animation!")
       }
       layer.opacity = opacity
       #elseif os(Windows)
