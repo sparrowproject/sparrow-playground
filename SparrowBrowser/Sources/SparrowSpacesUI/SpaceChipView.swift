@@ -24,9 +24,6 @@ struct SpaceChipView: View {
       label: { config in
         Group {
           RoundedRectangle(cornerRadius: StandardMetrics.buttonCornerRadius)
-            .fill(.gray.opacity(0.5))
-
-          RoundedRectangle(cornerRadius: StandardMetrics.buttonCornerRadius)
             .fill(fillColor)
 
           plusIcon
@@ -49,6 +46,7 @@ struct SpaceChipView: View {
       },
     )
     .popoverActivation([.pointerContextPress])
+    .highlightBox(when: viewModel.isSelected && !viewModel.hideSpace)
   }
 
   private enum Metrics {
@@ -72,10 +70,10 @@ struct SpaceChipView: View {
   }
 
   private var fillColor: Color {
-    if !viewModel.hideSpace, viewModel.hasSpace {
+    if viewModel.hasSpace, !viewModel.hideSpace {
       .primaryBackground
     } else {
-      .clear
+      .gray.opacity(0.5)
     }
   }
 
