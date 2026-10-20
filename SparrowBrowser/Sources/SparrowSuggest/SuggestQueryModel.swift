@@ -10,7 +10,7 @@ public final class SuggestQueryModel {
 
   public let input: String
   public internal(set) var status = Status.pending
-  public internal(set) var completions = [String]()
+  public internal(set) var completions = [SuggestQueryResult]()
 
   init(input: String) {
     self.input = input

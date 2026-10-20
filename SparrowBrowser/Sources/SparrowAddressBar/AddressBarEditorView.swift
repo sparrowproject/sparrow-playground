@@ -54,7 +54,7 @@ public struct AddressBarEditorView: View {
     .onChange(of: viewModel.suggestQueryModel?.completions, perform: { completions in
       let index: Int? =
         if let completions {
-          completions.firstIndex(of: buffer.trimmingCharacters(in: .whitespacesAndNewlines))
+          completions.firstIndex(of: .search(buffer.trimmingCharacters(in: .whitespacesAndNewlines)))
         } else {
           nil
         }
@@ -151,7 +151,7 @@ public struct AddressBarEditorView: View {
   }
 
   private func suggestion(at index: Int) -> String {
-    viewModel.suggestQueryModel?.completions[safe: index] ?? ""
+    viewModel.suggestQueryModel?.completions[safe: index]?.displayString ?? ""
   }
 
   private func computeLayout() -> Layout {

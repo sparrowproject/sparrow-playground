@@ -45,13 +45,13 @@ final class MergedSuggestQuery: SuggestQuery {
   private let webSearchSuggestQuery: SuggestQuery
   private var queryTask: Task<Void, Never>?
 
-  private func buildCompletions() -> [String] {
-    var completions: [String] = []
+  private func buildCompletions() -> [SuggestQueryResult] {
+    var completions: [SuggestQueryResult] = []
     if !model.input.isEmpty {
-      completions.append(model.input)
+      completions.append(.search(model.input))
     }
     for completion in webSearchSuggestQuery.model.completions {
-      if completion == model.input {
+      if case .search(let searchString) = completion, searchString == model.input {
         continue
       }
       completions.append(completion)

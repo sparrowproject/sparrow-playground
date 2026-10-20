@@ -50,7 +50,7 @@ final class WebSearchSuggestQuery: SuggestQuery {
         return
       }
 
-      model.completions = completions
+      model.completions = completions.map { .search($0) }
       model.status = .done
       queryTask = nil
     }
