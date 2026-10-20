@@ -1,7 +1,7 @@
 import Foundation
 
 extension URL {
-  public static func fromUserInput(_ string: String) -> URL? {
+  public static func fromUserInput(_ string: String, withSearchFallback: Bool = true) -> URL? {
     let input = string.trimmingCharacters(in: .whitespacesAndNewlines)
     guard !input.isEmpty else { return nil }
 
@@ -12,6 +12,8 @@ extension URL {
     if input.looksLikeHostnameURLInput {
       return URL(string: "https://\(input)")
     }
+
+    guard withSearchFallback else { return nil }
 
     return googleSearchURL(for: input)
   }

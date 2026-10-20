@@ -1,8 +1,9 @@
 import Foundation
+import SparrowToolbelt
 
 public enum SuggestQueryResult: Sendable, Equatable {
   case search(String)
-  case navigation(URL)
+  case navigation(URL, displayString: String)
 }
 
 extension SuggestQueryResult {
@@ -10,8 +11,17 @@ extension SuggestQueryResult {
     switch self {
     case .search(let string):
       string
-    case .navigation(let url):
-      url.absoluteString // TODO: Trim off the scheme, etc.
+    case .navigation(_, let string):
+      string
+    }
+  }
+
+  public var url: URL? {
+    switch self {
+    case .search(let string):
+      .googleSearchURL(for: string)    
+    case .navigation(let url, _):
+      url
     }
   }
 }

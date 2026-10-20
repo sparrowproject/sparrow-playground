@@ -48,6 +48,9 @@ final class MergedSuggestQuery: SuggestQuery {
   private func buildCompletions() -> [SuggestQueryResult] {
     var completions: [SuggestQueryResult] = []
     if !model.input.isEmpty {
+      if let url = URL.fromUserInput(model.input, withSearchFallback: false) {
+        completions.append(.navigation(url, displayString: model.input))
+      }
       completions.append(.search(model.input))
     }
     for completion in webSearchSuggestQuery.model.completions {

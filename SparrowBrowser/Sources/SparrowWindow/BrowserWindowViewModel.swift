@@ -360,22 +360,11 @@ public final class BrowserWindowViewModel {
     }
 
     switch action {
-    case .submit(let text):
-      print(">>> submit: \(text)")
-
-      guard let url = URL.fromUserInput(text) else {
-        // Reset back to the current tab model.
-        contentViewModel.contentToolbarViewModel.handleURLChanged(tabModel.url)
-        return nil
-      }
-   
-      // TODO: Navigate the tab!
+    case .submit(let url):
       dependencies.tabSystem.load(.init(url: url), inTab: tabModel.id)
       dismiss()
 
     case .dismissed:
-      // TODO: In the future there may be other reasons why the overlay should be open.
-      print(">>> address bar editor dismissed...")
       dismiss()
     }
     return nil

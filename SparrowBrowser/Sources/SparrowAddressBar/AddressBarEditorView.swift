@@ -1,10 +1,11 @@
 import Foundation
 import SparrowDesignSystem
+import SparrowSuggest
 import SparrowUI
 
 public struct AddressBarEditorView: View {
   public enum Action {
-    case submit(String)
+    case submit(URL)
     case dismissed
   }
 
@@ -34,7 +35,7 @@ public struct AddressBarEditorView: View {
     .height(layout.height)
     .offset(x: viewModel.placeholderPositionInHost?.x ?? 0, y: viewModel.placeholderPositionInHost?.y ?? 0)
     .onChange(of: buffer, perform: { buffer in
-      guard /*initialized,*/ buffer != viewModel.content.editorValue else { return }
+      guard buffer != viewModel.content.editorValue else { return }
       viewModel.querySuggestions(for: buffer)
     })
     .onChange(of: viewModel.content.editorValue) {
@@ -44,7 +45,7 @@ public struct AddressBarEditorView: View {
     }
     .onChange(of: selectedSuggestionRow, perform: { index in
       if let index {
-        let suggestion = suggestion(at: index)
+        let suggestion = suggestion(at: index)?.displayString ?? ""
         guard buffer != suggestion else { return }
         buffer = suggestion
         viewModel.content.editorValue = suggestion
@@ -54,7 +55,7 @@ public struct AddressBarEditorView: View {
     .onChange(of: viewModel.suggestQueryModel?.completions, perform: { completions in
       let index: Int? =
         if let completions {
-          completions.firstIndex(of: .search(buffer.trimmingCharacters(in: .whitespacesAndNewlines)))
+          completions.map(\.displayString).firstIndex(of: buffer.trimmingCharacters(in: .whitespacesAndNewlines))
         } else {
           nil
         }
@@ -129,7 +130,7 @@ public struct AddressBarEditorView: View {
         Group {
           Rectangle()
             .fill(suggestionRowFillColor(at: index, config: config))
-          Text(suggestion(at: index))
+          Text(suggestion(at: index)?.displayString ?? "")
             .font(.system(size: 13, weight: .light))
             .padding(.horizontal, StandardMetrics.buttonCornerRadius)
             .alignment(.leading)
@@ -150,8 +151,8 @@ public struct AddressBarEditorView: View {
     }
   }
 
-  private func suggestion(at index: Int) -> String {
-    viewModel.suggestQueryModel?.completions[safe: index]?.displayString ?? ""
+  private func suggestion(at index: Int) -> SuggestQueryResult? {
+    viewModel.suggestQueryModel?.completions[safe: index]
   }
 
   private func computeLayout() -> Layout {
@@ -173,11 +174,14 @@ public struct AddressBarEditorView: View {
     )
   }
 
-  private func submit(_ input: String) {
-    viewModel.content.editorValue = input
+  private func submit(_ result: SuggestQueryResult?) {
+    guard let result else { return }
+    viewModel.content.editorValue = result.displayString
     viewModel.mode = .placeholder
     focused = nil
-    action(.submit(input))
+    if let url = result.url {
+      action(.submit(url))
+    }
   }
 
   private func handleTextEditorAction(_ action: TextEditor.Action) {
@@ -185,8 +189,6 @@ public struct AddressBarEditorView: View {
     case .submit:
       if let selectedSuggestionRow {
         submit(suggestion(at: selectedSuggestionRow))
-      } else {
-        submit(buffer)
       }
     case .cancel:
       viewModel.dismissEditor()
