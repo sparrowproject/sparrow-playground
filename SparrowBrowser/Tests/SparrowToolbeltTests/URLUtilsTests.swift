@@ -10,7 +10,9 @@ struct URLUtilsTests {
 
     testSearchQueryFromWords(&failures)
     testURLFromHostname(&failures)
+    testURLFromSingleLabelHostWithPath(&failures)
     testURLFromExplicitScheme(&failures)
+    testNonEmptyHTTPPath(&failures)
     testSearchQueryFromSingleWord(&failures)
     testSearchQueryFromInvalidHostname(&failures)
 
@@ -32,13 +34,38 @@ struct URLUtilsTests {
   }
 
   private static func testURLFromHostname(_ failures: inout Int) {
-    expectEqual(URL.fromUserInput("foo.com")?.absoluteString, "https://foo.com", "Expected hostname to become HTTPS URL", &failures)
+    expectEqual(URL.fromUserInput("foo.com")?.absoluteString, "https://foo.com/", "Expected hostname to become HTTPS URL", &failures)
     expectEqual(URL.fromUserInput("foo.com/path?q=bar")?.absoluteString, "https://foo.com/path?q=bar", "Expected hostname path to be preserved", &failures)
   }
 
+  private static func testURLFromSingleLabelHostWithPath(_ failures: inout Int) {
+    for input in ["foo/", "foo/bar", "foo/bar?q=baz"] {
+      expectEqual(URL.fromUserInput(input)?.absoluteString, "https://\(input)", "Expected single-label host path to become HTTPS URL", &failures)
+      expectEqual(URL.fromUserInput(input, withSearchFallback: false)?.absoluteString, "https://\(input)", "Expected URL without search fallback", &failures)
+    }
+    expectEqual(URL.fromUserInput("foo", withSearchFallback: false), nil, "Expected bare single word to require search fallback", &failures)
+    for input in ["foo..com/bar", "-foo/bar", "/bar", "foo/bar baz"] {
+      expectEqual(URL.fromUserInput(input, withSearchFallback: false), nil, "Expected invalid URL input to require search fallback", &failures)
+    }
+  }
+
   private static func testURLFromExplicitScheme(_ failures: inout Int) {
-    expectEqual(URL.fromUserInput("https://foo.com")?.absoluteString, "https://foo.com", "Expected explicit HTTPS URL", &failures)
+    expectEqual(URL.fromUserInput("https://foo.com")?.absoluteString, "https://foo.com/", "Expected explicit HTTPS URL", &failures)
     expectEqual(URL.fromUserInput("mailto:user@example.com")?.absoluteString, "mailto:user@example.com", "Expected explicit non-HTTP URL", &failures)
+  }
+
+  private static func testNonEmptyHTTPPath(_ failures: inout Int) {
+    for (input, expected) in [
+      ("http://foo.com", "http://foo.com/"),
+      ("HTTPS://foo.com", "HTTPS://foo.com/"),
+      ("https://foo.com?q=bar#baz", "https://foo.com/?q=bar#baz"),
+      ("foo.com?q=bar#baz", "https://foo.com/?q=bar#baz"),
+      ("http://foo.com/", "http://foo.com/"),
+      ("https://foo.com/a%2Fb?q=bar#baz", "https://foo.com/a%2Fb?q=bar#baz"),
+      ("ftp://foo.com", "ftp://foo.com")
+    ] {
+      expectEqual(URL.fromUserInput(input)?.absoluteString, expected, "Expected HTTP path normalization to preserve other URL components", &failures)
+    }
   }
 
   private static func testSearchQueryFromSingleWord(_ failures: inout Int) {

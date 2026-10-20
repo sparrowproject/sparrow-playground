@@ -6,11 +6,11 @@ extension URL {
     guard !input.isEmpty else { return nil }
 
     if input.startsWithURLScheme {
-      return URL(string: input)
+      return URL(string: input)?.withNonEmptyHTTPPath
     }
 
-    if input.looksLikeHostnameURLInput {
-      return URL(string: "https://\(input)")
+    if input.looksLikeURLWithoutScheme {
+      return URL(string: "https://\(input)")?.withNonEmptyHTTPPath
     }
 
     guard withSearchFallback else { return nil }
@@ -30,6 +30,16 @@ extension URL {
   }
 }
 
+private extension URL {
+  var withNonEmptyHTTPPath: URL? {
+    guard let scheme = scheme?.lowercased(), scheme == "http" || scheme == "https" else { return self }
+    guard var components = URLComponents(url: self, resolvingAgainstBaseURL: false) else { return nil }
+    guard components.percentEncodedPath.isEmpty else { return self }
+    components.path = "/"
+    return components.url
+  }
+}
+
 private extension String {
   var startsWithURLScheme: Bool {
     guard let colonIndex = firstIndex(of: ":") else { return false }
@@ -45,7 +55,7 @@ private extension String {
     return self[startIndex].isLetter
   }
 
-  var looksLikeHostnameURLInput: Bool {
+  var looksLikeURLWithoutScheme: Bool {
     guard !contains(where: \.isWhitespace) else { return false }
 
     guard let components = URLComponents(string: "https://\(self)"),
@@ -54,11 +64,10 @@ private extension String {
       return false
     }
 
-    return true
+    return host.contains(".") || !components.path.isEmpty
   }
 
   var looksLikeHostname: Bool {
-    guard contains(".") else { return false }
     guard !hasPrefix("."), !hasSuffix(".") else { return false }
 
     return split(separator: ".", omittingEmptySubsequences: false).allSatisfy { label in
