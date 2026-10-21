@@ -59,6 +59,9 @@ final class MergedSuggestQuery: SuggestQuery {
       }
       completions.append(completion)
     }
+    if !model.input.isEmpty {
+      completions.append(.chat(model.input))
+    }
     return completions
   }
 }

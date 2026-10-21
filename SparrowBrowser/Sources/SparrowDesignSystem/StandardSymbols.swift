@@ -73,4 +73,12 @@ public enum StandardSymbols {
     .init(glyph: "\u{e721}", size: 12) // Search
     #endif
   }
+
+  public static var chat: SymbolSource {
+    #if os(macOS)
+    .init(systemName: "text.bubble", size: 12)
+    #elseif os(Windows)
+    .init(glyph: "\u{e8bd}", size: 12) // Message
+    #endif
+  }
 }

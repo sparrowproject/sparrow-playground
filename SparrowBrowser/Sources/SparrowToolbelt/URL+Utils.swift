@@ -28,6 +28,16 @@ extension URL {
     ]
     return components.url
   }
+
+  public static func chatGPTURL(for query: String) -> URL? {
+    var components = URLComponents()
+    components.scheme = "https"
+    components.host = "www.chatgpt.com"
+    components.queryItems = [
+      URLQueryItem(name: "q", value: query)
+    ]
+    return components.url
+  }
 }
 
 private extension URL {
