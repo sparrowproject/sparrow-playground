@@ -37,6 +37,13 @@ final class WebContentFactoryWK: WebContentFactory {
       configuration.websiteDataStore = .nonPersistent()
     }
 
+    #if DEBUG
+    DebugWebCryptoDataStore.installDelegate(
+      on: configuration.websiteDataStore,
+      partitionIdentifier: partition.identifier
+    )
+    #endif
+
     return configuration
   }()
 }
