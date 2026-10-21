@@ -181,20 +181,24 @@ public struct AddressBarEditorView: View {
 
   private func suggestionIconSource(at index: Int?) -> ImageSource {
     switch index.flatMap({ suggestion(at: $0) }) {
-    case .search, .none:
+    case .search:
       .symbol(StandardSymbols.search)
     case .chat:
       .symbol(StandardSymbols.chat)
     case .navigation(let url, _):
       .pageFavicon(pageURL: url, colorScheme: colorScheme)
+    case .none:
+      URL.fromUserInput(buffer, withSearchFallback: false).flatMap {
+        .pageFavicon(pageURL: $0, colorScheme: colorScheme)
+      } ?? .symbol(StandardSymbols.search)
     }
   }
 
   private func suggestionIconOpacity(at index: Int?) -> CGFloat {
     switch index.flatMap({ suggestion(at: $0) }) {
-    case .search, .chat, .none:
+    case .search, .chat:
       0.7
-    case .navigation:
+    case .navigation, .none:
       1
     }
   }
