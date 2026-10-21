@@ -18,7 +18,6 @@ public struct AddressBarEditorView: View {
   public var body: some View {
     Group {
       Group {
-        // suggestionIcon(for: selectedSuggestionRow)
         SuggestionIconView(for: selectedSuggestionResult)
           .alignment(.leading)
           .padding(.leading, Metrics.padding)
@@ -44,7 +43,6 @@ public struct AddressBarEditorView: View {
     .width(layout.width)
     .height(layout.height)
     .offset(x: viewModel.placeholderPositionInHost?.x ?? 0, y: viewModel.placeholderPositionInHost?.y ?? 0)
-    // .readColorScheme(to: $colorScheme)
     .onChange(of: buffer, perform: { buffer in
       guard buffer != viewModel.content.editorValue else { return }
       viewModel.suggestionsViewModel.querySuggestions(for: buffer)
@@ -104,31 +102,20 @@ public struct AddressBarEditorView: View {
   private struct Layout {
     let width: CGFloat
     let height: CGFloat
-    // let rowHeight: CGFloat
-    // let rowsOffsetY: [CGFloat]
-
-    // func rowOffsetY(for index: Int) -> CGFloat {
-    //   rowsOffsetY[safe: index] ?? 0
-    // }
 
     static let zero = Layout(
       width: 0,
       height: 0,
-      // rowHeight: 0,
-      // rowsOffsetY: [],
     )
   }
 
   private let viewModel: AddressBarViewModel
   private let action: (Action) -> Void
 
-  // @State private var initialized = false
   @State private var buffer: String = ""
   @State private var selection: Range<String.Index>?
   @State private var showEditorHighlight = false
   @State private var layout = Layout.zero
-  // @State private var selectedSuggestionRow: Int? // Set by moveUp / moveDown events.
-  // @State private var colorScheme = ColorScheme.light
 
   // TODO: Use a global focus state for this.
   @State private var focused: Bool?
@@ -157,19 +144,9 @@ public struct AddressBarEditorView: View {
   private func computeLayout() -> Layout {
     let width = viewModel.placeholderSize.width
 
-    // let numSuggestions = viewModel.suggestQueryModel?.completions.count ?? 0
-    // let rowHeight = viewModel.placeholderSize.height
-    // let height = CGFloat(numSuggestions + 1) * rowHeight
-
-    // let rowsOffsetY: [CGFloat] = (0..<numSuggestions).map {
-    //   viewModel.placeholderSize.height + CGFloat($0) * rowHeight
-    // }
-
     return .init(
       width: width,
       height: viewModel.placeholderSize.height + suggestionsViewSize.height,
-      // rowHeight: rowHeight,
-      // rowsOffsetY: rowsOffsetY,
     )
   }
 
