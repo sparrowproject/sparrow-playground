@@ -35,7 +35,7 @@ public struct AddressBarView: View {
       case .editor:
         action(.showEditorInOverlay)
       case .placeholder:
-        viewModel.clearSuggestions()
+        viewModel.suggestionsViewModel.clearSuggestions()
       }
     }
   }

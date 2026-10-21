@@ -18,7 +18,10 @@ public struct AddressBarEditorView: View {
   public var body: some View {
     Group {
       Group {
-        suggestionIcon(for: selectedSuggestionRow)
+        // suggestionIcon(for: selectedSuggestionRow)
+        SuggestionIconView(for: selectedSuggestionResult)
+          .alignment(.leading)
+          .padding(.leading, Metrics.padding)
 
         TextEditor(
           text: $buffer,
@@ -29,45 +32,45 @@ public struct AddressBarEditorView: View {
         .contentAlignment(.leading)
         .contentPadding(.horizontal, Metrics.padding)
         .focused(when: $focused, equals: true)
-        .padding(.leading, Metrics.padding + Metrics.iconSize)
+        .padding(.leading, Metrics.padding + SuggestionIconView.Metrics.iconSize)
       }
       .height(viewModel.placeholderSize.height)
 
       suggestionRows
         .clipped()
+        .offset(y: viewModel.placeholderSize.height)
     }
     .highlightBox(when: showEditorHighlight)
     .width(layout.width)
     .height(layout.height)
     .offset(x: viewModel.placeholderPositionInHost?.x ?? 0, y: viewModel.placeholderPositionInHost?.y ?? 0)
-    .readColorScheme(to: $colorScheme)
+    // .readColorScheme(to: $colorScheme)
     .onChange(of: buffer, perform: { buffer in
       guard buffer != viewModel.content.editorValue else { return }
-      viewModel.querySuggestions(for: buffer)
+      viewModel.suggestionsViewModel.querySuggestions(for: buffer)
     })
     .onChange(of: viewModel.content.editorValue) {
       guard buffer != viewModel.content.editorValue else { return }
       buffer = $0
       selection = nil
     }
-    .onChange(of: selectedSuggestionRow, perform: { index in
-      if let index {
-        let suggestion = suggestion(at: index)?.displayString ?? ""
-        guard buffer != suggestion else { return }
-        buffer = suggestion
-        viewModel.content.editorValue = suggestion
+    .onChange(of: viewModel.suggestionsViewModel.selectedSuggestionResult, perform: { result in
+      if let displayString = result?.displayString {
+        guard buffer != displayString else { return }
+        buffer = displayString
+        viewModel.content.editorValue = displayString
         selection = nil
       }
     })
-    .onChange(of: viewModel.suggestQueryModel?.completions, perform: { completions in
+    .onChange(of: viewModel.suggestionsViewModel.suggestionResults, perform: { results in
       let index: Int? =
-        if let completions {
-          completions.map(\.displayString).firstIndex(of: buffer.trimmingCharacters(in: .whitespacesAndNewlines))
+        if let results {
+          results.map(\.displayString).firstIndex(of: buffer.trimmingCharacters(in: .whitespacesAndNewlines))
         } else {
           nil
         }
-      if selectedSuggestionRow != index {
-        selectedSuggestionRow = index
+      if viewModel.suggestionsViewModel.selectedSuggestionRow != index {
+        viewModel.suggestionsViewModel.selectedSuggestionRow = index
       }
     })
     .onChange(of: viewModel.mode) { mode in
@@ -86,7 +89,6 @@ public struct AddressBarEditorView: View {
         buffer = viewModel.content.editorValue
         selection = viewModel.content.editorSelection
         focused = true
-
         withAnimation {
           showEditorHighlight = true
         }
@@ -102,18 +104,18 @@ public struct AddressBarEditorView: View {
   private struct Layout {
     let width: CGFloat
     let height: CGFloat
-    let rowHeight: CGFloat
-    let rowsOffsetY: [CGFloat]
+    // let rowHeight: CGFloat
+    // let rowsOffsetY: [CGFloat]
 
-    func rowOffsetY(for index: Int) -> CGFloat {
-      rowsOffsetY[safe: index] ?? 0
-    }
+    // func rowOffsetY(for index: Int) -> CGFloat {
+    //   rowsOffsetY[safe: index] ?? 0
+    // }
 
     static let zero = Layout(
       width: 0,
       height: 0,
-      rowHeight: 0,
-      rowsOffsetY: [],
+      // rowHeight: 0,
+      // rowsOffsetY: [],
     )
   }
 
@@ -125,104 +127,49 @@ public struct AddressBarEditorView: View {
   @State private var selection: Range<String.Index>?
   @State private var showEditorHighlight = false
   @State private var layout = Layout.zero
-  @State private var selectedSuggestionRow: Int? // Set by moveUp / moveDown events.
-  @State private var colorScheme = ColorScheme.light
+  // @State private var selectedSuggestionRow: Int? // Set by moveUp / moveDown events.
+  // @State private var colorScheme = ColorScheme.light
 
   // TODO: Use a global focus state for this.
   @State private var focused: Bool?
 
-  private var numSuggestionRows: Int {
-    viewModel.suggestQueryModel?.completions.count ?? 0
-  }
-  
+  @State private var suggestionsViewSize = CGSize.zero
+
   private var suggestionRows: some View {
-    Repeated(0..<numSuggestionRows, id: \.self) { index in
-      Button {
-        submit(suggestion(at: index))
-      } label: { config in
-        Group {
-          Rectangle()
-            .fill(suggestionRowFillColor(at: index, config: config))
-
-          suggestionIcon(for: index)
-
-          Text(suggestion(at: index)?.displayString ?? "")
-            .font(.system(size: 13, weight: .light))
-            .padding(.leading, 2 * Metrics.padding + Metrics.iconSize)
-            .padding(.trailing, Metrics.padding)
-            .alignment(.leading)
-        }
+    SuggestionsView(viewModel: viewModel.suggestionsViewModel, rowHeight: viewModel.placeholderSize.height) {
+      switch $0 {
+      case .submit(let result):
+        submit(result)
       }
-      .height(layout.rowHeight)
-      .offset(y: layout.rowOffsetY(for: index))
     }
+    .readSize(to: $suggestionsViewSize)
   }
 
-  private func suggestionIcon(for index: @autoclosure @MainActor @escaping () -> Int?) -> some View {
-    FaviconView(source: suggestionIconSource(at: index()))
-      .width(Metrics.iconSize)
-      .height(Metrics.iconSize)
-      .padding(.leading, Metrics.padding)
-      .alignment(.leading)
-      // TODO: Consider a better way to specify this. It's a bit fragile as the goal here is to
-      // match internal behavior of `FaviconView`.
-      .opacity(suggestionIconOpacity(at: index()))
-  }
-
-  private func suggestionRowFillColor(at index: Int, config: ButtonConfig) -> Color {
-    if index == selectedSuggestionRow {
-      StandardColors.highlight.opacity(0.7)
-    } else if config.isHovered {
-      StandardColors.highlight.opacity(0.3)
-    } else {
-      .clear
+  private var selectedSuggestionResult: SuggestQueryResult? {
+    if let result = viewModel.suggestionsViewModel.selectedSuggestionResult {
+      return result
     }
-  }
-
-  private func suggestionIconSource(at index: Int?) -> ImageSource {
-    switch index.flatMap({ suggestion(at: $0) }) {
-    case .search:
-      .symbol(StandardSymbols.search)
-    case .chat:
-      .symbol(StandardSymbols.chat)
-    case .navigation(let url, _):
-      .pageFavicon(pageURL: url, colorScheme: colorScheme)
-    case .none:
-      URL.fromUserInput(buffer, withSearchFallback: false).flatMap {
-        .pageFavicon(pageURL: $0, colorScheme: colorScheme)
-      } ?? .symbol(StandardSymbols.search)
+    return URL.fromUserInput(buffer, withSearchFallback: false).flatMap {
+      .navigation($0, displayString: buffer)
     }
-  }
-
-  private func suggestionIconOpacity(at index: Int?) -> CGFloat {
-    switch index.flatMap({ suggestion(at: $0) }) {
-    case .search, .chat:
-      0.7
-    case .navigation, .none:
-      1
-    }
-  }
-
-  private func suggestion(at index: Int) -> SuggestQueryResult? {
-    viewModel.suggestQueryModel?.completions[safe: index]
   }
 
   private func computeLayout() -> Layout {
     let width = viewModel.placeholderSize.width
 
-    let numSuggestions = viewModel.suggestQueryModel?.completions.count ?? 0
-    let rowHeight = viewModel.placeholderSize.height
-    let height = CGFloat(numSuggestions + 1) * rowHeight
+    // let numSuggestions = viewModel.suggestQueryModel?.completions.count ?? 0
+    // let rowHeight = viewModel.placeholderSize.height
+    // let height = CGFloat(numSuggestions + 1) * rowHeight
 
-    let rowsOffsetY: [CGFloat] = (0..<numSuggestions).map {
-      viewModel.placeholderSize.height + CGFloat($0) * rowHeight
-    }
+    // let rowsOffsetY: [CGFloat] = (0..<numSuggestions).map {
+    //   viewModel.placeholderSize.height + CGFloat($0) * rowHeight
+    // }
 
     return .init(
       width: width,
-      height: height,
-      rowHeight: rowHeight,
-      rowsOffsetY: rowsOffsetY,
+      height: viewModel.placeholderSize.height + suggestionsViewSize.height,
+      // rowHeight: rowHeight,
+      // rowsOffsetY: rowsOffsetY,
     )
   }
 
@@ -239,9 +186,7 @@ public struct AddressBarEditorView: View {
   private func handleTextEditorAction(_ action: TextEditor.Action) {
     switch action {
     case .submit:
-      if let selectedSuggestionRow {
-        submit(suggestion(at: selectedSuggestionRow))
-      }
+      submit(viewModel.suggestionsViewModel.selectedSuggestionResult)
     case .cancel:
       viewModel.dismissEditor()
     case .focusNext:
@@ -249,25 +194,9 @@ public struct AddressBarEditorView: View {
     case .focusPrevious:
       break // TODO: implement
     case .moveUp:
-      if let selectedSuggestionRow {
-        if selectedSuggestionRow > 0 {
-          self.selectedSuggestionRow = selectedSuggestionRow - 1
-        } else {
-          self.selectedSuggestionRow = numSuggestionRows - 1
-        }
-      } else if numSuggestionRows > 0 {
-        selectedSuggestionRow = 0
-      } else {
-        selectedSuggestionRow = nil
-      }
+      viewModel.suggestionsViewModel.moveSelectionUp()
     case .moveDown:
-      if let selectedSuggestionRow {
-        self.selectedSuggestionRow = (selectedSuggestionRow + 1) % numSuggestionRows
-      } else if numSuggestionRows > 0 {
-        selectedSuggestionRow = 0
-      } else {
-        selectedSuggestionRow = nil
-      }
+      viewModel.suggestionsViewModel.moveSelectionDown()
     }
   }
 }
