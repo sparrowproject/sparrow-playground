@@ -1,6 +1,7 @@
 #if os(macOS)
 import AppKit
 @testable import SparrowStorage
+import SparrowStorageBase
 import SparrowToolbelt
 import SparrowUIFoundation
 import SparrowWeb
@@ -77,6 +78,22 @@ func testPersistentWebHistory(_ root: URL) async throws {
 
   // Exercise persistence directly, without cache hits masking pending writes.
   let concurrent = PersistentWebHistory(dependencies: dependencies)
+  let pageURL = URL(string: "https://foo.com/")!
+  let wwwPageURL = URL(string: "https://www.foo.com/")!
+  concurrent.storeFaviconURL(url, forPageURL: wwwPageURL, withColorScheme: .light)
+  let fallback = await concurrent.queryFaviconURL(forPageURL: pageURL, withColorScheme: .light)
+  precondition(fallback == url, "Missing favicon must fall back to the www host")
+  let darkFallback = await concurrent.queryFaviconURL(forPageURL: pageURL, withColorScheme: .dark)
+  precondition(darkFallback == nil, "Fallback must preserve the requested color scheme")
+  let missingPath = await concurrent.queryFaviconURL(forPageURL: URL(string: "https://foo.com/other")!, withColorScheme: .light)
+  precondition(missingPath == nil, "Fallback must preserve the requested path")
+  let exactFavicon = URL(string: "https://foo.com/favicon.ico")!
+  concurrent.storeFaviconURL(exactFavicon, forPageURL: pageURL, withColorScheme: .light)
+  let exact = await concurrent.queryFaviconURL(forPageURL: pageURL, withColorScheme: .light)
+  precondition(exact == exactFavicon, "An exact match must take precedence over the www fallback")
+  concurrent.storeFaviconURL(url, forPageURL: URL(string: "https://www.www.foo.com/")!, withColorScheme: .dark)
+  let alreadyWWW = await concurrent.queryFaviconURL(forPageURL: wwwPageURL, withColorScheme: .dark)
+  precondition(alreadyWWW == nil, "A www host must not gain another www prefix")
   let first = SuspendedImageProvider()
   let second = SuspendedImageProvider()
   concurrent.storeImage(first, forFaviconURL: url)

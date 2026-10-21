@@ -5,5 +5,6 @@ target_compile_options(SparrowStorageTests PRIVATE
 )
 target_link_libraries(SparrowStorageTests PRIVATE
   SparrowStorage SparrowTabs SparrowToolbelt SparrowUI SparrowUICore SparrowUIFoundation SparrowWeb
+  SparrowDownloads SparrowProfileModel SparrowSpaces SparrowWindowModel
 )
 add_test(NAME SparrowStorageTests COMMAND SparrowStorageTests)

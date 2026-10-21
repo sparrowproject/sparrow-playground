@@ -32,7 +32,22 @@ final class PersistentWebHistory: WebHistory {
     guard !isShuttingDown else { return nil }
     let key = FaviconURLKey(pageURL: pageURL, colorScheme: colorScheme)
     do {
-      return try await faviconURLStore.read(forKey: key.rawValue, codec: .json)
+      if let faviconURL: URL = try await faviconURLStore.read(forKey: key.rawValue, codec: .json) {
+        return faviconURL
+      }
+
+      guard
+        !isShuttingDown,
+        var components = URLComponents(url: pageURL, resolvingAgainstBaseURL: false),
+        let scheme = components.scheme?.lowercased(), scheme == "https" || scheme == "http",
+        let host = components.host, !host.isEmpty, !host.lowercased().hasPrefix("www.")
+      else {
+        return nil
+      }
+      components.host = "www.\(host)"
+      guard let fallbackURL = components.url else { return nil }
+      let fallbackKey = FaviconURLKey(pageURL: fallbackURL, colorScheme: colorScheme)
+      return try await faviconURLStore.read(forKey: fallbackKey.rawValue, codec: .json)
     } catch {
       print(">>> Error reading from favicon URL store: \(error)")
       return nil
