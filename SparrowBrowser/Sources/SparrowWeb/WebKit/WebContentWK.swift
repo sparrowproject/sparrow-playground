@@ -273,6 +273,26 @@ extension WebContentWK: WKNavigationDelegate {
 extension WebContentWK: WKUIDelegate {
   func webView(
     _ webView: WKWebView,
+    runOpenPanelWith parameters: WKOpenPanelParameters,
+    initiatedByFrame frame: WKFrameInfo,
+    completionHandler: @escaping @MainActor @Sendable ([URL]?) -> Void
+  ) {
+    guard let window = webView.window else {
+      completionHandler(nil)
+      return
+    }
+
+    let panel = NSOpenPanel()
+    panel.allowsMultipleSelection = parameters.allowsMultipleSelection
+    panel.canChooseDirectories = parameters.allowsDirectories
+    panel.canChooseFiles = !parameters.allowsDirectories
+    panel.beginSheetModal(for: window) { response in
+      completionHandler(response == .OK ? panel.urls : nil)
+    }
+  }
+
+  func webView(
+    _ webView: WKWebView,
     createWebViewWith configuration: WKWebViewConfiguration,
     for navigationAction: WKNavigationAction,
     windowFeatures: WKWindowFeatures
