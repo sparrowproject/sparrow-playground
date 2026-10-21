@@ -11,15 +11,16 @@ public final class SparrowCommand: Command {
     case find
     case findNext
     case findPrevious
-    case openLocation
     case muteTab
     case newTab
     case newIncognitoWindow
     case newTabAfter
     case newWindow
+    case openLocation
     case pinTab
     case quit
     case reloadTab
+    case search
     case toggleTabMode
     case unmuteTab
     case unpinTab

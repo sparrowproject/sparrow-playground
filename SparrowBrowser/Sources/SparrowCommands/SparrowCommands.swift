@@ -13,6 +13,7 @@ public enum SparrowCommands {
   public static var newIncognitoWindow: SparrowCommand { .init(id: .newIncognitoWindow, title: "New incognito window", keybinding: .newIncognitoWindow) }
 
   public static var openLocation: SparrowCommand { .init(id: .openLocation, title: "Open Location...", keybinding: .openLocation) }
+  public static var search: SparrowCommand { .init(id: .search, title: "Search...", keybinding: .search) }
 
   // TODO: Enable these specifically on Windows.
   // public static var cut: SparrowCommand { .init(id: .cut, title: "Cut", keybinding: .cut) }
@@ -106,6 +107,14 @@ extension Keybinding {
     .init(keyEquivalent: "l", modifiers: [.command])
     #elseif os(Windows)
     .init(virtualKey: .l, modifiers: [.control])
+    #endif
+  }
+
+  fileprivate static var search: Self {
+    #if os(macOS)
+    .init(keyEquivalent: "k", modifiers: [.command])
+    #elseif os(Windows)
+    .init(virtualKey: .k, modifiers: [.control])
     #endif
   }
 

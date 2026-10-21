@@ -243,6 +243,8 @@ public final class BrowserWindowViewModel {
       return .quit
     case .openLocation:
       focusAddressBarEditor(blank: false)
+    case .search:
+      focusAddressBarEditor(blank: true)
     case .find:
       findInPageViewModel.showEditor()
       overlayViewModel.findInPageViewModel = findInPageViewModel

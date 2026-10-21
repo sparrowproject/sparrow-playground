@@ -54,7 +54,7 @@ public struct AddressBarEditorView: View {
     }
     .onChange(of: viewModel.suggestionsViewModel.selectedSuggestionResult, perform: { result in
       if let displayString = result?.displayString {
-        guard buffer != displayString else { return }
+        guard buffer.trimmingCharacters(in: .whitespacesAndNewlines) != displayString else { return }
         buffer = displayString
         viewModel.content.editorValue = displayString
         selection = nil

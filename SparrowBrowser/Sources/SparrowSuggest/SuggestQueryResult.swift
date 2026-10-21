@@ -27,4 +27,22 @@ extension SuggestQueryResult {
       url
     }
   }
+
+  public var isSearch: Bool {
+    switch self {
+    case .search:
+      true
+    default:
+      false
+    }
+  }
+
+  public var isChat: Bool {
+    switch self {
+    case .chat:
+      true
+    default:
+      false
+    }
+  }
 }

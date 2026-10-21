@@ -56,6 +56,8 @@ enum AppMenu {
     fileMenu.addCommand(SparrowCommands.newIncognitoWindow)
     fileMenu.addCommand(SparrowCommands.openLocation)
 
+    fileMenu.addHiddenCommand(SparrowCommands.search)
+
     fileMenu.addItem(.separator())
 
     fileMenu.addCommand(SparrowCommands.closeWindow)

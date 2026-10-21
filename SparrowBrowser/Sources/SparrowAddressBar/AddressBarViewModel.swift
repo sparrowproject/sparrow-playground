@@ -31,13 +31,18 @@ public final class AddressBarViewModel {
   }
 
   public func focusEditor(blank: Bool = false, selectAll: Bool = true) {
-    if blank {
-      content.editorValue = ""
+    switch mode {
+    case .placeholder:
+      if blank {
+        content.editorValue = ""
+      }
+      if selectAll {
+        content.editorSelection = content.editorValue.startIndex..<content.editorValue.endIndex
+      }
+      mode = .editor
+    case .editor:
+      suggestionsViewModel.moveSelectionToNextSearch()
     }
-    if selectAll {
-      content.editorSelection = content.editorValue.startIndex..<content.editorValue.endIndex
-    }
-    mode = .editor
   }
 
   public func dismissEditor() {
