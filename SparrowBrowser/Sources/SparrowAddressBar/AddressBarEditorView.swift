@@ -250,7 +250,11 @@ public struct AddressBarEditorView: View {
       break // TODO: implement
     case .moveUp:
       if let selectedSuggestionRow {
-        self.selectedSuggestionRow = (selectedSuggestionRow - 1) % numSuggestionRows
+        if selectedSuggestionRow > 0 {
+          self.selectedSuggestionRow = selectedSuggestionRow - 1
+        } else {
+          self.selectedSuggestionRow = numSuggestionRows - 1
+        }
       } else if numSuggestionRows > 0 {
         selectedSuggestionRow = 0
       } else {
