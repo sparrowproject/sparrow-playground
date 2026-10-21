@@ -16,7 +16,6 @@ extension ImageSource {
   /// Favicon indexed by URL of the associated web page & color scheme.
   public static func pageFavicon(pageURL: URL, colorScheme: ColorScheme) -> ImageSource {
     let id = "\(colorScheme.rawValue):\(pageURL.absoluteString)"
-    print(">>> generating pageFavicon for: \(id)")
     return .custom(kind: ImageSourceKinds.pageFavicon.rawValue, id: id)
   }
 }

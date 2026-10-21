@@ -59,8 +59,6 @@ final class WebSearchSuggestQuery: SuggestQuery {
   let model: SuggestQueryModel
 
   func cancel() {
-    print(">>> cancel suggest query!")
-
     queryTask?.cancel()
     queryTask = nil
 
