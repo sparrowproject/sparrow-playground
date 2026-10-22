@@ -55,10 +55,11 @@ public struct ContentToolbarView: View {
           .offset(x: layout.recentDownloadsButtonOffsetX)
           .visible(!viewModel.recentDownloadsViewModel.isEmpty)
 
-        // TODO: Hide this on macOS.
+        #if !os(macOS)
         menuButton
           .width(layout.buttonWidth)
           .offset(x: layout.menuButtonOffsetX)
+        #endif
         
         spaceSelectorToggleButton
           .width(layout.buttonWidth)
@@ -225,6 +226,7 @@ public struct ContentToolbarView: View {
     .highlightBox(when: recentDownloadsNeedsOpen)
   }
 
+  #if !os(macOS)
   private var menuButton: some View {
     PopoverButton(
       content: { controller in
@@ -241,6 +243,7 @@ public struct ContentToolbarView: View {
     .buttonStyle(.standard)
     .popoverPlacement(.below(alignment: .trailing))
   }
+  #endif
 
   private var spaceSelectorToggleButton: some View {
     PopoverButton(
@@ -291,8 +294,14 @@ public struct ContentToolbarView: View {
     let addressBarWidth = computeAddressBarWidth(buttonWidth: buttonWidth)
     let addressBarOffsetX = computeAddressBarOffsetX(addressBarWidth: addressBarWidth, buttonWidth: buttonWidth)
 
-    let recentDownloadsButtonOffsetX = contentSize.width - 3 * (Metrics.buttonPadding + layout.buttonWidth)
-    let menuButtonOffsetX = contentSize.width - 2 * (Metrics.buttonPadding + layout.buttonWidth)
+    #if os(macOS)
+    let hasMenuButton = false
+    #else
+    let hasMenuButton = true
+    #endif
+
+    let recentDownloadsButtonOffsetX = contentSize.width - (2 + (hasMenuButton ? 1 : 0)) * (Metrics.buttonPadding + layout.buttonWidth)
+    let menuButtonOffsetX = hasMenuButton ? contentSize.width - 2 * (Metrics.buttonPadding + layout.buttonWidth) : 0
     let spaceSelectorButtonOffsetX = contentSize.width - (Metrics.buttonPadding + layout.buttonWidth)
 
     return .init(
@@ -309,8 +318,18 @@ public struct ContentToolbarView: View {
   }
 
   private func computeAddressBarWidth(buttonWidth: CGFloat) -> CGFloat {
-    let hasRecentDownloads = !viewModel.recentDownloadsViewModel.isEmpty
-    let numButtons = CGFloat(5 + (hasRecentDownloads ? 1 : 0))
+    var trailingButtonCount: Int = 1
+
+    if !viewModel.recentDownloadsViewModel.isEmpty {
+      trailingButtonCount += 1
+    }
+
+    #if !os(macOS)
+    // The menu button is not shown on macOS.
+    trailingButtonCount += 1
+    #endif
+
+    let numButtons = CGFloat(3 + trailingButtonCount)
     let availableWidth = contentSize.width - numButtons * buttonWidth - (numButtons + 2) * Metrics.buttonPadding
     return min(Metrics.addressBarMaxWidth, availableWidth)
   }
