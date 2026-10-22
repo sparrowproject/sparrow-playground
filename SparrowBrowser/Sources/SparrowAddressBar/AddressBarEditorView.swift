@@ -45,41 +45,8 @@ public struct AddressBarEditorView: View {
     .offset(x: viewModel.placeholderPositionInHost?.x ?? 0, y: viewModel.placeholderPositionInHost?.y ?? 0)
     .onChange(of: (buffer, bufferSelection), perform: { buffer, bufferSelection in
       apply(autocompleteModel.handleEditorChange(value: buffer, selection: bufferSelection))
-      // defer {
-      //   viewModel.content.editorValue = buffer
-      //   viewModel.content.editorSelection = selection
-      // }
-      // print(">>> buffer changed: \"\(buffer)\", selection: \(selection)")
-      // guard buffer != viewModel.content.editorValue else { return }
-      // guard !buffer.isEmpty else {
-      //   disableAutoSelect = false
-      //   viewModel.suggestionsViewModel.clearSuggestions()
-      //   return
-      // }
-      // // let isPrefix = viewModel.content.editorValue.hasPrefix(buffer)
-      // // guard !isPrefix else { return }
-      // if let oldSelection = viewModel.content.editorSelection, !oldSelection.isEmpty, viewModel.content.editorValue[..<oldSelection.lowerBound] == buffer {
-      //   print(">>> disabling auto select")
-      //   disableAutoSelect = true
-      //   return
-      // }
-      // if viewModel.content.editorValue.hasPrefix(buffer) {
-      //   print(">>> disabling auto select, buffer is prefix of editorValue")
-      //   disableAutoSelect = true
-      // }
-      // print(">>> new buffer \"\(buffer)\", querying suggestions...")
-      // if buffer.hasPrefix(viewModel.content.editorValue) {
-      //   print(">>> enabling auto select, editorValue is prefix of buffer")
-      //   disableAutoSelect = false
-      // }
-      // viewModel.suggestionsViewModel.querySuggestions(for: buffer)
     })
     .onChange(of: (viewModel.content.editorValue, viewModel.content.editorSelection)) { value, selection in
-      // guard buffer != viewModel.content.editorValue else { return }
-      // // print(">>> new editorValue, setting buffer: \"\(buffer)\", selection: nil")
-      // buffer = value
-      // selection = nil
-      // disableAutoSelect = false
       if buffer != value {
         buffer = value
       }
@@ -88,14 +55,6 @@ public struct AddressBarEditorView: View {
       }
     }
     .onChange(of: viewModel.suggestionsViewModel.selectedSuggestionResult, perform: { result in
-      // if
-      //   let value = result?.value,
-      //   value != buffer.trimmingCharacters(in: .whitespacesAndNewlines)
-      // {
-      //   print(">>> new suggest result, setting buffer: \"\(value)\", selection: \(result?.selection)")
-      //   buffer = disableAutoSelect ? value.removing(result?.selection) : value
-      //   selection = disableAutoSelect ? nil : result?.selection
-      // }
       apply(autocompleteModel.handleSuggestionChange(value: result?.value, selection: result?.selection))
     })
     .onChange(of: viewModel.suggestionsViewModel.suggestionResults, perform: { results in
@@ -151,7 +110,6 @@ public struct AddressBarEditorView: View {
   @State private var bufferSelection: Range<String.Index>?
   @State private var showEditorHighlight = false
   @State private var layout = Layout.zero
-  // @State private var disableAutoSelect = false
 
   // TODO: Use a global focus state for this.
   @State private var focused: Bool?
@@ -234,18 +192,9 @@ public struct AddressBarEditorView: View {
     case .focusPrevious:
       break // TODO: implement
     case .moveUp:
-      // disableAutoSelect = false
       viewModel.suggestionsViewModel.moveSelectionUp()
     case .moveDown:
-      // disableAutoSelect = false
       viewModel.suggestionsViewModel.moveSelectionDown()
     }
   }
 }
-
-// extension String {
-//   func removing(_ range: Range<String.Index>?) -> String {
-//     guard let range else { return self }
-//     return String(self[..<range.lowerBound] + self[range.upperBound...])
-//   }
-// }
