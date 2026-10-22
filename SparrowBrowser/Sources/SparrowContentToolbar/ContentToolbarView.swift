@@ -33,40 +33,48 @@ public struct ContentToolbarView: View {
     Group {
       background
 
-      Group { geom in
+      Group {
         backButton
-          .width(buttonSize(for: geom))
-          .offset(x: Metrics.buttonPadding)
+          .width(layout.buttonWidth)
+          .offset(x: layout.backButtonOffsetX)
 
         forwardButton
-          .width(buttonSize(for: geom))
-          .offset(x: 2 * Metrics.buttonPadding + buttonSize(for: geom))
+          .width(layout.buttonWidth)
+          .offset(x: layout.forwardButtonOffsetX)
+
         reloadStopButton
-          .width(buttonSize(for: geom))
-          .offset(x: 3 * Metrics.buttonPadding + 2 * buttonSize(for: geom))
+          .width(layout.buttonWidth)
+          .offset(x: layout.reloadStopButtonOffsetX)
 
         addressBar
-          .offset(x: addressBarOffsetX(for: geom))
-          .width(addressBarWidth(for: geom))
+          .offset(x: layout.addressBarOffsetX)
+          .width(layout.addressBarWidth)
 
         recentDownloadsButton
-          .width(buttonSize(for: geom))
-          .offset(x: geom.width - 3 * (Metrics.buttonPadding + buttonSize(for: geom)))
+          .width(layout.buttonWidth)
+          .offset(x: layout.recentDownloadsButtonOffsetX)
           .visible(!viewModel.recentDownloadsViewModel.isEmpty)
 
+        // TODO: Hide this on macOS.
         menuButton
-          .width(buttonSize(for: geom))
-          .offset(x: geom.width - 2 * (Metrics.buttonPadding + buttonSize(for: geom)))
+          .width(layout.buttonWidth)
+          .offset(x: layout.menuButtonOffsetX)
         
         spaceSelectorToggleButton
-          .width(buttonSize(for: geom))
-          .offset(x: geom.width - (Metrics.buttonPadding + buttonSize(for: geom)))
+          .width(layout.buttonWidth)
+          .offset(x: layout.spaceSelectorButtonOffsetX)
       }
       .padding(.vertical, Metrics.buttonPadding)
       .padding(viewModel.insets)
+      .readSize(to: $contentSize)
 
       divider
       progressBar
+    }
+    .onChange(of: computeLayout()) { newLayout in
+      if layout != newLayout {
+        layout = newLayout
+      }
     }
     .onChange(of: viewModel.tabModel.url, perform: viewModel.handleURLChanged)
     .onChange(
@@ -82,8 +90,37 @@ public struct ContentToolbarView: View {
     .readColorScheme(to: $colorScheme)
   }
 
+  private struct Layout: Equatable {
+    let buttonWidth: CGFloat
+
+    let backButtonOffsetX: CGFloat
+    let forwardButtonOffsetX: CGFloat
+    let reloadStopButtonOffsetX: CGFloat
+
+    let addressBarWidth: CGFloat
+    let addressBarOffsetX: CGFloat
+
+    let recentDownloadsButtonOffsetX: CGFloat
+    let menuButtonOffsetX: CGFloat
+    let spaceSelectorButtonOffsetX: CGFloat
+
+    static let zero = Layout(
+      buttonWidth: 0,
+      backButtonOffsetX: 0,
+      forwardButtonOffsetX: 0,
+      reloadStopButtonOffsetX: 0,
+      addressBarWidth: 0,
+      addressBarOffsetX: 0,
+      recentDownloadsButtonOffsetX: 0,
+      menuButtonOffsetX: 0,
+      spaceSelectorButtonOffsetX: 0,
+    )
+  }
+
   private let viewModel: ContentToolbarViewModel
   private let action: (Action) -> Void
+  @State private var contentSize = CGSize.zero
+  @State private var layout = Layout.zero
   @State private var colorScheme: ColorScheme = .light
   @State private var recentDownloadsNeedsOpen = false
 
@@ -244,36 +281,55 @@ public struct ContentToolbarView: View {
     .alignment(.bottom)
   }
 
-  private func buttonSize(for geom: GeometryProxy) -> CGFloat {
-    geom.height
+  private func computeLayout() -> Layout {
+    let buttonWidth: CGFloat = contentSize.height
+
+    let backButtonOffsetX = Metrics.buttonPadding
+    let forwardButtonOffsetX = 2 * Metrics.buttonPadding + layout.buttonWidth
+    let reloadStopButtonOffsetX = 3 * Metrics.buttonPadding + 2 * layout.buttonWidth
+
+    let addressBarWidth = computeAddressBarWidth(buttonWidth: buttonWidth)
+    let addressBarOffsetX = computeAddressBarOffsetX(addressBarWidth: addressBarWidth, buttonWidth: buttonWidth)
+
+    let recentDownloadsButtonOffsetX = contentSize.width - 3 * (Metrics.buttonPadding + layout.buttonWidth)
+    let menuButtonOffsetX = contentSize.width - 2 * (Metrics.buttonPadding + layout.buttonWidth)
+    let spaceSelectorButtonOffsetX = contentSize.width - (Metrics.buttonPadding + layout.buttonWidth)
+
+    return .init(
+      buttonWidth: buttonWidth,
+      backButtonOffsetX: backButtonOffsetX,
+      forwardButtonOffsetX: forwardButtonOffsetX,
+      reloadStopButtonOffsetX: reloadStopButtonOffsetX,
+      addressBarWidth: addressBarWidth,
+      addressBarOffsetX: addressBarOffsetX,
+      recentDownloadsButtonOffsetX: recentDownloadsButtonOffsetX,
+      menuButtonOffsetX: menuButtonOffsetX,
+      spaceSelectorButtonOffsetX: spaceSelectorButtonOffsetX,
+    )
   }
 
-  // TODO: should be centered within outer group actually.
-
-  private func addressBarWidth(for geom: GeometryProxy) -> CGFloat {
+  private func computeAddressBarWidth(buttonWidth: CGFloat) -> CGFloat {
     let hasRecentDownloads = !viewModel.recentDownloadsViewModel.isEmpty
     let numButtons = CGFloat(5 + (hasRecentDownloads ? 1 : 0))
-    let availableWidth = geom.width - numButtons * buttonSize(for: geom) - (numButtons + 2) * Metrics.buttonPadding
+    let availableWidth = contentSize.width - numButtons * buttonWidth - (numButtons + 2) * Metrics.buttonPadding
     return min(Metrics.addressBarMaxWidth, availableWidth)
   }
 
-  private func addressBarOffsetX(for geom: GeometryProxy) -> CGFloat {
-    let addressBarWidth = addressBarWidth(for: geom)
-
+  private func computeAddressBarOffsetX(addressBarWidth: CGFloat, buttonWidth: CGFloat) -> CGFloat {
     // Center relative to the outer geometry.
     let centeredOffsetX
-      = (geom.width + viewModel.insets.leading + viewModel.insets.trailing) / 2
+      = (contentSize.width + viewModel.insets.leading + viewModel.insets.trailing) / 2
       - addressBarWidth / 2
       - viewModel.insets.leading
 
     // Constrain based on the inner geometry.
 
-    let minOffsetX = 3 * buttonSize(for: geom) + 4 * Metrics.buttonPadding
+    let minOffsetX = 3 * buttonWidth + 4 * Metrics.buttonPadding
     if centeredOffsetX < minOffsetX {
       return minOffsetX
     }
 
-    let maxOffsetX = geom.width - addressBarWidth - buttonSize(for: geom) - 2 * Metrics.buttonPadding
+    let maxOffsetX = contentSize.width - addressBarWidth - buttonWidth - 2 * Metrics.buttonPadding
     if centeredOffsetX > maxOffsetX {
       return maxOffsetX
     }
