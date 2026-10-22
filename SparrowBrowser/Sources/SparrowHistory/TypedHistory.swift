@@ -34,7 +34,8 @@ final class DefaultTypedHistory: TypedHistory {
   let model = TypedHistoryModel()
 
   func storeRecord(_ record: TypedHistoryRecord) {
-    model.records.append(record)
+    model.records.removeValue(forKey: record.value)
+    model.records[record.value] = record
     model.trie.insert(record)
   }
 

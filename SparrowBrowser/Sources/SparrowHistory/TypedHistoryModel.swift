@@ -1,9 +1,11 @@
 import Observation
+import OrderedCollections
 
 @Observable
 @MainActor
 public final class TypedHistoryModel {
-  public internal(set) var records = [TypedHistoryRecord]()
+  /// Unique by value, ordered from least to most recently stored.
+  public internal(set) var records = OrderedDictionary<String, TypedHistoryRecord>()
   var trie = TypedHistoryTrie()
 }
 
