@@ -1,35 +1,44 @@
 import Foundation
 import SparrowToolbelt
 
-public enum SuggestQueryResult: Sendable, Equatable {
-  case search(String)
-  case navigation(URL, displayString: String)
-  case chat(String)
+public struct SuggestQueryResult: Sendable, Equatable {
+  public enum Kind: Sendable, Equatable {
+    case navigation(URL)
+    case search
+    case chat
+  }
+
+  public init(
+    kind: Kind,
+    value: String,
+    representsInput: Bool,
+  ) {
+    self.kind = kind
+    self.value = value
+    self.representsInput = representsInput
+  }
+
+  public let kind: Kind
+  public let value: String
+
+  /// If true, then this value represents passing the user input through unmodified.
+  public let representsInput: Bool
 }
 
 extension SuggestQueryResult {
-  public var displayString: String {
-    switch self {
-    case .search(let string), .chat(let string):
-      string
-    case .navigation(_, let string):
-      string
-    }
-  }
-
   public var url: URL? {
-    switch self {
-    case .search(let string):
-      .googleSearchURL(for: string)
-    case .chat(let string):
-      .chatGPTURL(for: string)
-    case .navigation(let url, _):
+    switch kind {
+    case .navigation(let url):
       url
+    case .search:
+      .googleSearchURL(for: value)
+    case .chat:
+      .chatGPTURL(for: value)
     }
   }
 
   public var isSearch: Bool {
-    switch self {
+    switch kind {
     case .search:
       true
     default:
@@ -38,7 +47,7 @@ extension SuggestQueryResult {
   }
 
   public var isChat: Bool {
-    switch self {
+    switch kind {
     case .chat:
       true
     default:

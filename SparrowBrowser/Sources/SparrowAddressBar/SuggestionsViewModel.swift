@@ -90,7 +90,7 @@ final class SuggestionsViewModel {
   func moveSelectionToNextSearch() {
     guard let selectedSuggestionResult, let suggestionResults else { return }
 
-    switch selectedSuggestionResult {
+    switch selectedSuggestionResult.kind {
     case .search:
       if let index = suggestionResults.firstIndex(where: { $0.isChat }) {
         selectedSuggestionRow = index

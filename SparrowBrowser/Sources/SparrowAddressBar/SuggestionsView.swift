@@ -31,7 +31,7 @@ struct SuggestionsView: View {
             .padding(.leading, Metrics.padding)
             .alignment(.leading)
 
-          Text(viewModel.suggestionResult(at: index)?.displayString ?? "")
+          Text(viewModel.suggestionResult(at: index)?.value ?? "")
             .font(.system(size: 13, weight: .light))
             .padding(.leading, 2 * Metrics.padding + SuggestionIconView.Metrics.iconSize)
             .padding(.trailing, Metrics.padding)

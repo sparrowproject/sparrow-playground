@@ -362,8 +362,9 @@ public final class BrowserWindowViewModel {
     }
 
     switch action {
-    case .submit(let url):
-      dependencies.tabSystem.load(.init(url: url), inTab: tabModel.id)
+    case .submit(let completion):
+      print(">>> completion: \(completion)")
+      dependencies.tabSystem.load(.init(url: completion.url), inTab: tabModel.id)
       dismiss()
 
     case .dismissed:

@@ -6,7 +6,7 @@ import SparrowWeb
 
 public struct AddressBarEditorView: View {
   public enum Action {
-    case submit(URL)
+    case submit(AddressBarCompletion)
     case dismissed
   }
 
@@ -54,18 +54,18 @@ public struct AddressBarEditorView: View {
     }
     .onChange(of: viewModel.suggestionsViewModel.selectedSuggestionResult, perform: { result in
       if
-        let displayString = result?.displayString,
-        displayString != buffer.trimmingCharacters(in: .whitespacesAndNewlines)
+        let value = result?.value,
+        value != buffer.trimmingCharacters(in: .whitespacesAndNewlines)
       {
-        buffer = displayString
-        viewModel.content.editorValue = displayString
+        buffer = value
+        viewModel.content.editorValue = value
         selection = nil
       }
     })
     .onChange(of: viewModel.suggestionsViewModel.suggestionResults, perform: { results in
       let index: Int? =
         if let results {
-          results.map(\.displayString).firstIndex(of: buffer.trimmingCharacters(in: .whitespacesAndNewlines))
+          results.map(\.value).firstIndex(of: buffer.trimmingCharacters(in: .whitespacesAndNewlines))
         } else {
           nil
         }
@@ -139,7 +139,7 @@ public struct AddressBarEditorView: View {
       return result
     }
     return URL.fromUserInput(buffer, withSearchFallback: false).flatMap {
-      .navigation($0, displayString: buffer)
+      .init(kind: .navigation($0), value: buffer, representsInput: false)
     }
   }
 
@@ -153,13 +153,12 @@ public struct AddressBarEditorView: View {
   }
 
   private func submit(_ result: SuggestQueryResult?) {
-    // print(">>> submit, result: \"\(result?.displayString ?? "")\", typed: \(typed)")
     guard let result else { return }
-    viewModel.content.editorValue = result.displayString
+    viewModel.content.editorValue = result.value
     viewModel.mode = .placeholder
     focused = nil
-    if let url = result.url {
-      action(.submit(url))
+    if let completion = AddressBarCompletion(result) {
+      action(.submit(completion))
     }
   }
 

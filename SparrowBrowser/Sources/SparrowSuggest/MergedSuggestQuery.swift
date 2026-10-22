@@ -49,18 +49,18 @@ final class MergedSuggestQuery: SuggestQuery {
     var completions: [SuggestQueryResult] = []
     if !model.input.isEmpty {
       if let url = URL.fromUserInput(model.input, withSearchFallback: false) {
-        completions.append(.navigation(url, displayString: model.input))
+        completions.append(.init(kind: .navigation(url), value: model.input, representsInput: true))
       }
-      completions.append(.search(model.input))
+      completions.append(.init(kind: .search, value: model.input, representsInput: true))
     }
     for completion in webSearchSuggestQuery.model.completions {
-      if case .search(let searchString) = completion, searchString == model.input {
+      if case .search = completion.kind, completion.value == model.input {
         continue
       }
       completions.append(completion)
     }
     if !model.input.isEmpty {
-      completions.append(.chat(model.input))
+      completions.append(.init(kind: .chat, value: model.input, representsInput: true))
     }
     return completions
   }

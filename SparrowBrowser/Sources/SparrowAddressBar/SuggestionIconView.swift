@@ -26,18 +26,18 @@ struct SuggestionIconView: View {
   @State private var colorScheme = ColorScheme.light
 
   private var source: ImageSource {
-    switch result() {
+    switch result()?.kind {
     case .search, .none:
       .symbol(StandardSymbols.search)
     case .chat:
       .symbol(StandardSymbols.chat)
-    case .navigation(let url, _):
+    case .navigation(let url):
       .pageFavicon(pageURL: url, colorScheme: colorScheme)
     }
   }
 
   private var opacity: CGFloat {
-    switch result() {
+    switch result()?.kind {
     case .search, .chat, .none:
       0.7
     case .navigation:
