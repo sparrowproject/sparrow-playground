@@ -13,6 +13,7 @@ target_link_libraries(SparrowWindow PUBLIC
   SparrowContent
   SparrowContentToolbar
   SparrowDesignSystem
+  SparrowHistory
   SparrowProfileModel
   SparrowSpacesUI
   SparrowStorage

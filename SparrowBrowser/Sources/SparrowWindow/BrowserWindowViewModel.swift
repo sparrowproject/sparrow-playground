@@ -7,6 +7,7 @@ import SparrowContentToolbar
 import SparrowDownloads
 import SparrowDownloadsUI
 import SparrowFindInPage
+import SparrowHistory
 import SparrowProfileModel
 import SparrowTabs
 import SparrowTabsUI
@@ -24,6 +25,7 @@ public typealias BrowserWindowViewModelDependencies
   & SideTabsViewModelDependencies
   & TabSystemProviding
   & TopTabsViewModelDependencies
+  & TypedHistoryProviding
   & WebHistoryProviding
 
 @Observable @MainActor
@@ -366,6 +368,9 @@ public final class BrowserWindowViewModel {
       print(">>> completion: \(completion)")
       dependencies.tabSystem.load(.init(url: completion.url), inTab: tabModel.id)
       dismiss()
+      if let record = completion.typedHistoryRecord {
+        dependencies.typedHistory.storeRecord(record)
+      }
 
     case .dismissed:
       dismiss()

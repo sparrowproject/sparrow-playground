@@ -1,5 +1,6 @@
 import Foundation
 import SparrowDownloads
+import SparrowHistory
 import SparrowNetwork
 import SparrowProfileModel
 import SparrowSpaces
@@ -20,6 +21,7 @@ public protocol ProfileContainer
   , SpaceGridModelProviding
   , SuggestServiceProviding
   , TabSystemProviding
+  , TypedHistoryProviding
   , WebHistoryProviding
   , WindowSystemModelProviding
 {}
@@ -67,6 +69,13 @@ struct NormalProfileContainer
       struct Container: NetworkServiceDependencies {}
       let container = Container()
       return Factory<NetworkService>.makeDefaultInstance(dependencies: container)
+    }()
+
+    let typedHistory = {
+      @MainActor
+      struct Container: TypedHistoryDependencies {}
+      let container = Container()
+      return Factory<TypedHistory>.makeDefaultInstance(dependencies: container)
     }()
 
     let suggestService = {
@@ -177,6 +186,7 @@ struct NormalProfileContainer
     self.tabSystem = tabSystem
     self.tabSystemDelegate = tabSystemDelegate
     self.tabUndoManager = tabUndoManager
+    self.typedHistory = typedHistory
     self.webHistory = webHistory
     windowSystemModel = dependencies.windowSystemModel
   }
@@ -191,6 +201,7 @@ struct NormalProfileContainer
   let tabSystem: TabSystem
   let tabSystemDelegate: TabSystemDelegate
   let tabUndoManager: TabUndoManager
+  let typedHistory: TypedHistory
   let webHistory: WebHistory
   let windowSystemModel: WindowSystemModel
 }
@@ -220,6 +231,8 @@ struct IncognitoProfileContainer: LiveContainer, ProfileContainer {
       let container = Container()
       return Factory<NetworkService>.makeDefaultInstance(dependencies: container)
     }()
+
+    let typedHistory = Factory<TypedHistory>.makeReadonlyWrapper(source: normalContainer.typedHistory)
 
     let suggestService = {
       @MainActor
@@ -282,6 +295,7 @@ struct IncognitoProfileContainer: LiveContainer, ProfileContainer {
     self.suggestService = suggestService
     self.tabSystem = tabSystem
     self.tabSystemDelegate = tabSystemDelegate
+    self.typedHistory = typedHistory
     self.webHistory = webHistory
     windowSystemModel = normalContainer.windowSystemModel
   }
@@ -293,6 +307,7 @@ struct IncognitoProfileContainer: LiveContainer, ProfileContainer {
   let suggestService: SuggestService
   let tabSystem: TabSystem
   let tabSystemDelegate: TabSystemDelegate
+  let typedHistory: TypedHistory
   let webHistory: WebHistory
   let windowSystemModel: WindowSystemModel
 

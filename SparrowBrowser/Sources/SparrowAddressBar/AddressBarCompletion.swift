@@ -1,23 +1,17 @@
 import Foundation
+import SparrowHistory
 import SparrowSuggest
 
 public struct AddressBarCompletion: Sendable, Equatable {
-  public enum Kind: Sendable, Equatable {
-    case navigation
-    case search
-    case chat
-  }
-
-  public let kind: Kind
   public let url: URL
-  public let typed: Bool
+  public let typedHistoryRecord: TypedHistoryRecord?
 }
 
 extension AddressBarCompletion {
   init?(_ result: SuggestQueryResult) {
     guard let url = result.url else { return nil }
 
-    let kind: Kind =
+    let kind: TypedHistoryRecord.Kind =
       switch result.kind {
       case .navigation:
         .navigation
@@ -28,9 +22,8 @@ extension AddressBarCompletion {
       }
 
     self.init(
-      kind: kind,
       url: url,
-      typed: result.representsInput,
+      typedHistoryRecord: result.representsInput ? .init(kind: kind, value: result.value) : nil,
     )
   }
 }

@@ -8,6 +8,7 @@ set_target_properties(SparrowAddressBar PROPERTIES
   OUTPUT_NAME "libSparrowAddressBar"
 )
 target_link_libraries(SparrowAddressBar PUBLIC
+  SparrowHistory
   SparrowSuggest
 )
 target_link_libraries(SparrowAddressBar PRIVATE

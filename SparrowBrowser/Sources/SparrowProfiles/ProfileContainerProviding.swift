@@ -1,4 +1,5 @@
 import SparrowDownloads
+import SparrowHistory
 import SparrowNetwork
 import SparrowProfileModel
 import SparrowSpaces
@@ -19,6 +20,7 @@ extension LiveContainer where Self: ProfileContainerProviding & DownloadsManager
     profileContainer.downloadsManager
   }
 }
+
 extension LiveContainer where Self: ProfileContainerProviding & NetworkServiceProviding {
   @MainActor
   public var networkService: NetworkService {
@@ -51,6 +53,13 @@ extension LiveContainer where Self: ProfileContainerProviding & TabSystemProvidi
   @MainActor
   public var tabSystem: TabSystem {
     profileContainer.tabSystem
+  }
+}
+
+extension LiveContainer where Self: ProfileContainerProviding & TypedHistoryProviding {
+  @MainActor
+  public var typedHistory: TypedHistory {
+    profileContainer.typedHistory
   }
 }
 
