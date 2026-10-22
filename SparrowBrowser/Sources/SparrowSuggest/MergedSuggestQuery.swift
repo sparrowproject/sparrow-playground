@@ -55,21 +55,22 @@ final class MergedSuggestQuery: SuggestQuery {
   private func buildCompletions() -> [SuggestQueryResult] {
     var completions: [SuggestQueryResult] = []
     if !model.input.isEmpty {
-      if
-        let record = dependencies.typedHistory.queryRecord(matching: model.input),
-        let result = SuggestQueryResult(from: record, withInput: model.input)
-      {
+      let result = dependencies.typedHistory.queryRecord(matching: model.input).flatMap {
+        SuggestQueryResult(from: $0, withInput: model.input)
+      }
+      if let result {
         completions.append(result)
-      } else {
-        if let url = URL.fromUserInput(model.input, withSearchFallback: false) {
-          completions.append(.init(
-            kind: .navigation(url),
-            value: model.input,
-            selection: nil,
-            representsInput: true,
-            preferredMatch: true,
-          ))
-        }
+      }
+      if result?.isNavigation != true, let url = URL.fromUserInput(model.input, withSearchFallback: false) {
+        completions.append(.init(
+          kind: .navigation(url),
+          value: model.input,
+          selection: nil,
+          representsInput: true,
+          preferredMatch: true,
+        ))
+      }
+      if result?.isSearch != true {
         completions.append(.init(
           kind: .search,
           value: model.input,

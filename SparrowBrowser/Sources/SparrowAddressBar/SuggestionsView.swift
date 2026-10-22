@@ -5,7 +5,7 @@ import SparrowUI
 
 struct SuggestionsView: View {
   enum Action {
-    case submit(SuggestQueryResult?)
+    case submit(SuggestQueryResult)
   }
 
   init(
@@ -21,7 +21,9 @@ struct SuggestionsView: View {
   var body: some View {
     Repeated(0..<numSuggestionRows, id: \.self) { index in
       Button {
-        action(.submit(viewModel.suggestionResult(at: index)))
+        if let result = viewModel.suggestionResult(at: index) {
+          action(.submit(result))
+        }
       } label: { config in
         Group {
           Rectangle()

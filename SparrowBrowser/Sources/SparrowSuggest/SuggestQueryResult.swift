@@ -45,6 +45,15 @@ extension SuggestQueryResult {
     }
   }
 
+  public var isNavigation: Bool {
+    switch kind {
+    case .navigation:
+      true
+    default:
+      false
+    }
+  }
+
   public var isSearch: Bool {
     switch kind {
     case .search:
