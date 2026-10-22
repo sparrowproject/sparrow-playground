@@ -32,5 +32,11 @@
     <true/>
     <key>NSHumanReadableCopyright</key>
     <string>${MACOSX_BUNDLE_COPYRIGHT}</string>
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <!-- A general-purpose browser must be able to load HTTP websites. -->
+        <key>NSAllowsArbitraryLoadsInWebContent</key>
+        <true/>
+    </dict>
 </dict>
 </plist>
