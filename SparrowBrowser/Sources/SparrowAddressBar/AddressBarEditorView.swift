@@ -53,8 +53,10 @@ public struct AddressBarEditorView: View {
       selection = nil
     }
     .onChange(of: viewModel.suggestionsViewModel.selectedSuggestionResult, perform: { result in
-      if let displayString = result?.displayString {
-        guard buffer.trimmingCharacters(in: .whitespacesAndNewlines) != displayString else { return }
+      if
+        let displayString = result?.displayString,
+        displayString != buffer.trimmingCharacters(in: .whitespacesAndNewlines)
+      {
         buffer = displayString
         viewModel.content.editorValue = displayString
         selection = nil
@@ -151,6 +153,7 @@ public struct AddressBarEditorView: View {
   }
 
   private func submit(_ result: SuggestQueryResult?) {
+    // print(">>> submit, result: \"\(result?.displayString ?? "")\", typed: \(typed)")
     guard let result else { return }
     viewModel.content.editorValue = result.displayString
     viewModel.mode = .placeholder
