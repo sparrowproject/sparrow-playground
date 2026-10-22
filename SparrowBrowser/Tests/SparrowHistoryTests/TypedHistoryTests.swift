@@ -44,5 +44,46 @@ struct TypedHistoryTests {
     history.storeRecord(empty)
     precondition(history.queryRecord(matching: "") == empty)
     precondition(history.queryRecord(matching: "example") == replacement)
+
+    let bounded = Factory<TypedHistory>.makeDefaultInstance(dependencies: ())
+    for index in 0..<1000 {
+      bounded.storeRecord(TypedHistoryRecord(kind: .search, value: "record-\(index)"))
+    }
+    precondition(bounded.model.records.count == 1000)
+    let refreshed = TypedHistoryRecord(kind: .chat, value: "record-0")
+    bounded.storeRecord(refreshed)
+    precondition(bounded.model.records.count == 1000)
+    precondition(bounded.model.records.values.last == refreshed)
+
+    let newest = TypedHistoryRecord(kind: .navigation, value: "newest")
+    bounded.storeRecord(newest)
+    precondition(bounded.model.records.count == 1000)
+    precondition(bounded.model.records.keys.first == "record-2")
+    precondition(bounded.model.records["record-1"] == nil)
+    precondition(bounded.queryRecord(matching: "record-1")?.value == "record-199")
+    precondition(bounded.queryRecord(matching: "record-0") == refreshed)
+    precondition(bounded.queryRecord(matching: "") == newest)
+
+    for index in 0..<1000 {
+      bounded.storeRecord(TypedHistoryRecord(kind: .search, value: "replacement-\(index)"))
+    }
+    precondition(bounded.model.records.count == 1000)
+    precondition(bounded.queryRecord(matching: "record-") == nil)
+    precondition(bounded.queryRecord(matching: "newest") == nil)
+
+    let sharedPrefix = Factory<TypedHistory>.makeDefaultInstance(dependencies: ())
+    sharedPrefix.storeRecord(empty)
+    sharedPrefix.storeRecord(TypedHistoryRecord(kind: .search, value: "shared"))
+    let longer = TypedHistoryRecord(kind: .navigation, value: "shared/path")
+    sharedPrefix.storeRecord(longer)
+    for index in 0..<1000 {
+      sharedPrefix.storeRecord(TypedHistoryRecord(kind: .search, value: "filler-\(index)"))
+      if index == 998 {
+        precondition(sharedPrefix.queryRecord(matching: "shared") == longer)
+        precondition(sharedPrefix.model.records["shared"] == nil)
+      }
+    }
+    precondition(sharedPrefix.queryRecord(matching: "shared") == nil)
+    precondition(sharedPrefix.queryRecord(matching: "")?.value == "filler-999")
   }
 }

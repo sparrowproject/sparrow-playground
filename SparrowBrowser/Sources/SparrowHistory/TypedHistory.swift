@@ -27,6 +27,10 @@ extension Factory where Interface == TypedHistory {
 }
 
 final class DefaultTypedHistory: TypedHistory {
+  private enum Metrics {
+    static let maximumRecordCount = 1000
+  }
+
   init(dependencies: TypedHistoryDependencies) {
     self.dependencies = dependencies
   }
@@ -36,6 +40,10 @@ final class DefaultTypedHistory: TypedHistory {
   func storeRecord(_ record: TypedHistoryRecord) {
     model.records.removeValue(forKey: record.value)
     model.records[record.value] = record
+    if model.records.count > Metrics.maximumRecordCount {
+      let expired = model.records.removeFirst().value
+      model.trie.removeOldest(expired)
+    }
     model.trie.insert(record)
   }
 
