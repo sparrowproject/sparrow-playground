@@ -25,7 +25,7 @@ extension WindowBackdropStyle {
 
   public static var menu: Self {
     #if os(macOS)
-    .material(.menu)
+    .material(.popover)
     #elseif os(Windows)
     .acrylic
     #endif

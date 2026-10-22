@@ -17,6 +17,8 @@ public struct SpaceSelectorView: View {
 
   public var body: some View {
     Group {
+      background
+
       spaceChipView(for: viewModel.scratchChipViewModel)
         .offset(
           x: layout.offsetX(for: viewModel.scratchChipViewModel),
@@ -102,6 +104,10 @@ public struct SpaceSelectorView: View {
   private let action: (Action) -> Void
   @State private var layout = Layout.zero
   @State private var dragChipOffset: CGPoint?
+
+  private var background: some View {
+    Color.primaryBackground.opacity(0.5)
+  }
 
   private var savedSpacesTitle: some View {
     Group {
