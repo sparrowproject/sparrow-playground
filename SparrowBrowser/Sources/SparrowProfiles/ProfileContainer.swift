@@ -82,9 +82,11 @@ struct NormalProfileContainer
       @MainActor
       struct Container: SuggestServiceDependencies {
         let networkService: NetworkService
+        let typedHistory: TypedHistory
       }
       let container = Container(
         networkService: networkService,
+        typedHistory: typedHistory,
       )
       return Factory<SuggestService>.makeDefaultInstance(dependencies: container)
     }()
@@ -238,9 +240,11 @@ struct IncognitoProfileContainer: LiveContainer, ProfileContainer {
       @MainActor
       struct Container: SuggestServiceDependencies {
         let networkService: NetworkService
+        let typedHistory: TypedHistory
       }
       let container = Container(
         networkService: networkService,
+        typedHistory: typedHistory,
       )
       return Factory<SuggestService>.makeDefaultInstance(dependencies: container)
     }()

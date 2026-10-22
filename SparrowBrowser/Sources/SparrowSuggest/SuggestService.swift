@@ -13,7 +13,7 @@ public protocol SuggestServiceProviding {
 }
 
 public typealias SuggestServiceDependencies
-  = WebSearchSuggestQueryDependencies
+  = MergedSuggestQueryDependencies
 
 extension Factory where Interface == SuggestService {
   public static func makeDefaultInstance(dependencies: SuggestServiceDependencies) -> SuggestService {
@@ -28,10 +28,7 @@ final class DefaultSuggestService: SuggestService {
 
   func queryCompletions(for input: String) -> SuggestQuery {
     let input = input.trimmingCharacters(in: .whitespacesAndNewlines)
-    return MergedSuggestQuery(
-      input: input,
-      webSearchSuggestQuery: WebSearchSuggestQuery(dependencies: dependencies, input: input),
-    )
+    return MergedSuggestQuery(dependencies: dependencies, input: input)
   }
 
   private let dependencies: SuggestServiceDependencies

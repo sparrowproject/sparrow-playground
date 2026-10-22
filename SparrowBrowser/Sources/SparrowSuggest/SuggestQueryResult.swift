@@ -11,18 +11,26 @@ public struct SuggestQueryResult: Sendable, Equatable {
   public init(
     kind: Kind,
     value: String,
+    selection: Range<String.Index>?,
     representsInput: Bool,
+    preferredMatch: Bool,
   ) {
     self.kind = kind
     self.value = value
+    self.selection = selection
     self.representsInput = representsInput
+    self.preferredMatch = preferredMatch
   }
 
   public let kind: Kind
   public let value: String
+  public let selection: Range<String.Index>?
 
   /// If true, then this value represents passing the user input through unmodified.
   public let representsInput: Bool
+
+  /// If true, then this value represents a preferred match for the user input.
+  public let preferredMatch: Bool
 }
 
 extension SuggestQueryResult {

@@ -35,12 +35,11 @@ final class DefaultTypedHistory: TypedHistory {
 
   func storeRecord(_ record: TypedHistoryRecord) {
     model.records.append(record)
-    // TODO: Update Trie structure stored on `model`.
+    model.trie.insert(record)
   }
 
   func queryRecord(matching prefix: String) -> TypedHistoryRecord? {
-    // TODO: Implement using a Trie lookup stored on `model`.
-    nil
+    model.trie.record(matching: prefix)
   }
 
   private let dependencies: TypedHistoryDependencies

@@ -8,6 +8,7 @@ set_target_properties(SparrowSuggest PROPERTIES
   OUTPUT_NAME "libSparrowSuggest"
 )
 target_link_libraries(SparrowSuggest PUBLIC
+  SparrowHistory
   SparrowNetwork
   SparrowToolbelt
 )

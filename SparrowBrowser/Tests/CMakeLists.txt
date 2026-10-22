@@ -1,2 +1,3 @@
 add_subdirectory(SparrowToolbeltTests)
 add_subdirectory(SparrowStorageTests)
+add_subdirectory(SparrowHistoryTests)
