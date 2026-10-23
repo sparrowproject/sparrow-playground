@@ -38,6 +38,7 @@ final class AppViewModel {
     .init { Panel13View() },
     .init { Panel14View() },
     .init { Panel15View() },
+    .init { Panel16View() },
   ]
 
   var sidebarWidth: CGFloat = 200

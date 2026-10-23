@@ -16,14 +16,18 @@ public struct Image: View {
       loadingStatus: _loadingStatus,
     )
     #elseif os(Windows)
+    // CoreImageView does not support `ImageSource.symbol` on Windows. Instead, we need to
+    // use a `Symbol`, which internally uses `CoreTextView`.
     // Use an overlay here so that the intrinsic sizing of the `CoreImageView` still applies.
     _CoreImage(
-      source: _source,
+      source: { imageSource },
       resizable: _resizable,
       tintColor: _tintColor,
-      loadingStatus: _loadingStatus,
+      loadingStatus: .init(
+        get: { _loadingStatus?.get() ?? .idle },
+        set: { updateImageLoadingStatus($0) }
+      ),
     )
-    .opacity(symbolSource == nil ? 1 : 0)
     .overlay(
       Symbol(
         source: { symbolSource },
@@ -31,6 +35,11 @@ public struct Image: View {
       )
       .opacity(symbolSource != nil ? 1 : 0)
     )
+    .onChange(of: _source(), perform: { source in
+      if case .symbol = source {
+        _loadingStatus?.set(.loaded)
+      }
+    })
     #endif
   }
 
@@ -52,6 +61,16 @@ public struct Image: View {
   private var _loadingStatus: Binding<ImageLoadingStatus>?
 
   #if os(Windows)
+  private var imageSource: ImageSource? {
+    let source = _source()
+    switch source {
+    case .symbol:
+      return nil
+    default:
+      return source
+    }
+  }
+
   private var symbolSource: SymbolSource? {
     switch _source() {
     case .symbol(let symbolSource):
@@ -59,6 +78,13 @@ public struct Image: View {
     default:
       nil
     }
+  }
+
+  private func updateImageLoadingStatus(_ status: ImageLoadingStatus) {
+    if case .symbol = _source() {
+      return
+    }
+    _loadingStatus?.set(status)
   }
   #endif
 }

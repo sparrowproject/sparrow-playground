@@ -6,7 +6,7 @@ import AppKit
 
 final class AppWindow: NSWindow {
   init() {
-    let initialSize = CGSize(width: 1000, height: 600)
+    let initialSize = CGSize(width: 1000, height: 700)
     super.init(
       contentRect: .init(origin: .zero, size: initialSize),
       styleMask: [.titled, .closable, .resizable, .miniaturizable],
@@ -39,7 +39,7 @@ final class AppWindow: Window {
 
   private func onLoaded() {
     let scale = hostingView.xamlRoot!.rasterizationScale
-    try! appWindow.resize(.init(width: Int32(1000 * scale), height: Int32(600 * scale)))
+    try! appWindow.resize(.init(width: Int32(1000 * scale), height: Int32(700 * scale)))
   }
 }
 

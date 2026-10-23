@@ -40,7 +40,8 @@ public final class CoreImageLoader {
     #elseif os(Windows)
 
     if case .symbol = source {
-      preconditionFailure("Unexpected symbol source!") // Should have been handled at a higher level.
+      print(">>> CoreImageLoader: ignoring symbol source!")
+      return nil
     }
     
     // TODO: Add support for image formats other than SVG!
