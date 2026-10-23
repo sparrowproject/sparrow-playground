@@ -41,8 +41,8 @@ struct BrowserWindowOverlayView: View {
         addressBarEditorView(for: $0)
       }
     }
-    .registerCustomImageSource(viewModel.dependencies.webHistory.faviconImageSource)
-    .registerCustomImageSource(viewModel.dependencies.webHistory.pageFaviconImageSource)
+    // .registerCustomImageSource(viewModel.dependencies.webHistory.faviconImageSource)
+    // .registerCustomImageSource(viewModel.dependencies.webHistory.pageFaviconImageSource)
     .allowsHitTesting(viewModel.needsHitTesting)
     .onPointerDown {
       if let addressBarViewModel = viewModel.addressBarViewModel {

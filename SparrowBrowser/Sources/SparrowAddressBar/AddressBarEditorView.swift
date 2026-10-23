@@ -23,7 +23,7 @@ public struct AddressBarEditorView: View {
           .padding(.leading, Metrics.padding)
 
         TextEditor(
-          text: $buffer,
+          text: .init(get: { buffer }, set: { updateBuffer($0) }),
           selection: $bufferSelection,
           action: handleTextEditorAction,
         )
@@ -150,6 +150,16 @@ public struct AddressBarEditorView: View {
     )
   }
 
+  private func updateBuffer(_ value: String) {
+    guard buffer != value else { return }
+    buffer = value
+
+    // Update synchronously!
+    apply(autocompleteModel.handleEditorChange(value: buffer, selection: bufferSelection))
+
+    // TODO: Flush Scheduler here!
+  }
+
   private func submit(_ result: SuggestQueryResult) {
     viewModel.content.editorValue = result.value
     viewModel.content.editorSelection = nil
@@ -161,7 +171,6 @@ public struct AddressBarEditorView: View {
   }
 
   private func apply(_ actions: [AutocompleteModel.Action]) {
-    print(">>> apply: \(actions)")
     for action in actions {
       apply(action)
     }

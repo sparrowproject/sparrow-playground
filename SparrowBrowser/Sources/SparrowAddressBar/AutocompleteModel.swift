@@ -9,8 +9,6 @@ final class AutocompleteModel {
   init() {}
 
   func initializeEditorState(value: String, selection: Range<String.Index>?) {
-    // print(">>> initializeEditorState, value: \(value), selection: \(selection)")
-
     hasInitialEditorState = true
     editorString = value
     editorSelection = selection
@@ -21,8 +19,6 @@ final class AutocompleteModel {
 
     let (value, selection) = Self.normalizeInput(value: value, selection: selection)
     guard value != editorString || selection != editorSelection else { return [] }
-
-    // print(">>> AutocompleteModel.handleEditorChange, value: \(value), selection: \(selection), was: \(editorString), and: \(editorSelection)")
 
     // Observe if the user appears to have deleted a trailing selection.
     if
@@ -45,7 +41,24 @@ final class AutocompleteModel {
       return []
     }
 
-    return [.querySuggestions(value)]
+    var actions = [Action]()
+
+    // Handle the case of typing more of the autocomplete result.
+    if
+      !deletingFromTheEnd,
+      editorSelection == nil,
+      let suggestionString,
+      suggestionString != editorString,
+      suggestionString.hasPrefix(editorString)
+    {
+      editorString = suggestionString
+      editorSelection = value.endIndex..<editorString.endIndex
+      actions.append(.updateEditor(editorString, selection: editorSelection))
+    }
+
+    actions.append(.querySuggestions(value))
+
+    return actions
   }
 
   func handleSuggestionChange(value: String?, selection: Range<String.Index>?) -> [Action] {
@@ -53,8 +66,6 @@ final class AutocompleteModel {
 
     let (value, selection) = Self.normalizeInput(value: value, selection: selection)
     guard value != suggestionString || selection != suggestionSelection else { return [] }
-
-    // print(">>> AutocompleteModel.handleSuggestionChange, value: \(value), selection: \(selection), was: \(suggestionString), and: \(suggestionSelection)")
 
     // Nothing to do if the editor already reflects these values.
     if editorString == value, editorSelection == selection {

@@ -15,7 +15,8 @@ struct BrowserWindowOverlayViewRepresentable: NSViewRepresentable {
 
   func makeNSView(context: CoreViewContext, associatedView _: CoreView) -> NSViewType {
     let view = NSHostingView(
-      content: BrowserWindowOverlayView(viewModel: viewModel, action: action)
+      content: BrowserWindowOverlayView(viewModel: viewModel, action: action),
+      context: .init(derivedFrom: context),
     )
 
     context.scheduler.onChange(
@@ -43,7 +44,8 @@ struct BrowserWindowOverlayViewRepresentable: WinUIElementRepresentable {
 
   func makeUIElement(context: CoreViewContext, associatedView _: CoreView) -> UIElementType {
     let view = WinUIHostingView(
-      content: BrowserWindowOverlayView(viewModel: viewModel, action: action)
+      content: BrowserWindowOverlayView(viewModel: viewModel, action: action),
+      context: .init(derivedFrom: context),
     )
 
     context.scheduler.onChange(
