@@ -1,4 +1,5 @@
 import Foundation
+import Observation
 import SparrowCommands
 import SparrowProfileModel
 import SparrowProfiles
