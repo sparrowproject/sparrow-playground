@@ -15,7 +15,6 @@ extension App {
     SparrowCommands.openLocation,
     SparrowCommands.selectNextTab,
     SparrowCommands.selectPreviousTab,
-    SparrowCommands.selectTabAt(index: 0),
     SparrowCommands.selectTabAt(index: 1),
     SparrowCommands.selectTabAt(index: 2),
     SparrowCommands.selectTabAt(index: 3),
