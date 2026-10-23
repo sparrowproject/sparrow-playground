@@ -2,6 +2,7 @@ import Foundation
 import SparrowDesignSystem
 import SparrowSuggest
 import SparrowUI
+import SparrowUICore
 import SparrowWeb
 
 public struct AddressBarEditorView: View {
@@ -85,6 +86,7 @@ public struct AddressBarEditorView: View {
         }
       }
     }
+    .readScheduler(to: $scheduler)
   }
 
   private enum Metrics {
@@ -110,6 +112,7 @@ public struct AddressBarEditorView: View {
   @State private var bufferSelection: Range<String.Index>?
   @State private var showEditorHighlight = false
   @State private var layout = Layout.zero
+  @State private var scheduler: CoreScheduler?
 
   // TODO: Use a global focus state for this.
   @State private var focused: Bool?
@@ -158,6 +161,7 @@ public struct AddressBarEditorView: View {
     apply(autocompleteModel.handleEditorChange(value: buffer, selection: bufferSelection))
 
     // TODO: Flush Scheduler here!
+    scheduler?.flushUpdates()
   }
 
   private func submit(_ result: SuggestQueryResult) {
