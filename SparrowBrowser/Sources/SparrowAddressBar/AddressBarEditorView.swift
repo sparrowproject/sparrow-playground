@@ -158,10 +158,14 @@ public struct AddressBarEditorView: View {
     buffer = value
 
     // Update synchronously!
-    apply(autocompleteModel.handleEditorChange(value: buffer, selection: bufferSelection))
+    let actions = autocompleteModel.handleEditorChange(value: buffer, selection: bufferSelection)
+    apply(actions)
 
-    // TODO: Flush Scheduler here!
-    scheduler?.flushUpdates()
+    // Flushing the scheduler here causes the underlying text control to be synchronously
+    // updated. This is key so that any updates to the editor are made immediately.
+    if actions.contains(where: { $0.isUpdateEditor }) {
+      scheduler?.flushUpdates()
+    }
   }
 
   private func submit(_ result: SuggestQueryResult) {

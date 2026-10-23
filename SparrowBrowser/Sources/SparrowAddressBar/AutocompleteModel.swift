@@ -4,6 +4,15 @@ final class AutocompleteModel {
     case updateEditor(String, selection: Range<String.Index>?)
     case querySuggestions(String)
     case clearSuggestions
+
+    var isUpdateEditor: Bool {
+      switch self {
+      case .updateEditor:
+        true
+      default:
+        false
+      }
+    }
   }
 
   init() {}
