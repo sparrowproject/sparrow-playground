@@ -107,6 +107,7 @@ struct BlobStoreTests {
     try broken.close()
     try await testCodecs(root)
     await testCachingWebHistory()
+    try await testTypedHistoryStore(root)
     #if os(macOS)
     try await testPersistentWebHistory(root)
     #endif

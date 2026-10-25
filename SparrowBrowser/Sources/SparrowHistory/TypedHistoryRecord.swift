@@ -1,5 +1,5 @@
-public struct TypedHistoryRecord: Sendable, Equatable {
-  public enum Kind: Sendable, Equatable {
+public struct TypedHistoryRecord: Sendable, Equatable, Codable {
+  public enum Kind: String, Sendable, Equatable, Codable {
     case navigation
     case search
     case chat

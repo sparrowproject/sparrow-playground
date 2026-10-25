@@ -1,4 +1,5 @@
 import SparrowDownloads
+import SparrowHistory
 import SparrowStorageBase
 import SparrowTabs
 import SparrowToolbelt
@@ -20,6 +21,7 @@ public typealias StorageSystemDependencies
   & SpaceStoreProviding
   & StoragePathsProviding
   & TabSystemProviding
+  & TypedHistoryProviding
   & WebHistoryProviding
 
 extension Factory where Interface == StorageSystem {
@@ -34,6 +36,7 @@ final class DefaultStorageSystem: StorageSystem {
     tabStore = .init(dependencies: dependencies)
     tabGroupStore = .init(dependencies: dependencies)
     downloadInfoStore = .init(dependencies: dependencies)
+    typedHistoryStore = .init(dependencies: dependencies)
   }
 
   func initialize() async {
@@ -46,6 +49,9 @@ final class DefaultStorageSystem: StorageSystem {
       }
       group.addTask {
         await self.initializeSpaceStore()
+      }
+      group.addTask {
+        await self.typedHistoryStore.initialize()
       }
       // Add other profile-scoped services here.
     }
@@ -63,6 +69,9 @@ final class DefaultStorageSystem: StorageSystem {
     if let task = downloadInfoStore.shutdown() {
       tasks.append(task)
     }
+    if let task = typedHistoryStore.shutdown() {
+      tasks.append(task)
+    }
     if let task = dependencies.spaceStore.shutdown() {
       tasks.append(task)
     }
@@ -77,6 +86,7 @@ final class DefaultStorageSystem: StorageSystem {
   private let tabStore: TabStore
   private let tabGroupStore: TabGroupStore
   private let downloadInfoStore: DownloadInfoStore
+  private let typedHistoryStore: TypedHistoryStore
 
   private func initializeTabSystem() async {
     await dependencies.tabSystem.initialize { tabSystemInitializer in

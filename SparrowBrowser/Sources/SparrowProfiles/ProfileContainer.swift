@@ -163,6 +163,7 @@ struct NormalProfileContainer
         let downloadsManager: DownloadsManager
         let spaceStore: SpaceStore
         let storagePaths: StoragePaths
+        let typedHistory: TypedHistory
         let tabSystem: TabSystem
         let webHistory: WebHistory
       }
@@ -170,6 +171,7 @@ struct NormalProfileContainer
         downloadsManager: downloadsManager,
         spaceStore: spaceStore,
         storagePaths: storagePaths,
+        typedHistory: typedHistory,
         tabSystem: tabSystem,
         webHistory: webHistory,
       )
