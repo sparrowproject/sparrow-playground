@@ -1,4 +1,5 @@
 import Observation
+import SparrowUIFoundation
 
 @Observable
 @MainActor
@@ -14,5 +15,30 @@ public final class SuggestQueryModel {
 
   init(input: String) {
     self.input = input
+  }
+}
+
+extension SuggestQueryModel {
+  /// Generate a transitional model. This model preserves the previous results while the
+  /// new results are being fetched, even if they no longer match. It also updates the
+  /// selection of the first match if appropriate.
+  public func transitionalModel(from previous: SuggestQueryModel?) -> SuggestQueryModel {
+    guard let previous, status != .done else { return self }
+
+    if
+      input.hasPrefix(previous.input),
+      let firstCompletion = previous.completions.first,
+      firstCompletion.selection != nil,
+      firstCompletion.value.hasPrefix(input)
+    {
+      let model = SuggestQueryModel(input: input)
+      model.completions = previous.completions
+      model.completions[0] = with(firstCompletion) {
+        $0.selection = input.endIndex ..< firstCompletion.value.endIndex
+      }
+      return model
+    }
+
+    return previous
   }
 }

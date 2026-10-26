@@ -24,7 +24,7 @@ public struct SuggestQueryResult: Sendable, Equatable {
 
   public let kind: Kind
   public let value: String
-  public let selection: Range<String.Index>?
+  public internal(set) var selection: Range<String.Index>?
 
   /// If true, then this value represents passing the user input through unmodified.
   public let representsInput: Bool

@@ -25,10 +25,6 @@ final class SuggestionsViewModel {
     selectedSuggestionRow.flatMap { suggestionResult(at: $0) }
   }
 
-  var suggestQueryModel: SuggestQueryModel? {
-    suggestQuery?.model
-  }
-
   func suggestionResult(at index: Int) -> SuggestQueryResult? {
     suggestQueryModel?.completions[safe: index]
   }
@@ -38,6 +34,8 @@ final class SuggestionsViewModel {
     let pendingSuggestQuery = dependencies.suggestService.queryCompletions(for: input)
     self.pendingSuggestQuery = pendingSuggestQuery
 
+    suggestQueryModel = pendingSuggestQuery.model.transitionalModel(from: suggestQueryModel)
+
     Task<Void, Never> {
       for await status in Observations({
         pendingSuggestQuery.model.status
@@ -45,9 +43,11 @@ final class SuggestionsViewModel {
         if pendingSuggestQuery !== self.pendingSuggestQuery {
           break
         }
+
         if status == .done {
           suggestQuery?.cancel()
           suggestQuery = pendingSuggestQuery
+          suggestQueryModel = pendingSuggestQuery.model
           self.pendingSuggestQuery = nil
           break
         }
@@ -104,6 +104,7 @@ final class SuggestionsViewModel {
 
   private let dependencies: SuggestionsViewModelDependencies
   private var suggestQuery: SuggestQuery?
+  private var suggestQueryModel: SuggestQueryModel?
 
   // Preserve the existing `suggestQuery` until the new one loads. This way we
   // minimize flicker while the query is running.

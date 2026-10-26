@@ -12,3 +12,6 @@ target_link_libraries(SparrowSuggest PUBLIC
   SparrowNetwork
   SparrowToolbelt
 )
+target_link_libraries(SparrowSuggest PRIVATE
+  SparrowUIFoundation
+)
