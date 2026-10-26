@@ -450,15 +450,15 @@ private final class TextBoxRepresentable: WinUIElementRepresentable {
   @MainActor
   final class Controller {
     init(
-      textChanged: @escaping @MainActor (String) -> Void,
-      selectionChanged: @escaping @MainActor (Range<String.Index>?) -> Void,
+      textBinding: Binding<String>,
+      selectionBinding: Binding<Range<String.Index>?>?,
     ) {
-      self.textChanged = textChanged
-      self.selectionChanged = selectionChanged
+      self.textBinding = textBinding
+      self.selectionBinding = selectionBinding
     }
 
-    let textChanged: @MainActor (String) -> Void
-    let selectionChanged: @MainActor (Range<String.Index>?) -> Void
+    let textBinding: Binding<String>
+    let selectionBinding: Binding<Range<String.Index>?>?
     let foregroundBrush = SolidColorBrush()
     var contentAlignment: Alignment = .leading
     var contentPadding: EdgeInsets = .zero
@@ -548,6 +548,28 @@ private final class TextBoxRepresentable: WinUIElementRepresentable {
         right: contentPadding.trailing,
         bottom: contentPadding.bottom,
       )
+    }
+
+    func textChanged(_ value: String) {
+      textBinding.set(value)
+
+      // // If the text binding was modified, then reflect that change immediately to avoid flicker.
+      // let valueAfter = textBinding.get()
+      // if valueAfter != value {
+      //   setText(valueAfter, withSelection: selectionBinding.flatMap { $0.get() })
+      // }
+    }
+
+    func selectionChanged(_ selection: Range<String.Index>?) {
+      guard let selectionBinding else { return }
+
+      selectionBinding.set(selection)
+
+      // // If the selection binding was modified, then reflect that change immediately to avoid flicker.
+      // let selectionAfter = selectionBinding.get()
+      // if selectionAfter != selection {
+      //   setText(textBinding.get(), withSelection: selectionAfter)
+      // }
     }
   }
 
