@@ -553,11 +553,11 @@ private final class TextBoxRepresentable: WinUIElementRepresentable {
     func textChanged(_ value: String) {
       textBinding.set(value)
 
-      // // If the text binding was modified, then reflect that change immediately to avoid flicker.
-      // let valueAfter = textBinding.get()
-      // if valueAfter != value {
-      //   setText(valueAfter, withSelection: selectionBinding.flatMap { $0.get() })
-      // }
+      // If the text binding was modified, then reflect that change immediately to avoid flicker.
+      let valueAfter = textBinding.get()
+      if valueAfter != value {
+        setText(valueAfter, withSelection: selectionBinding.flatMap { $0.get() })
+      }
     }
 
     func selectionChanged(_ selection: Range<String.Index>?) {
@@ -565,11 +565,11 @@ private final class TextBoxRepresentable: WinUIElementRepresentable {
 
       selectionBinding.set(selection)
 
-      // // If the selection binding was modified, then reflect that change immediately to avoid flicker.
-      // let selectionAfter = selectionBinding.get()
-      // if selectionAfter != selection {
-      //   setText(textBinding.get(), withSelection: selectionAfter)
-      // }
+      // If the selection binding was modified, then reflect that change immediately to avoid flicker.
+      let selectionAfter = selectionBinding.get()
+      if selectionAfter != selection {
+        setText(textBinding.get(), withSelection: selectionAfter)
+      }
     }
   }
 
@@ -607,14 +607,16 @@ private final class TextBoxRepresentable: WinUIElementRepresentable {
       controller.updateLayout()
     }
 
-    textBox.textChanged.addHandler { [controller] _, _ in
+    textBox.textChanging.addHandler { [controller] _, _ in
       guard let textBox = controller.textBox else { return }
+      // New value is already set on `TextBox.text`. It just hasn't been rendered yet.
       controller.textChanged(textBox.text)
     }
 
-    textBox.selectionChanged.addHandler { [controller] _, _ in
+    textBox.selectionChanging.addHandler { [controller] (_, args: TextBoxSelectionChangingEventArgs!) in
       guard let textBox = controller.textBox else { return }
-      let range = NSRange(location: Int(textBox.selectionStart), length: Int(textBox.selectionLength))
+      // New values are given by `args`.
+      let range = NSRange(location: Int(args.selectionStart), length: Int(args.selectionLength))
       controller.selection = Range(range, in: textBox.text)
     }
 
