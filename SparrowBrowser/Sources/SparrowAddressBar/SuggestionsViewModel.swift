@@ -61,6 +61,8 @@ final class SuggestionsViewModel {
 
     pendingSuggestQuery?.cancel()
     pendingSuggestQuery = nil
+
+    suggestQueryModel = nil
   }
 
   func moveSelectionUp() {
