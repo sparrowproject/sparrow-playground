@@ -24,8 +24,6 @@ public final class CoreEmbeddedView: CoreView {
     self.makePlatformView = makePlatformView
     self.tearDownPlatformView = tearDownPlatformView
     super.init(context: context)
-
-    setUpObservers()
   }
 
   @MainActor
@@ -139,6 +137,8 @@ public final class CoreEmbeddedView: CoreView {
     #if os(macOS)
     view.wantsLayer = true
     #endif
+    // Defer this step until the native view is created.
+    setUpObservers()
     return view
   }()
   private let makePlatformView: (CoreView) -> PlatformView

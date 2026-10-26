@@ -18,26 +18,6 @@ extension View {
   }
 }
 
-/*
-
-menuButton
-  .popup(MainMenu(), preferredAnchor: .anchorTo(.bounds, place: .below(.alignment: .trailing)))
-
-tabView
-  .contextPopup(TabMenu(), preferredAnchor: .anchorTo(.point, place: .below(.alignment: .leading)))
-  .popup(isPresented: $showThumbnail, preferredAnchor: .anchorTo(.bounds, place: .below(.alignment: .leading)))
-
-backButton
-  .contextPopup(BackMenu(), preferredAnchor: .anchorTo(.bounds, place: .below(.alignment: .leading)))
-
-extensionButton
-  .popup(ExtensionPopup(), preferredAnchor: .anchorTo(.bounds, place: .below(.alignment: .leading)))
-
-statusBubbleAnchor
-  .nonInteractivePopup(isPresented: $showStatusBubble, StatusView(), preferredAnchor: .anchorTo(.bounds, place: .below(.alignment: .leading)))
-
-*/
-
 @MainActor
 protocol _PopoverImpl {
   var isPresented: Binding<Bool> { get }

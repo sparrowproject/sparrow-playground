@@ -67,7 +67,7 @@ private final class FlyoutAnchor<PopoverContent: View>: Grid {
     content: @MainActor @escaping () -> PopoverContent,
   ) {
     @State var contentSize = CGSize.zero
-    
+
     let contentView = WinUIHostingView(
       content: PopoverContentContainer(content: content, isPresented: isPresented, contentSize: $contentSize),
       context: .init(derivedFrom: context),
