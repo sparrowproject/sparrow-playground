@@ -27,8 +27,7 @@ final class DefaultSuggestService: SuggestService {
   }
 
   func queryCompletions(for input: String) -> SuggestQuery {
-    let input = input.trimmingCharacters(in: .whitespacesAndNewlines)
-    return MergedSuggestQuery(dependencies: dependencies, input: input)
+    MergedSuggestQuery(dependencies: dependencies, input: input)
   }
 
   private let dependencies: SuggestServiceDependencies

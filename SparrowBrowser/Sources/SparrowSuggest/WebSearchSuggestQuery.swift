@@ -12,7 +12,7 @@ final class WebSearchSuggestQuery: SuggestQuery {
     )!
     components.queryItems = [
       URLQueryItem(name: "client", value: "firefox"),
-      URLQueryItem(name: "q", value: input)
+      URLQueryItem(name: "q", value: input.trimmingCharacters(in: .whitespacesAndNewlines))
     ]
 
     networkRequest = dependencies.networkService.load(url: components.url!)

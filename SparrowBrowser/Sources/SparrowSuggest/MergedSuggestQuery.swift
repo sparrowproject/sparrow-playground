@@ -54,7 +54,8 @@ final class MergedSuggestQuery: SuggestQuery {
 
   private func buildCompletions() -> [SuggestQueryResult] {
     var completions: [SuggestQueryResult] = []
-    if !model.input.isEmpty {
+    let trimmedInput = model.input.trimmingCharacters(in: .whitespacesAndNewlines)
+    if !trimmedInput.isEmpty {
       let result = dependencies.typedHistory.queryRecord(matching: model.input).flatMap {
         SuggestQueryResult(from: $0, withInput: model.input)
       }
@@ -81,7 +82,7 @@ final class MergedSuggestQuery: SuggestQuery {
       }
     }
     for completion in webSearchSuggestQuery.model.completions {
-      if case .search = completion.kind, completion.value == model.input {
+      if case .search = completion.kind, completion.value == trimmedInput {
         continue
       }
       completions.append(completion)
