@@ -475,6 +475,7 @@ private final class TextBoxRepresentable: WinUIElementRepresentable {
 
     func setText(_ text: String, withSelection selection: Range<String.Index>?) {
       guard let textBox else { return }
+      var existingSelectionStart = textBox.selectionStart
       if text != textBox.text {
         textBox.text = text
       }
@@ -486,6 +487,7 @@ private final class TextBoxRepresentable: WinUIElementRepresentable {
           textBox.selectionStart = Int32(range.location)
           textBox.selectionLength = Int32(range.length)
         } else {
+          textBox.selectionStart = max(existingSelectionStart, Int32(text.count))
           textBox.selectionLength = 0
         }
       }
