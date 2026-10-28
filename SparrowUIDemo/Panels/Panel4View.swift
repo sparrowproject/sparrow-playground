@@ -24,8 +24,10 @@ struct Panel4View: PanelView {
     static let rowHeight: CGFloat = 36
   }
 
-  @State private var text: String = "Hello, world!"
-  @State private var selection: Range<String.Index>?
+  static let initialText = "Hello, world!"
+
+  @State private var text: String = Self.initialText
+  @State private var selection: Range<String.Index> = Self.initialText.endIndex ..< Self.initialText.endIndex
 
   private var background: some View {
     Color(.init(gray: 0.9))
@@ -53,7 +55,7 @@ struct Panel4View: PanelView {
 
   private var selectionView: some View {
     Group {
-      Text("Selected range: \(selection?.description ?? "none")")
+      Text("Selected range: \(selection.description)")
         .font(.system(size: 12))
         .alignment(.leading)
     }
