@@ -36,11 +36,11 @@ public struct TextEditor: View {
   public var body: some View {
     TextBoxRepresentable(controller: controller, action: config.action)
       .readColorScheme(to: $colorScheme)
-      .onChange(of: (text.get(), selection?.get())) { text, selection in
-        if selection == nil {
-          selectionDefault.value = text.endIndex ..< text.endIndex
-        }
-        controller.setText(text, withSelection: selection ?? selectionDefault.value)
+      .onAppear {
+        setText()
+      }
+      .onChange(of: (text.get(), selection?.get())) { _, _ in
+        setText()
       }
       .onChange(of: config.font()) {
         controller.setFont($0)
@@ -105,6 +105,14 @@ public struct TextEditor: View {
       let associatedView = controller.associatedView
     else { return false }
     return context.focusedView === associatedView
+  }
+
+  private func setText() {
+    let text = text.get()
+    if selection == nil {
+      selectionDefault.value = text.endIndex ..< text.endIndex
+    }
+    controller.setText(text, withSelection: selection?.get() ?? selectionDefault.value)
   }
 }
 
