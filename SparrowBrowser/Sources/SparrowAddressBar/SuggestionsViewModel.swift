@@ -19,7 +19,11 @@ final class SuggestionsViewModel {
     suggestionResults?.count ?? 0
   }
 
-  var selectedSuggestionRow: Int?
+  var selectedSuggestionRow: Int? {
+    didSet {
+      print(">>> didSet selectedSuggestionRow: \(selectedSuggestionRow)")
+    }
+  }
 
   var selectedSuggestionResult: SuggestQueryResult? {
     selectedSuggestionRow.flatMap { suggestionResult(at: $0) }

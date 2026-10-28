@@ -29,6 +29,8 @@ final class AutocompleteModel {
     let (value, selection) = Self.normalizeInput(value: value, selection: selection)
     guard value != editorString || selection != editorSelection else { return [] }
 
+    print(">>> handleEditorChange, value: \"\(value)\", selection: \(selection)")
+
     // Observe if the user appears to have deleted a trailing selection.
     if
       selection == nil,
@@ -75,6 +77,8 @@ final class AutocompleteModel {
 
     let (value, selection) = Self.normalizeInput(value: value, selection: selection)
     guard value != suggestionString || selection != suggestionSelection else { return [] }
+
+    print(">>> handleSuggestionChange, value: \"\(value)\", selection: \(selection)")
 
     // Nothing to do if the editor already reflects these values.
     if editorString == value, editorSelection == selection {
@@ -126,16 +130,16 @@ final class AutocompleteModel {
   private var deletingFromTheEnd = false
 
   private static func normalizeInput(value: String, selection: Range<String.Index>?) -> (value: String, selection: Range<String.Index>?) {
-    if selection?.lowerBound == value.endIndex && selection?.upperBound == value.endIndex {
-      (value: value, selection: nil)
+    if selection == nil { // ?.lowerBound == value.endIndex && selection?.upperBound == value.endIndex {
+      (value: value, selection: value.endIndex ..< value.endIndex)
     } else {
       (value: value, selection: selection)
     }
   }
 
   private static func normalizeInput(value: String?, selection: Range<String.Index>?) -> (value: String?, selection: Range<String.Index>?) {
-    if selection?.lowerBound == value?.endIndex && selection?.upperBound == value?.endIndex {
-      (value: value, selection: nil)
+    if selection == nil { // selection?.lowerBound == value?.endIndex && selection?.upperBound == value?.endIndex {
+      (value: value, selection: value.flatMap({ $0.endIndex ..< $0.endIndex }))
     } else {
       (value: value, selection: selection)
     }

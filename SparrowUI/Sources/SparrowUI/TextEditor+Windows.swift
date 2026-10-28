@@ -32,7 +32,11 @@ final class TextBoxRepresentable: WinUIElementRepresentable {
     weak var context: CoreViewContext?
     weak var associatedView: CoreView?
     var textBox: TextBox?
-    var ignoreTextBoxEvents = false
+    var ignoreTextBoxEvents = false {
+      didSet {
+        print(">>> didSet ignoreTextBoxEvents: \(ignoreTextBoxEvents)")
+      }
+    }
     var changed: (() -> Void)?
 
     // var selection: Range<String.Index>? {
@@ -67,9 +71,10 @@ final class TextBoxRepresentable: WinUIElementRepresentable {
         if let range = selection.flatMap({ NSRange($0, in: text) }) {
           (Int32(range.location), Int32(range.length))
         } else {
-          (max(existingSelectionStart, Int32(text.count)), 0)
+          (existingSelectionStart, 0)
         }
       if textBox.selectionStart != selectionStart || textBox.selectionLength != selectionLength {
+        print(">>> calling select: \(selectionStart), \(selectionLength)")
         try! textBox.select(selectionStart, selectionLength)
       }
     }
@@ -134,9 +139,9 @@ final class TextBoxRepresentable: WinUIElementRepresentable {
     }
 
     func textChanging(_ value: String, withSelection selection: Range<String.Index>?) {
-      print(">>> textChanging: \(value), withSelection: \(selection)")
-
       guard !ignoreTextBoxEvents else { return }
+
+      print(">>> textChanging: \(value), withSelection: \(selection)")
 
       var changed = false
 
@@ -152,26 +157,12 @@ final class TextBoxRepresentable: WinUIElementRepresentable {
       if changed {
         notifyChanged()
       }
-
-      // self.selection = selection
-      // textBinding.set(value)
-
-      // // If the text binding was modified, then reflect that change immediately to avoid flicker.
-      // let valueAfter = textBinding.get()
-      // if valueAfter != value {
-      //   print(">>> calling setText w/ valueAfter: \"\(valueAfter)\"")
-      //   setText(valueAfter, withSelection: selectionBinding.flatMap { $0.get() })
-      // }
     }
 
     func selectionChanged(_ selection: Range<String.Index>?) {
-      // guard let selectionBinding else { return }
-
-      print(">>> selectionChanged: \(selection)")
-
       guard !ignoreTextBoxEvents else { return }
 
-      // selectionBinding.set(selection)
+      print(">>> selectionChanged: \(selection), selectionBinding: \(selectionBinding.get())")
 
       var changed = false
 
@@ -183,33 +174,21 @@ final class TextBoxRepresentable: WinUIElementRepresentable {
       if changed {
         notifyChanged()
       }
-
-      // // If the selection binding was modified, then reflect that change immediately to avoid flicker.
-      // let selectionAfter = selectionBinding.get()
-      // if selectionAfter != selection {
-      //   print(">>> calling setText w/ selectionAfter: \"\(selectionAfter)\"")
-      //   setText(textBinding.get(), withSelection: selectionAfter)
-      // }
     }
 
     private func notifyChanged() {
-      guard let textBox, let changed else { return }
+      guard let changed else { return }
 
       changed()
 
       setText(textBinding.get(), withSelection: selectionBinding.get())
-
-      // ignoreTextBoxEvents = true
-      // defer { ignoreTextBoxEvents = false }
-
-      // if textBox.text != textBinding.get() {
-      //   textBox.text = textBinding.get()
-      // }
     }
   }
 
   func makeUIElement(context: CoreViewContext, associatedView: CoreView) -> UIElement {
-    let textBox = TextBox()
+    let textBox = CustomTextBox()
+    textBox.action = action
+
     controller.textBox = textBox
     controller.context = context
     controller.associatedView = associatedView
@@ -278,21 +257,6 @@ final class TextBoxRepresentable: WinUIElementRepresentable {
       }
     }
 
-    textBox.keyDown.addHandler { [action] (_, event: KeyRoutedEventArgs!) in
-      switch event.key {
-      case VirtualKey.enter:
-        action?(.submit)
-
-      case VirtualKey.escape:
-        action?(.cancel)
-
-      default:
-        return
-      }
-
-      event.handled = true
-    }
-
     return textBox
   }
 
@@ -300,5 +264,36 @@ final class TextBoxRepresentable: WinUIElementRepresentable {
 
   private let controller: Controller
   private let action: (@MainActor (TextEditor.Action) -> Void)?
+}
+
+private final class CustomTextBox: TextBox {
+  var action: ((TextEditor.Action) -> Void)?
+
+  /// This override is needed in order to get first shot at all events.
+  /// The `keyDown` event handler does not see a down arrow press for
+  /// example when text is selected.
+  override func onKeyDown(_ event: KeyRoutedEventArgs!) throws {
+    switch event.key {
+    case .enter:
+      action?(.submit)
+
+    case .escape:
+      action?(.cancel)
+    
+    case .up:
+      print(">>> VirtualKey.up")
+      action?(.moveUp)
+
+    case .down:
+      print(">>> VirtualKey.down")
+      action?(.moveDown)
+
+    default:
+      try super.onKeyDown(event)
+      return
+    }
+
+    event.handled = true
+  }
 }
 #endif

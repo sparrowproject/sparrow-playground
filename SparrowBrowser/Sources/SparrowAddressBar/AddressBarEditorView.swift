@@ -167,6 +167,7 @@ public struct AddressBarEditorView: View {
   }
 
   private func apply(_ action: AutocompleteModel.Action) {
+    print(">>> apply: \(action)")
     switch action {
     case .updateEditor(let value, let selection):
       buffer = value
@@ -179,6 +180,7 @@ public struct AddressBarEditorView: View {
   }
 
   private func handleNewSuggestionResults(_ results: [SuggestQueryResult]?) {
+    print(">>> handleNewSuggestionResults")
     let index: Int? = results?.firstIndex(where: { $0.preferredMatch })
     if viewModel.suggestionsViewModel.selectedSuggestionRow != index {
       viewModel.suggestionsViewModel.selectedSuggestionRow = index
@@ -199,8 +201,12 @@ public struct AddressBarEditorView: View {
       break // TODO: implement
     case .moveUp:
       viewModel.suggestionsViewModel.moveSelectionUp()
+      let result = viewModel.suggestionsViewModel.selectedSuggestionResult
+      apply(autocompleteModel.handleSuggestionChange(value: result?.value, selection: result?.selection))
     case .moveDown:
       viewModel.suggestionsViewModel.moveSelectionDown()
+      let result = viewModel.suggestionsViewModel.selectedSuggestionResult
+      apply(autocompleteModel.handleSuggestionChange(value: result?.value, selection: result?.selection))
     case .changed:
       handleTextEditorChanged()
     }
@@ -208,6 +214,8 @@ public struct AddressBarEditorView: View {
 
   private func handleTextEditorChanged() {
     // Update synchronously!
+
+    print(">>> handleTextEditorChanged")
 
     apply(autocompleteModel.handleEditorChange(value: buffer, selection: bufferSelection))
 
