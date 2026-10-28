@@ -210,8 +210,6 @@ final class WebContentWV2: NSObject, WebContent {
         return
       }
 
-      print(">>> calling ensureCoreWebView2Async ...")
-
       do {
         try await webView.ensureCoreWebView2Async(configuration.environment, configuration.options).get()
       } catch {
@@ -255,7 +253,6 @@ final class WebContentWV2: NSObject, WebContent {
       // Avoid redundant work. Assume the data for a given favicon URL is idempotent.
       if await dependencies.webHistory.queryImage(forFaviconURL: faviconURL) == nil {
         let stream = try! await coreWebView.getFaviconAsync(.png).value!
-        print(">>> got stream for favicon data: \(stream), of size: \(stream.size), w/ faviconURL: \(faviconURL)")
 
         dependencies.webHistory.storeImage(
           CachingImageProvider(source: ImageFromStreamProvider(stream: stream)),
@@ -274,8 +271,6 @@ final class WebContentWV2: NSObject, WebContent {
   }
 
   private func handleNewWindowRequested(args: CoreWebView2NewWindowRequestedEventArgs) {
-    print(">>> newWindowRequested")
-
     // Always mark as handled even if we return early since we don't want the default
     // behavior of the framework opening its own top-level window.
     args.handled = true
@@ -300,7 +295,6 @@ final class WebContentWV2: NSObject, WebContent {
       }
 
       args.newWindow = coreWebView
-      print(">>> newly opened webcontent is initialized!")
       try! deferral.complete()
     }
 
@@ -312,7 +306,6 @@ final class WebContentWV2: NSObject, WebContent {
   }
 
   private func handleDownloadStarting(args: CoreWebView2DownloadStartingEventArgs) {
-    print(">>> downloadStarting!")
     args.handled = true
     action?(.downloadStarting(WebDownloadWV2(download: args.downloadOperation)))
   }
