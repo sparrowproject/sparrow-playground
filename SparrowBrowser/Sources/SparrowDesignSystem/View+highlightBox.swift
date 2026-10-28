@@ -29,11 +29,11 @@ struct HighlightBoxModifier: ViewModifier {
           .width(geom.width + 2)
           .height(geom.height + 2)
           .offset(x: -1, y: -1)
+          .opacity(condition() ? 1 : 0)
        
         RoundedRectangle(cornerRadius: cornerRadius())
           .fill(backgroundColor())
       }
-      .opacity(condition() ? 1 : 0)
 
       content
     }
