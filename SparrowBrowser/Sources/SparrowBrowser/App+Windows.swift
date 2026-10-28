@@ -24,6 +24,7 @@ extension App {
     SparrowCommands.selectTabAt(index: 7),
     SparrowCommands.selectTabAt(index: 8),
     SparrowCommands.selectTabAt(index: 9),
+    SparrowCommands.undoClose,
   ]
 
   @MainActor

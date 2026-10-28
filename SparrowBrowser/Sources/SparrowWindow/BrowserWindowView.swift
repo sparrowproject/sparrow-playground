@@ -13,6 +13,7 @@ public struct BrowserWindowView: View {
     case newWindow
     case newIncognitoWindow
     case close
+    case undoClose
     case applyColorScheme(ColorScheme?)
     case spaceSelector(SpaceSelectorView.Action)
   }

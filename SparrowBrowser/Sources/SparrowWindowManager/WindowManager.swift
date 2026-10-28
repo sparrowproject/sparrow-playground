@@ -156,6 +156,8 @@ final class DefaultWindowManager: WindowManager {
       #elseif os(Windows)
       try! window.close()
       #endif
+    case .view(.undoClose):
+      handleUndoClose()
     case .view(.applyColorScheme(let colorScheme)):
       window.applyColorScheme(colorScheme)
     case .view(.spaceSelector(let spaceSelectorAction)):

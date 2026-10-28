@@ -21,6 +21,10 @@ struct MainMenuView: View {
     .command(SparrowCommands.newWindow),
     .command(SparrowCommands.newIncognitoWindow),
 
+    .submenu(.init(title: "History", items: [
+      .command(SparrowCommands.undoClose)
+    ])),
+
     // .separator(),
     // .command(SparrowCommand(title: "History")),
     // .command(SparrowCommand(title: "Downloads", keybinding: .downloads)),
