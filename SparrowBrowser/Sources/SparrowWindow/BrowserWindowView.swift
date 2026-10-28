@@ -38,38 +38,39 @@ public struct BrowserWindowView: View {
       windowControlsView
       #endif
 
-      Group {
-        Button(
-          action: {
-            withAnimation {
-              viewModel.cycleTabsStyle()
-            }
-          },
-          label: {
-            Text("Cycle Tabs Style!")
-          }
-        )
-        .buttonStyle(.standard)
-        .height(32)
-        .alignment(.top)
-
-        Button(
-          action: {
-            withAnimation {
-              viewModel.cycleTabsVisibility()              
-            }
-          },
-          label: {
-            Text("Cycle Tabs Visibility!")
-          }
-        )
-        .buttonStyle(.standard)
-        .height(32)
-        .alignment(.bottom)
-      }
-      .height(64)
-      .width(160)
-      .alignment(.center)
+      // For DEBUGGING:
+      //
+      // Group {
+      //   Button(
+      //     action: {
+      //       withAnimation {
+      //         viewModel.cycleTabsStyle()
+      //       }
+      //     },
+      //     label: {
+      //       Text("Cycle Tabs Style!")
+      //     }
+      //   )
+      //   .buttonStyle(.standard)
+      //   .height(32)
+      //   .alignment(.top)
+      //   Button(
+      //     action: {
+      //       withAnimation {
+      //         viewModel.cycleTabsVisibility()              
+      //       }
+      //     },
+      //     label: {
+      //       Text("Cycle Tabs Visibility!")
+      //     }
+      //   )
+      //   .buttonStyle(.standard)
+      //   .height(32)
+      //   .alignment(.bottom)
+      // }
+      // .height(64)
+      // .width(160)
+      // .alignment(.center)
 
       BrowserWindowOverlayViewRepresentable(viewModel: viewModel.overlayViewModel) {
         viewModel.handleOverlayAction($0).flatMap { action($0) }
