@@ -1,7 +1,7 @@
 @MainActor
 final class AutocompleteModel {
   enum Action {
-    case updateEditor(String, selection: Range<String.Index>?)
+    case updateEditor(String, selection: Range<String.Index>)
     case querySuggestions(String)
     case clearSuggestions
 
@@ -17,7 +17,7 @@ final class AutocompleteModel {
 
   init() {}
 
-  func initializeEditorState(value: String, selection: Range<String.Index>?) {
+  func initializeEditorState(value: String, selection: Range<String.Index>) {
     hasInitialEditorState = true
     editorString = value
     editorSelection = selection
@@ -33,11 +33,11 @@ final class AutocompleteModel {
 
     // Observe if the user appears to have deleted a trailing selection.
     if
-      selection == nil,
+      selection.isEmpty,
       editorString != value,
       editorString.hasPrefix(value),
-      (editorSelection == nil ||
-       editorSelection?.lowerBound == editorString.index(editorString.startIndex, offsetBy: value.count))
+      (editorSelection.isEmpty ||
+       editorSelection.lowerBound == editorString.index(editorString.startIndex, offsetBy: value.count))
     {
       deletingFromTheEnd = true
     } else {
@@ -57,7 +57,7 @@ final class AutocompleteModel {
     // Handle the case of typing more of the autocomplete result.
     if
       !deletingFromTheEnd,
-      editorSelection == nil,
+      editorSelection.isEmpty,
       let suggestionString,
       suggestionString != editorString,
       suggestionString.hasPrefix(editorString)
@@ -75,7 +75,7 @@ final class AutocompleteModel {
   func handleSuggestionChange(value: String?, selection: Range<String.Index>?) -> [Action] {
     guard hasInitialEditorState else { return [] }
 
-    let (value, selection) = Self.normalizeInput(value: value, selection: selection)
+    // let (value, selection) = Self.normalizeInput(value: value, selection: selection)
     guard value != suggestionString || selection != suggestionSelection else { return [] }
 
     print(">>> handleSuggestionChange, value: \"\(value)\", selection: \(selection)")
@@ -104,7 +104,7 @@ final class AutocompleteModel {
       if
         value != editorString,
         value.hasPrefix(editorString),
-        editorSelection == nil,
+        editorSelection.isEmpty,
         let suggestionSelection,
         suggestionSelection.lowerBound == value.index(value.startIndex, offsetBy: editorString.count)
       {
@@ -114,7 +114,7 @@ final class AutocompleteModel {
     }
 
     editorString = value
-    editorSelection = selection
+    editorSelection = selection ?? editorString.endIndex ..< editorString.endIndex
 
     return [.updateEditor(editorString, selection: editorSelection)]
   }
@@ -122,26 +122,36 @@ final class AutocompleteModel {
   private var hasInitialEditorState = false
 
   private var editorString: String = ""
-  private var editorSelection: Range<String.Index>?
+  private var editorSelection: Range<String.Index> = "".endIndex ..< "".endIndex
 
   private var suggestionString: String?
   private var suggestionSelection: Range<String.Index>?
 
-  private var deletingFromTheEnd = false
-
-  private static func normalizeInput(value: String, selection: Range<String.Index>?) -> (value: String, selection: Range<String.Index>?) {
-    if selection == nil { // ?.lowerBound == value.endIndex && selection?.upperBound == value.endIndex {
-      (value: value, selection: value.endIndex ..< value.endIndex)
-    } else {
-      (value: value, selection: selection)
+  private var deletingFromTheEnd = false {
+    didSet {
+      print(">>> --- didSet deletingFromTheEnd: \(deletingFromTheEnd)")
     }
   }
 
-  private static func normalizeInput(value: String?, selection: Range<String.Index>?) -> (value: String?, selection: Range<String.Index>?) {
-    if selection == nil { // selection?.lowerBound == value?.endIndex && selection?.upperBound == value?.endIndex {
-      (value: value, selection: value.flatMap({ $0.endIndex ..< $0.endIndex }))
-    } else {
-      (value: value, selection: selection)
+  private static func normalizeInput(
+    value: String,
+    selection: Range<String.Index>?
+  ) -> (value: String, selection: Range<String.Index>) {
+    guard let selection else {
+      // Let a `nil` selection imply the cursor is positioned at the end.
+      return (value: value, selection: value.endIndex ..< value.endIndex)
     }
+    return (value: value, selection: selection)
   }
+
+  // private static func normalizeInput(
+  //   value: String?,
+  //   selection: Range<String.Index>?
+  // ) -> (value: String?, selection: Range<String.Index>?) {
+  //   if selection == nil {
+  //     (value: value, selection: value.flatMap({ $0.endIndex ..< $0.endIndex }))
+  //   } else {
+  //     (value: value, selection: selection)
+  //   }
+  // }
 }

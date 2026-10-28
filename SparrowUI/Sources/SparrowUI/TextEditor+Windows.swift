@@ -11,21 +11,21 @@ final class TextBoxRepresentable: WinUIElementRepresentable {
     self.controller = controller
     self.action = action
 
-    controller.changed = { action?(.changed) }
+    controller.action = action
   }
 
   @MainActor
   final class Controller {
     init(
       textBinding: Binding<String>,
-      selectionBinding: Binding<Range<String.Index>?>,
+      selectionBinding: Binding<Range<String.Index>>,
     ) {
       self.textBinding = textBinding
       self.selectionBinding = selectionBinding
     }
 
     let textBinding: Binding<String>
-    let selectionBinding: Binding<Range<String.Index>?>
+    let selectionBinding: Binding<Range<String.Index>>
     let foregroundBrush = SolidColorBrush()
     var contentAlignment: Alignment = .leading
     var contentPadding: EdgeInsets = .zero
@@ -37,17 +37,9 @@ final class TextBoxRepresentable: WinUIElementRepresentable {
         print(">>> didSet ignoreTextBoxEvents: \(ignoreTextBoxEvents)")
       }
     }
-    var changed: (() -> Void)?
+    var action: (@MainActor (TextEditor.Action) -> Void)?
 
-    // var selection: Range<String.Index>? {
-    //   didSet {
-    //     print(">>> didSet selection: \(selection), oldValue: \(oldValue)")
-    //     guard selection != oldValue else { return }
-    //     selectionChanged(selection)
-    //   }
-    // }
-
-    func setText(_ text: String, withSelection selection: Range<String.Index>?) {
+    func setText(_ text: String, withSelection selection: Range<String.Index>) {
       guard let textBox else { return }
 
       assert(text == textBinding.get())
@@ -58,7 +50,7 @@ final class TextBoxRepresentable: WinUIElementRepresentable {
 
       print(">>> setText: \"\(text)\", selection: \(selection), current: \"\(textBox.text)\", selection: \(textBox.selectionStart), \(textBox.selectionLength)")
 
-      let existingSelectionStart = textBox.selectionStart
+      // let existingSelectionStart = textBox.selectionStart
 
       if text != textBox.text {
         textBox.text = text
@@ -67,12 +59,8 @@ final class TextBoxRepresentable: WinUIElementRepresentable {
       // Avoid re-setting selection if not changed as this can confuse the underlying TextBox,
       // interfering with shift-arrow interactive selection.
 
-      let (selectionStart, selectionLength) =
-        if let range = selection.flatMap({ NSRange($0, in: text) }) {
-          (Int32(range.location), Int32(range.length))
-        } else {
-          (existingSelectionStart, 0)
-        }
+      let range = NSRange(selection, in: text) 
+      let (selectionStart, selectionLength) = (Int32(range.location), Int32(range.length))
       if textBox.selectionStart != selectionStart || textBox.selectionLength != selectionLength {
         print(">>> calling select: \(selectionStart), \(selectionLength)")
         try! textBox.select(selectionStart, selectionLength)
@@ -138,7 +126,7 @@ final class TextBoxRepresentable: WinUIElementRepresentable {
       )
     }
 
-    func textChanging(_ value: String, withSelection selection: Range<String.Index>?) {
+    func textChanging(_ value: String, withSelection selection: Range<String.Index>) {
       guard !ignoreTextBoxEvents else { return }
 
       print(">>> textChanging: \(value), withSelection: \(selection)")
@@ -155,31 +143,24 @@ final class TextBoxRepresentable: WinUIElementRepresentable {
       }
 
       if changed {
-        notifyChanged()
+        notifyTextChanged()
       }
     }
 
-    func selectionChanged(_ selection: Range<String.Index>?) {
+    func selectionChanged(_ selection: Range<String.Index>) {
       guard !ignoreTextBoxEvents else { return }
 
       print(">>> selectionChanged: \(selection), selectionBinding: \(selectionBinding.get())")
 
-      var changed = false
-
       if selectionBinding.get() != selection {
         selectionBinding.set(selection)
-        changed = true
-      }
-
-      if changed {
-        notifyChanged()
       }
     }
 
-    private func notifyChanged() {
-      guard let changed else { return }
+    private func notifyTextChanged() {
+      guard let action else { return }
 
-      changed()
+      action(.textChanged)
 
       setText(textBinding.get(), withSelection: selectionBinding.get())
     }
@@ -226,17 +207,15 @@ final class TextBoxRepresentable: WinUIElementRepresentable {
       print(">>> textChanging to: \(textBox.text), selection: \(textBox.selectionStart), \(textBox.selectionLength)")
       // New value is already set on `TextBox.text`. It just hasn't been rendered yet.
       let text = textBox.text
-      let range = NSRange(location: Int(textBox.selectionStart), length: Int(textBox.selectionLength))
-      let selection = Range(range, in: text)
+      let selection = makeClampedRange(start: textBox.selectionStart, length: textBox.selectionLength, in: text)
       controller.textChanging(text, withSelection: selection)
     }
 
-    textBox.selectionChanged.addHandler { [controller] _, _ in // (_, args: TextBoxSelectionChangingEventArgs!) in
+    textBox.selectionChanged.addHandler { [controller] _, _ in
       guard let textBox = controller.textBox else { return }
       print(">>> selectionChanged to: \(textBox.selectionStart), \(textBox.selectionLength) for text: \"\(textBox.text)\"")
-      // New values are given by `args`.
-      let range = NSRange(location: Int(textBox.selectionStart), length: Int(textBox.selectionLength))
-      controller.selectionChanged(Range(range, in: textBox.text))
+      let selection = makeClampedRange(start: textBox.selectionStart, length: textBox.selectionLength, in: textBox.text)
+      controller.selectionChanged(selection)
     }
 
     textBox.gotFocus.addHandler { [controller] _, _ in
@@ -296,4 +275,12 @@ private final class CustomTextBox: TextBox {
     event.handled = true
   }
 }
+
+fileprivate func makeClampedRange(start: Int32, length: Int32, in string: String) -> Range<String.Index> {
+  let start = clamp(start, 0, Int32(string.count))
+  let length = clamp(length, 0, Int32(string.count) - start)
+  let range = NSRange(location: Int(start), length: Int(length))
+  return .init(range, in: string)!
+}
+
 #endif

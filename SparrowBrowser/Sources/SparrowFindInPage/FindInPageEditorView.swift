@@ -70,7 +70,7 @@ public struct FindInPageEditorView: View {
       viewModel.findNext()
     case .cancel:
       self.action(.dismiss)
-    case .focusNext, .focusPrevious, .moveUp, .moveDown, .changed:
+    case .focusNext, .focusPrevious, .moveUp, .moveDown, .textChanged:
       print(">>> unhandled editor action: \(action)")
     }
   }

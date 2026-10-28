@@ -16,29 +16,35 @@ public struct TextEditor: View {
     case moveUp
     case moveDown
 
-    /// Sent immediately after either `text` or `selection` changes due to user input.
-    /// The receiver may alter `text` or `selection`, and the result will be applied
-    /// immediately. Not sent due to programmatic update to `text` or `selection`.
-    case changed
+    /// Sent immediately after `text` changes due to user input. The receiver may
+    /// alter `text` or `selection`, and the result will be applied immediately.
+    /// Not sent due to programmatic update to `text`.
+    case textChanged
   }
 
   public init(
     text: Binding<String>,
-    selection: Binding<Range<String.Index>?>? = nil,
+    selection: Binding<Range<String.Index>>? = nil,
     action: (@MainActor (Action) -> ())? = nil,
   ) {
-    let selection = selection ?? .binding(for: \.value, of: ObservableValue<Range<String.Index>?>(nil))
-    controller = .init(textBinding: text, selectionBinding: selection)
+    let selectionDefault = ObservableValue<Range<String.Index>>(
+      text.get().endIndex ..< text.get().endIndex,
+    )
+    controller = .init(textBinding: text, selectionBinding: selection ?? .binding(for: \.value, of: selectionDefault))
     self.text = text
     self.selection = selection
+    self.selectionDefault = selectionDefault
     config = .init(action: action)
   }
 
   public var body: some View {
     TextBoxRepresentable(controller: controller, action: config.action)
       .readColorScheme(to: $colorScheme)
-      .onChange(of: (text.get(), selection?.get())) {
-        controller.setText($0.0, withSelection: $0.1)
+      .onChange(of: (text.get(), selection?.get())) { text, selection in
+        if selection == nil {
+          selectionDefault.value = text.endIndex ..< text.endIndex
+        }
+        controller.setText(text, withSelection: selection ?? selectionDefault.value)
       }
       .onChange(of: config.font()) {
         controller.setFont($0)
@@ -70,18 +76,21 @@ public struct TextEditor: View {
   private init(
     controller: TextBoxRepresentable.Controller,
     text: Binding<String>,
-    selection: Binding<Range<String.Index>?>?,
+    selection: Binding<Range<String.Index>>?,
+    selectionDefault: ObservableValue<Range<String.Index>>,
     config: Config,
   ) {
     self.controller = controller
     self.text = text
     self.selection = selection
+    self.selectionDefault = selectionDefault
     self.config = config
   }
 
   private let controller: TextBoxRepresentable.Controller
   private let text: Binding<String>
-  private let selection: Binding<Range<String.Index>?>?
+  private let selection: Binding<Range<String.Index>>?
+  private let selectionDefault: ObservableValue<Range<String.Index>>
   private let config: Config
   @State private var colorScheme = ColorScheme.light
 
@@ -109,6 +118,7 @@ extension TextEditor {
       controller: controller,
       text: text,
       selection: selection,
+      selectionDefault: selectionDefault,
       config: with(config) { $0.font = font }
     )
   }
@@ -118,6 +128,7 @@ extension TextEditor {
       controller: controller,
       text: text,
       selection: selection,
+      selectionDefault: selectionDefault,
       config: with(config) { $0.foregroundColor = foregroundColor }
     )
   }
@@ -127,6 +138,7 @@ extension TextEditor {
       controller: controller,
       text: text,
       selection: selection,
+      selectionDefault: selectionDefault,
       config: with(config) { $0.contentAlignment = contentAlignment }
     )
   }
@@ -136,6 +148,7 @@ extension TextEditor {
       controller: controller,
       text: text,
       selection: selection,
+      selectionDefault: selectionDefault,
       config: with(config) { $0.contentPadding = contentPadding }
     )
   }
@@ -148,6 +161,7 @@ extension TextEditor {
       controller: controller,
       text: text,
       selection: selection,
+      selectionDefault: selectionDefault,
       config: with(config) { $0.contentPadding = { .init(edges: edges(), value: value()) } }
     )
   }

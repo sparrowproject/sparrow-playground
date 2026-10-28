@@ -51,7 +51,7 @@ public struct AddressBarEditorView: View {
       if buffer != value {
         buffer = value
       }
-      if bufferSelection != selection {
+      if let selection, bufferSelection != selection {
         bufferSelection = selection
       }
     }
@@ -75,7 +75,7 @@ public struct AddressBarEditorView: View {
       // TODO: Can we avoid this Task somehow?
       Task {
         buffer = viewModel.content.editorValue
-        bufferSelection = viewModel.content.editorSelection
+        bufferSelection = viewModel.content.editorSelection ?? buffer.endIndex ..< buffer.endIndex
         autocompleteModel.initializeEditorState(value: buffer, selection: bufferSelection)
         focused = true
         withAnimation {
@@ -106,7 +106,7 @@ public struct AddressBarEditorView: View {
   private let action: (Action) -> Void
 
   @State private var buffer: String = ""
-  @State private var bufferSelection: Range<String.Index>?
+  @State private var bufferSelection: Range<String.Index> = "".endIndex ..< "".endIndex
   @State private var showEditorHighlight = false
   @State private var layout = Layout.zero
   @State private var scheduler: CoreScheduler?
@@ -207,15 +207,15 @@ public struct AddressBarEditorView: View {
       viewModel.suggestionsViewModel.moveSelectionDown()
       let result = viewModel.suggestionsViewModel.selectedSuggestionResult
       apply(autocompleteModel.handleSuggestionChange(value: result?.value, selection: result?.selection))
-    case .changed:
-      handleTextEditorChanged()
+    case .textChanged:
+      handleTextChanged()
     }
   }
 
-  private func handleTextEditorChanged() {
+  private func handleTextChanged() {
     // Update synchronously!
 
-    print(">>> handleTextEditorChanged")
+    print(">>> handleTextChanged")
 
     apply(autocompleteModel.handleEditorChange(value: buffer, selection: bufferSelection))
 
