@@ -167,7 +167,6 @@ public struct AddressBarEditorView: View {
   }
 
   private func apply(_ action: AutocompleteModel.Action) {
-    print(">>> apply: \(action)")
     switch action {
     case .updateEditor(let value, let selection):
       buffer = value
@@ -180,7 +179,6 @@ public struct AddressBarEditorView: View {
   }
 
   private func handleSuggestionResultsChange() {
-    print(">>> handleSuggestionResultsChange")
     let results = viewModel.suggestionsViewModel.suggestionResults
     let index: Int? = results?.firstIndex(where: { $0.preferredMatch })
     if viewModel.suggestionsViewModel.selectedSuggestionRow != index {
@@ -189,7 +187,6 @@ public struct AddressBarEditorView: View {
   }
 
   private func handleSelectedSuggestionChange() {
-    print(">>> handleSelectedSuggestionChange")
     let result = viewModel.suggestionsViewModel.selectedSuggestionResult
     apply(autocompleteModel.handleSuggestionChange(value: result?.value, selection: result?.selection))
   }
@@ -209,13 +206,9 @@ public struct AddressBarEditorView: View {
     case .moveUp:
       viewModel.suggestionsViewModel.moveSelectionUp()
       handleSelectedSuggestionChange()
-      // let result = viewModel.suggestionsViewModel.selectedSuggestionResult
-      // apply(autocompleteModel.handleSuggestionChange(value: result?.value, selection: result?.selection))
     case .moveDown:
       viewModel.suggestionsViewModel.moveSelectionDown()
       handleSelectedSuggestionChange()
-      // let result = viewModel.suggestionsViewModel.selectedSuggestionResult
-      // apply(autocompleteModel.handleSuggestionChange(value: result?.value, selection: result?.selection))
     case .textChanged:
       handleEditorChange()
     }
@@ -224,13 +217,9 @@ public struct AddressBarEditorView: View {
   private func handleEditorChange() {
     // Update synchronously!
 
-    print(">>> [[ handleTextChanged")
-
     apply(autocompleteModel.handleEditorChange(value: buffer, selection: bufferSelection))
 
     handleSuggestionResultsChange()
     handleSelectedSuggestionChange()
-
-    print(">>> ]]")
   }
 }

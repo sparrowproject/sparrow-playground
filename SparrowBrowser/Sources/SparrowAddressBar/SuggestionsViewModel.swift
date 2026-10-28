@@ -19,11 +19,7 @@ final class SuggestionsViewModel {
     suggestionResults?.count ?? 0
   }
 
-  var selectedSuggestionRow: Int? {
-    didSet {
-      print(">>> didSet selectedSuggestionRow: \(selectedSuggestionRow)")
-    }
-  }
+  var selectedSuggestionRow: Int?
 
   var selectedSuggestionResult: SuggestQueryResult? {
     selectedSuggestionRow.flatMap { suggestionResult(at: $0) }
@@ -43,8 +39,6 @@ final class SuggestionsViewModel {
     } else {
       suggestQueryModel = pendingSuggestQuery.model
     }
-
-    print(">>> interim results: \(suggestQueryModel?.completions)")
 
     Task<Void, Never> {
       for await status in Observations({

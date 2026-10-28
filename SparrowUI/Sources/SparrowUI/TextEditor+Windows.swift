@@ -48,10 +48,6 @@ final class TextBoxRepresentable: WinUIElementRepresentable {
       ignoreTextBoxEvents = true
       defer { ignoreTextBoxEvents = false }
 
-      print(">>> setText: \"\(text)\", selection: \(selection), current: \"\(textBox.text)\", selection: \(textBox.selectionStart), \(textBox.selectionLength)")
-
-      // let existingSelectionStart = textBox.selectionStart
-
       if text != textBox.text {
         textBox.text = text
       }
@@ -60,9 +56,9 @@ final class TextBoxRepresentable: WinUIElementRepresentable {
       // interfering with shift-arrow interactive selection.
 
       let range = NSRange(selection, in: text) 
-      let (selectionStart, selectionLength) = (Int32(range.location), Int32(range.length))
+      let selectionStart = Int32(range.location) 
+      let selectionLength = Int32(range.length)
       if textBox.selectionStart != selectionStart || textBox.selectionLength != selectionLength {
-        print(">>> calling select: \(selectionStart), \(selectionLength)")
         try! textBox.select(selectionStart, selectionLength)
       }
     }
@@ -129,8 +125,6 @@ final class TextBoxRepresentable: WinUIElementRepresentable {
     func textChanging(_ value: String, withSelection selection: Range<String.Index>) {
       guard !ignoreTextBoxEvents else { return }
 
-      print(">>> textChanging: \(value), withSelection: \(selection)")
-
       var changed = false
 
       if textBinding.get() != value {
@@ -149,8 +143,6 @@ final class TextBoxRepresentable: WinUIElementRepresentable {
 
     func selectionChanged(_ selection: Range<String.Index>) {
       guard !ignoreTextBoxEvents else { return }
-
-      print(">>> selectionChanged: \(selection), selectionBinding: \(selectionBinding.get())")
 
       if selectionBinding.get() != selection {
         selectionBinding.set(selection)
@@ -204,7 +196,6 @@ final class TextBoxRepresentable: WinUIElementRepresentable {
 
     textBox.textChanging.addHandler { [controller] _, _ in
       guard let textBox = controller.textBox else { return }
-      print(">>> textChanging to: \(textBox.text), selection: \(textBox.selectionStart), \(textBox.selectionLength)")
       // New value is already set on `TextBox.text`. It just hasn't been rendered yet.
       let text = textBox.text
       let selection = makeClampedRange(start: textBox.selectionStart, length: textBox.selectionLength, in: text)
@@ -213,7 +204,6 @@ final class TextBoxRepresentable: WinUIElementRepresentable {
 
     textBox.selectionChanged.addHandler { [controller] _, _ in
       guard let textBox = controller.textBox else { return }
-      print(">>> selectionChanged to: \(textBox.selectionStart), \(textBox.selectionLength) for text: \"\(textBox.text)\"")
       let selection = makeClampedRange(start: textBox.selectionStart, length: textBox.selectionLength, in: textBox.text)
       controller.selectionChanged(selection)
     }
@@ -260,11 +250,9 @@ private final class CustomTextBox: TextBox {
       action?(.cancel)
     
     case .up:
-      print(">>> VirtualKey.up")
       action?(.moveUp)
 
     case .down:
-      print(">>> VirtualKey.down")
       action?(.moveDown)
 
     default:
