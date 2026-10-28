@@ -32,11 +32,7 @@ final class TextBoxRepresentable: WinUIElementRepresentable {
     weak var context: CoreViewContext?
     weak var associatedView: CoreView?
     var textBox: TextBox?
-    var ignoreTextBoxEvents = false {
-      didSet {
-        print(">>> didSet ignoreTextBoxEvents: \(ignoreTextBoxEvents)")
-      }
-    }
+    var ignoreTextBoxEvents = false
     var action: (@MainActor (TextEditor.Action) -> Void)?
 
     func setText(_ text: String, withSelection selection: Range<String.Index>) {
