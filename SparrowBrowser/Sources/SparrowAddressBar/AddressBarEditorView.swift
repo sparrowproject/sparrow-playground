@@ -55,11 +55,11 @@ public struct AddressBarEditorView: View {
         bufferSelection = selection
       }
     }
-    .onChange(of: viewModel.suggestionsViewModel.selectedSuggestionResult, perform: { result in
-      apply(autocompleteModel.handleSuggestionChange(value: result?.value, selection: result?.selection))
+    .onChange(of: viewModel.suggestionsViewModel.selectedSuggestionResult, perform: { _ in
+      handleSelectedSuggestionChange()
     })
-    .onChange(of: viewModel.suggestionsViewModel.suggestionResults, perform: { results in
-      handleNewSuggestionResults(results)
+    .onChange(of: viewModel.suggestionsViewModel.suggestionResults, perform: { _ in
+      handleSuggestionResultsChange()
     })
     .onChange(of: viewModel.mode) { mode in
       if mode == .placeholder {
@@ -179,12 +179,19 @@ public struct AddressBarEditorView: View {
     }
   }
 
-  private func handleNewSuggestionResults(_ results: [SuggestQueryResult]?) {
-    print(">>> handleNewSuggestionResults")
+  private func handleSuggestionResultsChange() {
+    print(">>> handleSuggestionResultsChange")
+    let results = viewModel.suggestionsViewModel.suggestionResults
     let index: Int? = results?.firstIndex(where: { $0.preferredMatch })
     if viewModel.suggestionsViewModel.selectedSuggestionRow != index {
       viewModel.suggestionsViewModel.selectedSuggestionRow = index
     }
+  }
+
+  private func handleSelectedSuggestionChange() {
+    print(">>> handleSelectedSuggestionChange")
+    let result = viewModel.suggestionsViewModel.selectedSuggestionResult
+    apply(autocompleteModel.handleSuggestionChange(value: result?.value, selection: result?.selection))
   }
 
   private func handleTextEditorAction(_ action: TextEditor.Action) {
@@ -201,27 +208,29 @@ public struct AddressBarEditorView: View {
       break // TODO: implement
     case .moveUp:
       viewModel.suggestionsViewModel.moveSelectionUp()
-      let result = viewModel.suggestionsViewModel.selectedSuggestionResult
-      apply(autocompleteModel.handleSuggestionChange(value: result?.value, selection: result?.selection))
+      handleSelectedSuggestionChange()
+      // let result = viewModel.suggestionsViewModel.selectedSuggestionResult
+      // apply(autocompleteModel.handleSuggestionChange(value: result?.value, selection: result?.selection))
     case .moveDown:
       viewModel.suggestionsViewModel.moveSelectionDown()
-      let result = viewModel.suggestionsViewModel.selectedSuggestionResult
-      apply(autocompleteModel.handleSuggestionChange(value: result?.value, selection: result?.selection))
+      handleSelectedSuggestionChange()
+      // let result = viewModel.suggestionsViewModel.selectedSuggestionResult
+      // apply(autocompleteModel.handleSuggestionChange(value: result?.value, selection: result?.selection))
     case .textChanged:
-      handleTextChanged()
+      handleEditorChange()
     }
   }
 
-  private func handleTextChanged() {
+  private func handleEditorChange() {
     // Update synchronously!
 
-    print(">>> handleTextChanged")
+    print(">>> [[ handleTextChanged")
 
     apply(autocompleteModel.handleEditorChange(value: buffer, selection: bufferSelection))
 
-    handleNewSuggestionResults(viewModel.suggestionsViewModel.suggestionResults)
+    handleSuggestionResultsChange()
+    handleSelectedSuggestionChange()
 
-    let result = viewModel.suggestionsViewModel.selectedSuggestionResult
-    apply(autocompleteModel.handleSuggestionChange(value: result?.value, selection: result?.selection))
+    print(">>> ]]")
   }
 }

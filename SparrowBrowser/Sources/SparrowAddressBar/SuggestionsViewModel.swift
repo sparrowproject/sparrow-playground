@@ -38,7 +38,13 @@ final class SuggestionsViewModel {
     let pendingSuggestQuery = dependencies.suggestService.queryCompletions(for: input)
     self.pendingSuggestQuery = pendingSuggestQuery
 
-    suggestQueryModel = pendingSuggestQuery.model.transitionalModel(from: suggestQueryModel)
+    if selectedSuggestionRow == 0 {
+      suggestQueryModel = pendingSuggestQuery.model.transitionalModel(from: suggestQueryModel)
+    } else {
+      suggestQueryModel = pendingSuggestQuery.model
+    }
+
+    print(">>> interim results: \(suggestQueryModel?.completions)")
 
     Task<Void, Never> {
       for await status in Observations({

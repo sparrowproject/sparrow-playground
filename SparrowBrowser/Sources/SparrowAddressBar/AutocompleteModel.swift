@@ -98,8 +98,8 @@ final class AutocompleteModel {
       return []
     }
 
-    // // Take care to avoid stomping over the user who is deleting characters at the end and
-    // // getting back suggestions for the new prefix.
+    // Take care to avoid stomping over the user who is deleting characters at the end and
+    // getting back suggestions for the new prefix.
     if deletingFromTheEnd {
       if
         value != editorString,

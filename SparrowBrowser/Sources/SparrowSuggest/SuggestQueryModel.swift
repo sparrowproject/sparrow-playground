@@ -1,4 +1,5 @@
 import Observation
+import SparrowToolbelt
 import SparrowUIFoundation
 
 @Observable
@@ -25,6 +26,8 @@ extension SuggestQueryModel {
   public func transitionalModel(from previous: SuggestQueryModel?) -> SuggestQueryModel {
     guard let previous, status != .done else { return self }
 
+    print(">>> transitionalModel for input: \"\(input)\", previous.input: \"\(previous.input)\"")
+
     if
       input.hasPrefix(previous.input),
       let firstCompletion = previous.completions.first,
@@ -38,6 +41,8 @@ extension SuggestQueryModel {
       }
       return model
     }
+
+    print(">>> ... just using previous")
 
     return previous
   }
