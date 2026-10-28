@@ -26,7 +26,7 @@ extension Binding {
   /// Returns a `Binding` for a member of an `Observable` type.
   public static func binding<Member, ObjectType>(
     for member: Member,
-    on object: ObjectType,
+    of object: ObjectType,
   ) -> Self where ObjectType: AnyObject & Observable, Member: ReferenceWritableKeyPath<ObjectType, Value> {
     .init(
       get: {

@@ -24,7 +24,7 @@ public struct AddressBarEditorView: View {
           .padding(.leading, Metrics.padding)
 
         TextEditor(
-          text: .init(get: { buffer }, set: { updateBuffer($0) }),
+          text: $buffer,
           selection: $bufferSelection,
           action: handleTextEditorAction,
         )
@@ -59,10 +59,7 @@ public struct AddressBarEditorView: View {
       apply(autocompleteModel.handleSuggestionChange(value: result?.value, selection: result?.selection))
     })
     .onChange(of: viewModel.suggestionsViewModel.suggestionResults, perform: { results in
-      let index: Int? = results?.firstIndex(where: { $0.preferredMatch })
-      if viewModel.suggestionsViewModel.selectedSuggestionRow != index {
-        viewModel.suggestionsViewModel.selectedSuggestionRow = index
-      }
+      handleNewSuggestionResults(results)
     })
     .onChange(of: viewModel.mode) { mode in
       if mode == .placeholder {
@@ -153,15 +150,6 @@ public struct AddressBarEditorView: View {
     )
   }
 
-  private func updateBuffer(_ value: String) {
-    guard buffer != value else { return }
-    buffer = value
-
-    // Update synchronously!
-    let actions = autocompleteModel.handleEditorChange(value: buffer, selection: bufferSelection)
-    apply(actions)
-  }
-
   private func submit(_ result: SuggestQueryResult) {
     viewModel.content.editorValue = result.value
     viewModel.content.editorSelection = nil
@@ -190,6 +178,13 @@ public struct AddressBarEditorView: View {
     }
   }
 
+  private func handleNewSuggestionResults(_ results: [SuggestQueryResult]?) {
+    let index: Int? = results?.firstIndex(where: { $0.preferredMatch })
+    if viewModel.suggestionsViewModel.selectedSuggestionRow != index {
+      viewModel.suggestionsViewModel.selectedSuggestionRow = index
+    }
+  }
+
   private func handleTextEditorAction(_ action: TextEditor.Action) {
     switch action {
     case .submit:
@@ -206,6 +201,19 @@ public struct AddressBarEditorView: View {
       viewModel.suggestionsViewModel.moveSelectionUp()
     case .moveDown:
       viewModel.suggestionsViewModel.moveSelectionDown()
+    case .changed:
+      handleTextEditorChanged()
     }
+  }
+
+  private func handleTextEditorChanged() {
+    // Update synchronously!
+
+    apply(autocompleteModel.handleEditorChange(value: buffer, selection: bufferSelection))
+
+    handleNewSuggestionResults(viewModel.suggestionsViewModel.suggestionResults)
+
+    let result = viewModel.suggestionsViewModel.selectedSuggestionResult
+    apply(autocompleteModel.handleSuggestionChange(value: result?.value, selection: result?.selection))
   }
 }

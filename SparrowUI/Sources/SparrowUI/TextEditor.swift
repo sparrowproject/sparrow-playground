@@ -4,10 +4,6 @@ import SparrowUIFoundation
 
 #if os(macOS)
 import AppKit
-#elseif os(Windows)
-import UWP
-import WinAppSDK
-import WinUI
 #endif
 
 /// A single line text editor.
@@ -19,6 +15,11 @@ public struct TextEditor: View {
     case focusPrevious
     case moveUp
     case moveDown
+
+    /// Sent immediately after either `text` or `selection` changes due to user input.
+    /// The receiver may alter `text` or `selection`, and the result will be applied
+    /// immediately. Not sent due to programmatic update to `text` or `selection`.
+    case changed
   }
 
   public init(
@@ -26,6 +27,7 @@ public struct TextEditor: View {
     selection: Binding<Range<String.Index>?>? = nil,
     action: (@MainActor (Action) -> ())? = nil,
   ) {
+    let selection = selection ?? .binding(for: \.value, of: ObservableValue<Range<String.Index>?>(nil))
     controller = .init(textBinding: text, selectionBinding: selection)
     self.text = text
     self.selection = selection
@@ -440,225 +442,4 @@ final class CustomTextView: NSTextView {
   }
 }
 
-#elseif os(Windows)
-private final class TextBoxRepresentable: WinUIElementRepresentable {
-  init(controller: Controller, action: (@MainActor (TextEditor.Action) -> Void)?) {
-    self.controller = controller
-    self.action = action
-  }
-
-  @MainActor
-  final class Controller {
-    init(
-      textBinding: Binding<String>,
-      selectionBinding: Binding<Range<String.Index>?>?,
-    ) {
-      self.textBinding = textBinding
-      self.selectionBinding = selectionBinding
-    }
-
-    let textBinding: Binding<String>
-    let selectionBinding: Binding<Range<String.Index>?>?
-    let foregroundBrush = SolidColorBrush()
-    var contentAlignment: Alignment = .leading
-    var contentPadding: EdgeInsets = .zero
-    weak var context: CoreViewContext?
-    weak var associatedView: CoreView?
-    var textBox: TextBox?
-
-    var selection: Range<String.Index>? {
-      didSet {
-        guard selection != oldValue else { return }
-        selectionChanged(selection)
-      }
-    }
-
-    func setText(_ text: String, withSelection selection: Range<String.Index>?) {
-      guard let textBox else { return }
-      let existingSelectionStart = textBox.selectionStart
-      if text != textBox.text {
-        textBox.text = text
-      }
-      // Avoid re-setting selection if not changed as this can confuse the underlying TextBox,
-      // interfering with shift-arrow interactive selection.
-      if selection != self.selection {
-        if let selection {
-          let range = NSRange(selection, in: text)
-          try! textBox.select(Int32(range.location), Int32(range.length))
-        } else {
-          try! textBox.select(max(existingSelectionStart, Int32(text.count)), 0)
-        }
-      }
-    }
-
-    func setFont(_ font: Font) {
-      guard let textBox else { return }
-      textBox.fontFamily = .init(font.family)
-      textBox.fontSize = font.size
-      textBox.fontWeight = .init(weight: UInt16(font.weight.value))
-    }
-
-    func setForegroundColor(_ foregroundColor: CoreColor) {
-      foregroundBrush.color = foregroundColor.value
-    }
-
-    func setContentAlignment(_ alignment: Alignment) {
-      contentAlignment = alignment
-      updateLayout()
-    }
-
-    func setContentPadding(_ padding: EdgeInsets) {
-      contentPadding = padding
-      updateLayout()
-    }
-
-    func setFocused() {
-      guard let textBox else { return }
-      _ = try! textBox.focus(.programmatic)
-    }
-
-    func updateLayout() {
-      guard let textBox else { return }
-
-      let actualHeight = textBox.actualHeight
-      guard actualHeight != 0 else { return }
-
-      if contentAlignment != .leading {
-        print(">>> TODO: missing implementation of TextBox.contentAlignment: \(contentAlignment)")
-      }
-
-      let textBlock = TextBlock()
-      textBlock.text = "Ag"
-      textBlock.fontFamily = textBox.fontFamily
-      textBlock.fontSize = textBox.fontSize
-      textBlock.fontWeight = textBox.fontWeight
-
-      try! textBlock.measure(.init(width: .greatestFiniteMagnitude, height: .greatestFiniteMagnitude))
-
-      let textHeight = CGFloat(textBlock.desiredSize.height)
-
-      let availableHeight = textBox.actualHeight
-        - contentPadding.top
-        - contentPadding.bottom
-        - textHeight
-
-      textBox.padding = Thickness(
-        left: contentPadding.leading,
-        top: contentPadding.top + availableHeight / 2,
-        right: contentPadding.trailing,
-        bottom: contentPadding.bottom,
-      )
-    }
-
-    func textChanged(_ value: String) {
-      textBinding.set(value)
-
-      // If the text binding was modified, then reflect that change immediately to avoid flicker.
-      let valueAfter = textBinding.get()
-      if valueAfter != value {
-        setText(valueAfter, withSelection: selectionBinding.flatMap { $0.get() })
-      }
-    }
-
-    func selectionChanged(_ selection: Range<String.Index>?) {
-      guard let selectionBinding else { return }
-
-      selectionBinding.set(selection)
-
-      // If the selection binding was modified, then reflect that change immediately to avoid flicker.
-      let selectionAfter = selectionBinding.get()
-      if selectionAfter != selection {
-        setText(textBinding.get(), withSelection: selectionAfter)
-      }
-    }
-  }
-
-  func makeUIElement(context: CoreViewContext, associatedView: CoreView) -> UIElement {
-    let textBox = TextBox()
-    controller.textBox = textBox
-    controller.context = context
-    controller.associatedView = associatedView
-
-    associatedView.acceptsFocus = { true }
-
-    textBox.placeholderText = ""
-    textBox.textWrapping = .noWrap
-    textBox.fontSize = 14
-    textBox.borderThickness = Thickness()
-    textBox.padding = Thickness()
-    textBox.minHeight = 0
-    textBox.isSpellCheckEnabled = false
-
-    let clearBrush = SolidColorBrush(Colors.transparent)
-    textBox.resources["TextControlBorderBrush"] = clearBrush
-    textBox.resources["TextControlBorderBrushPointerOver"] = clearBrush
-    textBox.resources["TextControlBorderBrushFocused"] = clearBrush
-    textBox.resources["TextControlBackground"] = clearBrush
-    textBox.resources["TextControlBackgroundPointerOver"] = clearBrush
-    textBox.resources["TextControlBackgroundFocused"] = clearBrush
-
-    textBox.foreground = controller.foregroundBrush
-    textBox.resources["TextControlForeground"] = controller.foregroundBrush
-    textBox.resources["TextControlForegroundFocused"] = controller.foregroundBrush
-    textBox.resources["TextControlForegroundPointerOver"] = controller.foregroundBrush
-
-    textBox.sizeChanged.addHandler { [controller] (_, event: SizeChangedEventArgs!) in
-      guard event.newSize.height != event.previousSize.height else { return }
-      controller.updateLayout()
-    }
-
-    textBox.textChanging.addHandler { [controller] _, _ in
-      guard let textBox = controller.textBox else { return }
-      // New value is already set on `TextBox.text`. It just hasn't been rendered yet.
-      controller.textChanged(textBox.text)
-    }
-
-    textBox.selectionChanging.addHandler { [controller] (_, args: TextBoxSelectionChangingEventArgs!) in
-      guard let textBox = controller.textBox else { return }
-      // New values are given by `args`.
-      let range = NSRange(location: Int(args.selectionStart), length: Int(args.selectionLength))
-      controller.selection = Range(range, in: textBox.text)
-    }
-
-    textBox.gotFocus.addHandler { [controller] _, _ in
-      guard
-        let context = controller.context,
-        let associatedView = controller.associatedView
-      else { return }
-      context.focusedView = associatedView
-    }
-
-    textBox.lostFocus.addHandler { [controller] _, _ in
-      guard
-        let context = controller.context,
-        let associatedView = controller.associatedView
-      else { return }
-      if context.focusedView === associatedView {
-        context.focusedView = nil
-      }
-    }
-
-    textBox.keyDown.addHandler { [action] (_, event: KeyRoutedEventArgs!) in
-      switch event.key {
-      case VirtualKey.enter:
-        action?(.submit)
-
-      case VirtualKey.escape:
-        action?(.cancel)
-
-      default:
-        return
-      }
-
-      event.handled = true
-    }
-
-    return textBox
-  }
-
-  static func tearDownUIElement(_: UIElement) {}
-
-  private let controller: Controller
-  private let action: (@MainActor (TextEditor.Action) -> Void)?
-}
 #endif

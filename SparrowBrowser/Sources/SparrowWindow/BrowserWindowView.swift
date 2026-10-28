@@ -74,7 +74,7 @@ public struct BrowserWindowView: View {
         viewModel.handleOverlayAction($0).flatMap { action($0) }
       }
     }
-    .readSize(to: .binding(for: \.size, on: viewModel))
+    .readSize(to: .binding(for: \.size, of: viewModel))
     .onChange(of: viewModel.forcedColorScheme) {
       action(.applyColorScheme($0))
     }

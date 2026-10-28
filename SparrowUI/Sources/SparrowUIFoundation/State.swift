@@ -4,7 +4,7 @@ import Observation
 @propertyWrapper
 public struct State<Value> {
   public init(wrappedValue: Value) {
-    _valueContainer = .init(value: wrappedValue)
+    _valueContainer = .init(wrappedValue)
   }
 
   public var wrappedValue: Value {
@@ -23,13 +23,5 @@ public struct State<Value> {
     )
   }
 
-  @Observable
-  final class ValueContainer {
-    init(value: Value) {
-      self.value = value
-    }
-    var value: Value
-  }
-
-  private var _valueContainer: ValueContainer
+  private var _valueContainer: ObservableValue<Value>
 }
