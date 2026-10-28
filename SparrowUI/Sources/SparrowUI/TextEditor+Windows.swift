@@ -121,18 +121,17 @@ final class TextBoxRepresentable: WinUIElementRepresentable {
     func textChanging(_ value: String, withSelection selection: Range<String.Index>) {
       guard !ignoreTextBoxEvents else { return }
 
-      var changed = false
+      var textChanged = false
 
       if textBinding.get() != value {
         textBinding.set(value)
-        changed = true
+        textChanged = true
       }
       if selectionBinding.get() != selection {
         selectionBinding.set(selection)
-        changed = true
       }
 
-      if changed {
+      if textChanged {
         notifyTextChanged()
       }
     }
