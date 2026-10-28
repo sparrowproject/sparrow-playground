@@ -365,7 +365,6 @@ public final class BrowserWindowViewModel {
 
     switch action {
     case .submit(let completion):
-      print(">>> completion: \(completion)")
       dependencies.tabSystem.load(.init(url: completion.url), inTab: tabModel.id)
       dismiss()
       if let record = completion.typedHistoryRecord {
