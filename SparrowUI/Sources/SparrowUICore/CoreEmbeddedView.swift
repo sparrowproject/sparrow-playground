@@ -33,6 +33,8 @@ public final class CoreEmbeddedView: CoreView {
   }
 
   override func setSuperview(_ superview: CoreView?) {
+    guard superview !== self.superview else { return }
+
     super.setSuperview(superview)
 
     if superview != nil {

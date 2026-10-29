@@ -104,8 +104,6 @@ private final class FlyoutAnchor<PopoverContent: View>: Grid {
         flyout.reveal()
         contentView.whenLoaded { [weak self] in
           guard let self else { return }
-          let appWindow = contentView.appWindow
-          print(">>> contentView is loaded, containing window position: \(appWindow?.position), size: \(appWindow?.size)")
           if !didInstallEventMapper {
             didInstallEventMapper = true
             anchorHostingView.pushEventRouter(eventMapper)

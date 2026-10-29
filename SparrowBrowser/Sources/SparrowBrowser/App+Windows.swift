@@ -74,7 +74,7 @@ private let _hookProc: HOOKPROC = { (code: Int32, wParam: WPARAM, lParam: LPARAM
 
       if App.instance.handleKeystroke(.init(virtualKey: virtualKey), modifiers: modifiers) {
         print(">>> --- intercepted key event: \(virtualKey), modifiers: \(modifiers)")
-        msg.message = UINT(WM_NULL)
+        ptr.pointee.message = UINT(WM_NULL)
       }
     default:
       break

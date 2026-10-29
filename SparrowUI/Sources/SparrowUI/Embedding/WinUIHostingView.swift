@@ -294,7 +294,23 @@ extension WinUIHostingView: CoreViewContext.Delegate {
   }
 
   public func updateEmbeddedViews(_ elements: [UIElement]) {
-    canvas.children.replaceAll(elements)
+    let children = canvas.children!
+
+    // NOTE: Cannot use `replaceAll` here as that has the side-effect of
+    // removing all elements and then re-adding them, which can cause an
+    // existing element to lose focus.
+
+    // WinRT equality compares IUnknown addresses, not Swift wrapper identity.
+    // Keep unchanged elements attached to preserve keyboard focus.
+    let changes = elements.difference(from: children.compactMap { $0 })
+    for change in changes {
+      switch change {
+      case .remove(let index, _, _):
+        children.removeAt(UInt32(index))
+      case .insert(let index, let element, _):
+        children.insertAt(UInt32(index), element)
+      }
+    }
   }
 }
 

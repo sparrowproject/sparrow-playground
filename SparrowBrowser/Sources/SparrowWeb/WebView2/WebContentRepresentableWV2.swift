@@ -49,11 +49,8 @@ final class WebViewContainer: Grid {
     didSet {
       guard !isEqual(allWebContent, oldValue) else { return }
 
-      print(">>> allWebContent changed: \(allWebContent.map { ObjectIdentifier($0.webView.thisPtr) })")
-
       for webContent in allWebContent {
         if children.index(of: webContent.webView) == nil {
-          print(">>> adding webView @ \(ObjectIdentifier(webContent.webView.thisPtr))")
           children.append(webContent.webView)
           webContent.webView.visibility = (webContent === selectedWebContent) ? .visible : .collapsed
         }
@@ -76,16 +73,12 @@ final class WebViewContainer: Grid {
           }
         }
       }
-
-      print(">>> children.count: \(children.count)")
     }
   }
 
   private var selectedWebContent: WebContent? {
     didSet {
       guard selectedWebContent !== oldValue else { return }
-
-      // print(">>> selectedWebContent: \(selectedWebContent)")
 
       oldValue?.webView.visibility = .collapsed
       selectedWebContent?.webView.visibility = .visible

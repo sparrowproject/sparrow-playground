@@ -52,7 +52,6 @@ public final class ContentToolbarViewModel {
   let forwardListMenuData = MenuData()
 
   func updateBackListMenuData(colorScheme: ColorScheme) {
-    print(">>> updateBackListMenuData")
     guard let liveTab = dependencies.tabSystem.liveTab(forTab: tabModel.value) else {
       backListMenuData.items = []
       return
@@ -63,7 +62,6 @@ public final class ContentToolbarViewModel {
   }
 
   func updateForwardListMenuData(colorScheme: ColorScheme) {
-    print(">>> updateForwardListMenuData")
     guard let liveTab = dependencies.tabSystem.liveTab(forTab: tabModel.value) else {
       forwardListMenuData.items = []
       return
@@ -72,23 +70,6 @@ public final class ContentToolbarViewModel {
       .command(BackForwardListCommand(item: $0, colorScheme: colorScheme))
     }
   }
-
-  // func handleAddressBarAction(_ action: AddressBarView.Action) -> ContentToolbarView.Action? {
-  
-  //   switch action {
-  //   case .submit(let text):
-  //     print(">>> submit: \(text)")
-
-  //     guard let url = URL.fromUserInput(text) else {
-  //       // Reset back to the current tab model.
-  //       handleURLChanged(tabModel.url)
-  //       return
-  //     }
-   
-  //     // TODO: Navigate the tab!
-  //     dependencies.tabSystem.load(.init(url: url), inTab: tabModel.id)
-  //   }
-  // }
 
   func handleBackForwardMenuAction(_ action: Menu.Action) {
     guard let liveTab = dependencies.tabSystem.liveTab(forTab: tabModel.value) else { return }
