@@ -47,7 +47,7 @@ final class WebViewContainer: Grid {
 
   private var allWebContent = [WebContent]() {
     didSet {
-      // print(">>> allWebContent changed, count: \(allWebContent.count)")
+      guard !isEqual(allWebContent, oldValue) else { return }
 
       print(">>> allWebContent changed: \(allWebContent.map { ObjectIdentifier($0.webView.thisPtr) })")
 
@@ -91,6 +91,10 @@ final class WebViewContainer: Grid {
       selectedWebContent?.webView.visibility = .visible
     }
   }
+}
+
+private func isEqual(_ a: [WebContent], _ b: [WebContent]) -> Bool {
+  a.elementsEqual(b, by: { $0 === $1 })
 }
 
 #endif

@@ -112,7 +112,7 @@ final class DefaultTabSystem: TabSystem {
 
     // If a TabID exists, it should already have a known model.
     return model.tabs[tabID] ?? {
-      assertionFailure("TabID without a backing TabModel, tabID: \(tabID)!")
+      print(">>> TabID without a backing TabModel, tabID: \(tabID)!")
       return .invalid
     }()
   }

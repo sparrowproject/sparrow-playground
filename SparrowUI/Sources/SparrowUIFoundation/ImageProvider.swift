@@ -2,7 +2,7 @@ import Foundation
 
 @MainActor
 public protocol ImageProvider: Sendable {
-  func getImage() async -> ImageRef?
+  func getImage() -> Future<ImageRef>
 }
 
 public typealias AnyImageProvider = any ImageProvider
@@ -13,24 +13,27 @@ public final class CachingImageProvider: ImageProvider {
     self.source = source
   }
 
-  public func getImage() async -> ImageRef? {
+  public func getImage() -> Future<ImageRef> {
     switch state {
     case .loaded(let value):
-      return value
+      return .value(value)
 
     case .loading(let task):
-      return await task.value
+      return .deferred(task)
 
     case .empty:
-      let task = Task {
-        await source.getImage()
+      switch source.getImage() {
+      case .value(let value):
+        return .value(value)
+      case .deferred(let innerTask):
+        let task = Task<ImageRef?, Never> {
+          let value = await innerTask.value
+          state = .loaded(value)
+          return value
+        }
+        state = .loading(task)
+        return .deferred(task)
       }
-
-      state = .loading(task)
-
-      let value = await task.value
-      state = .loaded(value)
-      return value
     }
   }
 
@@ -51,8 +54,10 @@ public final class DecodingImageProvider: ImageProvider {
     self.codec = codec
   }
 
-  public func getImage() async -> ImageRef? {
-    await codec.decode(data)
+  public func getImage() -> Future<ImageRef> {
+    .deferred(.init {
+      await codec.decode(data)
+    })
   }
 
   private let data: Data

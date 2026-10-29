@@ -168,37 +168,36 @@ public final class CoreImageView: CoreView {
   }
 
   private func renderImage() {
-    guard _renderSize.width > 0, _renderSize.height > 0 else {
+    guard _renderSize.width > 0, _renderSize.height > 0, let _source else {
+      _loadingStatus = .idle
       resetVisual()
       return
     }
 
-    surfaceRasterTask?.cancel()
-    surfaceRasterTask = Task<Void, Never>.immediate {
-      let image = await getImage()
-      guard !Task.isCancelled else { return }
-      defer {
+    func complete() {
+      if let cachedImage {
+        _loadingStatus = .loaded
+        drawImage(cachedImage)
+      } else {
+        _loadingStatus = .failed
+        resetVisual()
+      }
+    }
+
+    switch CoreImageLoader(context: context).loadImage(source: _source) {
+    case .value(let image):
+      cachedImage = image
+      complete()
+    case .deferred(let task):
+      surfaceRasterTask?.cancel()
+      surfaceRasterTask = .init {
+        let image = await task.value
+        guard !Task.isCancelled else { return }
+        cachedImage = image
+        complete()
         surfaceRasterTask = nil
       }
-      guard let image else {
-        print(">>> getImage failed, _source: \(_source)")
-        resetVisual()
-        _loadingStatus = .failed
-        return
-      }
-      drawImage(image)
-      _loadingStatus = .loaded
     }
-  }
-
-  private func getImage() async -> ImageRef? {
-    guard let _source else { return nil }
-
-    if cachedImage == nil {
-      cachedImage = await CoreImageLoader(context: context).loadImage(source: _source)
-      _loadingStatus = cachedImage != nil ? .loaded : .failed
-    }
-    return cachedImage
   }
 
   private func drawImage(_ image: ImageRef) {

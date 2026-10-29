@@ -44,18 +44,20 @@ public struct _LazyFaviconProvider: ImageProvider {
   let webHistory: WebHistory
   let id: String
 
-  public func getImage() async -> ImageRef? {
+  public func getImage() -> Future<ImageRef> {
     guard let faviconURL = URL(string: id) else {
       print(">>> invalid favicon url!")
-      return nil
+      return .value(nil)
     }
 
-    guard let imageProvider = await webHistory.queryImage(forFaviconURL: faviconURL) else {
-      print(">>> image for favicon not found!")
-      return nil
-    }
+    return .deferred(.init {
+      guard let imageProvider = await webHistory.queryImage(forFaviconURL: faviconURL) else {
+        print(">>> image for favicon not found!")
+        return nil
+      }
 
-    return await imageProvider.getImage()
+      return await imageProvider.getImage().value
+    })
   }
 }
 
@@ -73,29 +75,31 @@ public struct _LazyPageFaviconProvider: ImageProvider {
   let webHistory: WebHistory
   let id: String
 
-  public func getImage() async -> ImageRef? {
+  public func getImage() -> Future<ImageRef> {
     let parts = id.split(separator: ":", maxSplits: 1)
 
     guard let colorScheme = ColorScheme(rawValue: String(parts[0])) else {
       print(">>> invalid color scheme!")
-      return nil
+      return .value(nil)
     }
 
     guard let pageURL = URL(string: String(parts[1])) else {
       print(">>> invalid page url!")
-      return nil
+      return .value(nil)
     }
 
-    guard let faviconURL = await webHistory.queryFaviconURL(forPageURL: pageURL, withColorScheme: colorScheme) else {
-      print(">>> favicon for page not found!")
-      return nil
-    }
+    return .deferred(.init {
+      guard let faviconURL = await webHistory.queryFaviconURL(forPageURL: pageURL, withColorScheme: colorScheme) else {
+        print(">>> favicon for page not found!")
+        return nil
+      }
 
-    guard let imageProvider = await webHistory.queryImage(forFaviconURL: faviconURL) else {
-      print(">>> image for favicon not found!")
-      return nil
-    }
+      guard let imageProvider = await webHistory.queryImage(forFaviconURL: faviconURL) else {
+        print(">>> image for favicon not found!")
+        return nil
+      }
 
-    return await imageProvider.getImage()
+      return await imageProvider.getImage().value
+    })
   }
 }
