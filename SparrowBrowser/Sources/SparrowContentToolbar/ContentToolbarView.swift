@@ -77,7 +77,6 @@ public struct ContentToolbarView: View {
         layout = newLayout
       }
     }
-    .onChange(of: viewModel.tabModel.url, perform: viewModel.handleURLChanged)
     .onChange(
       of: viewModel.recentDownloadsViewModel.hasPendingDownloads,
       perform: {

@@ -1,14 +1,17 @@
 import Foundation
 import Observation
 import SparrowSuggest
+import SparrowTabs
+import SparrowToolbelt
 
 public typealias AddressBarViewModelDependencies
   = SuggestionsViewModelDependencies
 
 @Observable @MainActor
 public final class AddressBarViewModel {
-  public init(dependencies: AddressBarViewModelDependencies) {
+  public init(dependencies: AddressBarViewModelDependencies, groupModel: Handle<TabGroupModel>) {
     self.dependencies = dependencies
+    self.groupModel = groupModel
 
     suggestionsViewModel = .init(dependencies: dependencies)
   }
@@ -47,16 +50,8 @@ public final class AddressBarViewModel {
 
   public func dismissEditor() {
     mode = .placeholder
+    handleURLChanged(url) // Put the current URL back.
   }
-
-  public func handleURLChanged(_ url: URL?) {
-    guard mode == .placeholder else { return }
-
-    let hostname = url?.host() ?? ""
-
-    content.placeholderValue = hostname
-    content.editorValue = url?.absoluteString ?? ""
-   }
 
   enum Mode {
     case placeholder
@@ -68,7 +63,29 @@ public final class AddressBarViewModel {
   var placeholderPositionInHost: CGPoint?
   var placeholderSize = CGSize.zero
 
+  var url: URL? {
+    groupModel.selectedTabModel.url
+  }
+
+  var tabID: TabID {
+    groupModel.selectedTabModel.id
+  }
+
+  func handleURLChanged(_ url: URL?) {
+    guard mode == .placeholder else { return }
+
+    let hostname = url?.host() ?? ""
+
+    content.placeholderValue = hostname
+    content.editorValue = url?.absoluteString ?? ""
+  }
+
+  func handleTabChange() {
+    // TODO: Adjust behavior based on selected tab.
+  }
+
   private let dependencies: AddressBarViewModelDependencies
+  private let groupModel: Handle<TabGroupModel>
 }
 
 extension AddressBarViewModel: @MainActor Identifiable {

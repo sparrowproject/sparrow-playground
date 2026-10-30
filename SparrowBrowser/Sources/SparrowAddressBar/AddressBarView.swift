@@ -30,6 +30,12 @@ public struct AddressBarView: View {
     .readSize {
       viewModel.placeholderSize = $0
     }
+    .onChange(of: viewModel.url) {
+      viewModel.handleURLChanged($0)
+    }
+    .onChange(of: viewModel.tabID) { _ in
+      viewModel.handleTabChange()
+    }
     .onChange(of: viewModel.mode) { mode in
       switch mode {
       case .editor:

@@ -23,7 +23,7 @@ public final class ContentToolbarViewModel {
     self.dependencies = dependencies
     self.groupModel = groupModel
 
-    addressBarViewModel = .init(dependencies: dependencies)
+    addressBarViewModel = .init(dependencies: dependencies, groupModel: groupModel)
     spaceSelectorViewModel = .init(dependencies: dependencies, groupModel: groupModel)
     recentDownloadsViewModel = .init(dependencies: dependencies)
   }
@@ -42,10 +42,6 @@ public final class ContentToolbarViewModel {
 
   public var disableSpaceSelector: Bool {
     dependencies.profileID.isIncognito
-  }
-
-  public func handleURLChanged(_ url: URL?) {
-    addressBarViewModel.handleURLChanged(url)
   }
 
   let backListMenuData = MenuData()

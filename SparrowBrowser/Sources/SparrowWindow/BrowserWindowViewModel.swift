@@ -360,7 +360,6 @@ public final class BrowserWindowViewModel {
     func dismiss() {
       overlayViewModel.addressBarViewModel = nil
       contentViewModel.contentBodyViewModel.webContentViewModel.inputDisabled = false
-      contentViewModel.contentToolbarViewModel.addressBarViewModel.handleURLChanged(tabModel.url)
     }
 
     switch action {

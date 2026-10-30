@@ -13,6 +13,7 @@ target_link_libraries(SparrowAddressBar PUBLIC
 )
 target_link_libraries(SparrowAddressBar PRIVATE
   SparrowDesignSystem
+  SparrowTabs
   SparrowUI
   SparrowUICore
   SparrowUIFoundation
