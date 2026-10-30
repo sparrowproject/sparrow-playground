@@ -1,5 +1,9 @@
 import Foundation
 
+#if os(macOS)
+import AppKit
+#endif
+
 @MainActor
 public protocol ImageProvider: Sendable {
   func getImage() -> Future<ImageRef>

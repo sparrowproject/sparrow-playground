@@ -60,34 +60,21 @@ public final class CoreImageView: CoreView {
   }
   #endif
 
+  private var renderImagePending = false
+  private var deferredLoadImageTask: Task<Void, Never>?
+
   private var _source: ImageSource? {
     didSet {
       guard _source != oldValue else { return }
 
-      _loadingStatus = _source != nil ? .loading : .idle
+      // _loadingStatus = _source != nil ? .loading : .idle
 
-      #if os(macOS)
-      // Handle overlapped invocations.
-      loadingTask?.cancel()
-      loadingTask = Task<Void, Never> {
-        let image: NSImage? =
-          if let _source {
-            await CoreImageLoader(context: context).loadImage(source: _source)
-          } else {
-            nil
-          }
-        guard !Task.isCancelled else { return }
-        _loadingStatus = image != nil ? .loaded : .failed
-        imageState.intrinsicSize = image?.size
-        (layer as! CoreImageLayer).image = image
-        loadingTask = nil
-      }
-      #endif
+      print(">>> didSet _source: \(_source)")
 
-      #if os(Windows)
       cachedImage = nil
       scheduleRenderImage()
-      #endif
+
+      print(">>> ... _loadingStatus: \(_loadingStatus)")
     }
   }
 
@@ -117,6 +104,9 @@ public final class CoreImageView: CoreView {
 
   private var _loadingStatus: ImageLoadingStatus = .idle {
     didSet {
+      if _loadingStatus != oldValue {
+        print(">>> didSet _loadingStatus: \(_loadingStatus)")
+      }
       if let loadingStatus {
         loadingStatus.set(_loadingStatus)
       }
@@ -127,21 +117,82 @@ public final class CoreImageView: CoreView {
     state as! ImageState
   }
 
+  private var cachedImage: ImageRef?
+
+  private func scheduleRenderImage() {
+    guard !renderImagePending else { return }
+    renderImagePending = true
+    // Use scheduleDeferredUpdate here to allow other property changes to be applied
+    // before actually calling `renderImage`.
+    context.scheduler.scheduleDeferredUpdate { [weak self] in
+      guard let self else { return }
+      renderImagePending = false
+      renderImage()
+    }
+  }
+
+  private func renderImage() {
+    #if os(Windows)
+    guard _renderSize.width > 0, _renderSize.height > 0 else {
+      _loadingStatus = .idle
+      clearImage()
+      return
+    }
+    #endif
+
+    guard let _source else {
+      _loadingStatus = .idle
+      clearImage()
+      return
+    }
+
+    func complete() {
+      print(">>> complete w/ cachedImage: \(cachedImage)")
+      imageState.intrinsicSize = cachedImage?.size
+      if let cachedImage {
+        _loadingStatus = .loaded
+        applyImage(cachedImage)
+      } else {
+        _loadingStatus = .failed
+        clearImage()
+      }
+    }
+
+    if cachedImage != nil {
+      complete()
+      return
+    }
+
+    switch CoreImageLoader(context: context).loadImage(source: _source) {
+    case .value(let image):
+      cachedImage = image
+      complete()
+    case .deferred(let task):
+      print(">>> creating deferredLoadImageTask...")
+      _loadingStatus = .loading
+      deferredLoadImageTask?.cancel()
+      deferredLoadImageTask = .init {
+        let image = await task.value
+        guard !Task.isCancelled else { return }
+        cachedImage = image
+        complete()
+        deferredLoadImageTask = nil
+      }
+    }
+  }
+
   #if os(macOS)
-  private var loadingTask: Task<Void, Never>?
+  private func applyImage(_ image: NSImage) {
+    (layer as! CoreImageLayer).image = image
+  }
+
+  private func clearImage() {
+    (layer as! CoreImageLayer).image = nil
+  }
   #endif
 
   #if os(Windows)
-  private var renderImagePending = false
   private var surface: CompositionDrawingSurface?
-  private var surfaceRasterTask: Task<Void, Never>?
-
-  private var cachedImage: ImageRef? {
-    didSet {
-      guard cachedImage != oldValue else { return }
-      imageState.intrinsicSize = cachedImage?.size
-    }
-  }
 
   private var _renderSize: CGSize = .zero {
     didSet {
@@ -157,56 +208,17 @@ public final class CoreImageView: CoreView {
     }
   }
 
-  private func scheduleRenderImage() {
-    guard !renderImagePending else { return }
-    renderImagePending = true
-    context.scheduler.scheduleDeferredUpdate { [weak self] in
-      guard let self else { return }
-      renderImagePending = false
-      renderImage()
-    }
-  }
-
-  private func renderImage() {
-    guard _renderSize.width > 0, _renderSize.height > 0, let _source else {
-      _loadingStatus = .idle
-      resetVisual()
-      return
-    }
-
-    func complete() {
-      if let cachedImage {
-        _loadingStatus = .loaded
-        drawImage(cachedImage)
-      } else {
-        _loadingStatus = .failed
-        resetVisual()
-      }
-    }
-
-    switch CoreImageLoader(context: context).loadImage(source: _source) {
-    case .value(let image):
-      cachedImage = image
-      complete()
-    case .deferred(let task):
-      surfaceRasterTask?.cancel()
-      surfaceRasterTask = .init {
-        let image = await task.value
-        guard !Task.isCancelled else { return }
-        cachedImage = image
-        complete()
-        surfaceRasterTask = nil
-      }
-    }
-  }
-
-  private func drawImage(_ image: ImageRef) {
+  private func applyImage(_ image: ImageRef) {
     switch image {
     case .bitmap(let bitmap):
       drawBitmap(bitmap)
     case .svg(let svg):
       drawSvg(svg)
     }
+  }
+
+  private func clearImage() {
+    visual.brush = try! context.compositor.createColorBrush(Colors.transparent)
   }
 
   private func drawBitmap(_ bitmap: CanvasBitmap) {
@@ -310,10 +322,6 @@ public final class CoreImageView: CoreView {
 
     let brush = try! context.compositor.createSurfaceBrush(surface)!
     visual.brush = brush
-  }
-
-  private func resetVisual() {
-    visual.brush = try! context.compositor.createColorBrush(Colors.transparent)
   }
   #endif
 }

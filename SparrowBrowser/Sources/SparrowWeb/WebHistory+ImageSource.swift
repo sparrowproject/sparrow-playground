@@ -2,6 +2,10 @@ import Foundation
 import SparrowUI
 import SparrowUIFoundation
 
+#if os(macOS)
+import AppKit
+#endif
+
 enum ImageSourceKinds: String {
   case favicon
   case pageFavicon
