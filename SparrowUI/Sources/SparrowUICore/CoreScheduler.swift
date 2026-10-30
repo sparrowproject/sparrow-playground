@@ -39,6 +39,8 @@ public final class CoreScheduler {
   }
 
   public func flushUpdates() {
+    guard !updateQueue.isEmpty || !deferredUpdateQueue.isEmpty else { return }
+
     defer { animationInstance = nil }
 
     #if os(macOS)

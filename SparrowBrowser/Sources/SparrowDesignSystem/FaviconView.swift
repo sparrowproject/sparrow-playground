@@ -16,10 +16,16 @@ public struct FaviconView: View {
         .width(geom.width)
         .height(geom.height)
     }
+    .onChange(of: loadingStatus != .loaded) { notLoaded in
+      withAnimation(nil) {
+        showFallbackContent = notLoaded
+      }
+    }
   }
 
   private let source: @MainActor () -> ImageSource?
   @State private var loadingStatus = ImageLoadingStatus.idle
+  @State private var showFallbackContent = false
 
   private var primaryContent: some View {
     Image(source: source())
@@ -35,7 +41,7 @@ public struct FaviconView: View {
       .opacity(showFallbackContent ? 1 : 0)
   }
 
-  private var showFallbackContent: Bool {
-    loadingStatus != .loaded
-  }
+  // private var showFallbackContent: Bool {
+  //   loadingStatus != .loaded
+  // }
 }

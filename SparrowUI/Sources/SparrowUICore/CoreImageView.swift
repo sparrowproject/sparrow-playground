@@ -171,7 +171,7 @@ public final class CoreImageView: CoreView {
       print(">>> creating deferredLoadImageTask...")
       _loadingStatus = .loading
       deferredLoadImageTask?.cancel()
-      deferredLoadImageTask = .init {
+      deferredLoadImageTask = .immediate {
         let image = await task.value
         guard !Task.isCancelled else { return }
         cachedImage = image

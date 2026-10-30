@@ -4,6 +4,7 @@ public enum Future<Value: Sendable>: Sendable {
 }
 
 extension Future {
+  nonisolated(nonsending)
   public var value: Value? {
     get async {
       switch self {

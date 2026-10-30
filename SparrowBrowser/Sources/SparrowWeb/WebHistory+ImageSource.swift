@@ -49,18 +49,34 @@ public struct _LazyFaviconProvider: ImageProvider {
   let id: String
 
   public func getImage() -> Future<ImageRef> {
+    print(">>> _LazyFaviconProvider.getImage()")
+
     guard let faviconURL = URL(string: id) else {
       print(">>> invalid favicon url!")
       return .value(nil)
     }
 
-    return .deferred(.init {
+    return .deferred(.immediate {
+      print(">>> ... calling queryImage for: \(faviconURL)")
       guard let imageProvider = await webHistory.queryImage(forFaviconURL: faviconURL) else {
         print(">>> image for favicon not found!")
         return nil
       }
 
-      return await imageProvider.getImage().value
+      print(">>> ... got imageProvider: \(imageProvider)")
+
+      let result = await imageProvider.getImage().value
+      print(">>> ... got result")
+      return result
+
+      // switch imageProvider.getImage() {
+      // case .value(let image):
+      //   print(">>> ... returning value")
+      //   return image
+      // case .deferred(let task):
+      //   print(">>> ... awaiting task.value")
+      //   return await task.value
+      // }
     })
   }
 }
@@ -92,7 +108,7 @@ public struct _LazyPageFaviconProvider: ImageProvider {
       return .value(nil)
     }
 
-    return .deferred(.init {
+    return .deferred(.immediate {
       guard let faviconURL = await webHistory.queryFaviconURL(forPageURL: pageURL, withColorScheme: colorScheme) else {
         print(">>> favicon for page not found!")
         return nil

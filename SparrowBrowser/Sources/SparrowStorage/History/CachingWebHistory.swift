@@ -19,7 +19,7 @@ final class CachingWebHistory: WebHistory {
   func queryFaviconURL(forPageURL pageURL: URL, withColorScheme colorScheme: ColorScheme) async -> URL? {
     let key = FaviconURLKey(pageURL: pageURL, colorScheme: colorScheme)
     if let cached = faviconURLs[key] { return await cached.value }
-    let task = Task { [source] in
+    let task = Task.immediate { [source] in
       await source.queryFaviconURL(forPageURL: pageURL, withColorScheme: colorScheme)
     }
     faviconURLs[key] = task
@@ -33,8 +33,13 @@ final class CachingWebHistory: WebHistory {
   }
 
   func queryImage(forFaviconURL faviconURL: URL) async -> AnyImageProvider? {
-    if let cached = faviconImages[faviconURL] { return await cached.value }
-    let task = Task<AnyImageProvider?, Never> { [source] in
+    print(">>> queryImage for \(faviconURL)")
+
+    if let cached = faviconImages[faviconURL] {
+      print(">>> ... returning cached.value")
+      return await cached.value
+    }
+    let task = Task<AnyImageProvider?, Never>.immediate { [source] in
       await source.queryImage(forFaviconURL: faviconURL)
     }
     faviconImages[faviconURL] = task
