@@ -61,20 +61,14 @@ public final class CoreImageView: CoreView {
   #endif
 
   private var renderImagePending = false
-  private var deferredLoadImageTask: Task<Void, Never>?
+  private var loadImageTask: Task<Void, Never>?
 
   private var _source: ImageSource? {
     didSet {
       guard _source != oldValue else { return }
 
-      // _loadingStatus = _source != nil ? .loading : .idle
-
-      print(">>> didSet _source: \(_source)")
-
       cachedImage = nil
       scheduleRenderImage()
-
-      print(">>> ... _loadingStatus: \(_loadingStatus)")
     }
   }
 
@@ -104,9 +98,6 @@ public final class CoreImageView: CoreView {
 
   private var _loadingStatus: ImageLoadingStatus = .idle {
     didSet {
-      if _loadingStatus != oldValue {
-        print(">>> didSet _loadingStatus: \(_loadingStatus)")
-      }
       if let loadingStatus {
         loadingStatus.set(_loadingStatus)
       }
@@ -147,7 +138,6 @@ public final class CoreImageView: CoreView {
     }
 
     func complete() {
-      print(">>> complete w/ cachedImage: \(cachedImage)")
       imageState.intrinsicSize = cachedImage?.size
       if let cachedImage {
         _loadingStatus = .loaded
@@ -163,21 +153,13 @@ public final class CoreImageView: CoreView {
       return
     }
 
-    switch CoreImageLoader(context: context).loadImage(source: _source) {
-    case .value(let image):
+    loadImageTask?.cancel()
+    loadImageTask = .immediate {
+      let image = await CoreImageLoader(context: context).loadImage(source: _source)
+      guard !Task.isCancelled else { return }
       cachedImage = image
       complete()
-    case .deferred(let task):
-      print(">>> creating deferredLoadImageTask...")
-      _loadingStatus = .loading
-      deferredLoadImageTask?.cancel()
-      deferredLoadImageTask = .immediate {
-        let image = await task.value
-        guard !Task.isCancelled else { return }
-        cachedImage = image
-        complete()
-        deferredLoadImageTask = nil
-      }
+      loadImageTask = nil
     }
   }
 

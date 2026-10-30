@@ -15,30 +15,28 @@ public final class CoreImageLoader {
     self.context = context
   }
 
-  func loadImage(source: ImageSource) -> Future<ImageRef> {
+  func loadImage(source: ImageSource) async -> ImageRef? {
     if case .custom(let kind, let id) = source {
-      return loadCustomImage(kind: kind, id: id)
+      return await loadCustomImage(kind: kind, id: id)
     }
 
     #if os(macOS)
 
     if case .symbol(let source) = source {
-      let image = NSImage(systemSymbolName: source.systemName, accessibilityDescription: nil)?
+      return NSImage(systemSymbolName: source.systemName, accessibilityDescription: nil)?
         .withSymbolConfiguration(.init(pointSize: source.size, weight: .from(source.weight)))
-      return .value(image)
     }
     if let fileURL = source.fileURL {
-      return .deferred(.init {
-        let data: Data? = await withCheckedContinuation { continuation in
-          DispatchQueue(label: "image-loader").async {
-            continuation.resume(returning: try? Data(contentsOf: fileURL))
-          }
+      // TODO: Consider how to add a cache here.
+      let data: Data? = await withCheckedContinuation { continuation in
+        DispatchQueue(label: "image-loader").async {
+          continuation.resume(returning: try? Data(contentsOf: fileURL))
         }
-        guard let data else { return nil }
-        return await ImageCodecs.lossless.decode(data)
-      })
+      }
+      guard let data else { return nil }
+      return await ImageCodecs.lossless.decode(data)
     }
-    return .value(nil)
+    return nil
 
     #elseif os(Windows)
 
@@ -72,16 +70,16 @@ public final class CoreImageLoader {
 
   private let context: CoreViewContext
 
-  private func loadCustomImage(kind: String, id: String) -> Future<ImageRef> {
+  private func loadCustomImage(kind: String, id: String) async -> ImageRef? {
     guard let resolver = context.imageSourceResolvers[kind] else {
       print(">>> unknown custom resolver, kind: \(kind)!")
-      return .value(nil)
+      return nil
     }
     guard let provider = resolver(id) else {
       print(">>> provider is nil!")
-      return .value(nil)
+      return nil
     }
-    return provider.getImage()
+    return await provider.getImage()
   }
 }
 

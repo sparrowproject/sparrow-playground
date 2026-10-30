@@ -44,13 +44,9 @@ public final class CoreScheduler {
     defer { animationInstance = nil }
 
     #if os(macOS)
-    print(">>> BEGIN CATransaction")
     CATransaction.begin()
     CATransaction.setDisableActions(true)
-    defer {
-      print(">>> COMMIT CATransaction")
-      CATransaction.commit()
-    }
+    defer { CATransaction.commit() }
     #endif
 
     func processWorkItems(_ items: [WorkItem]) {

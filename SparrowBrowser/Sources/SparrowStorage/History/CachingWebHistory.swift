@@ -33,10 +33,7 @@ final class CachingWebHistory: WebHistory {
   }
 
   func queryImage(forFaviconURL faviconURL: URL) async -> AnyImageProvider? {
-    print(">>> queryImage for \(faviconURL)")
-
     if let cached = faviconImages[faviconURL] {
-      print(">>> ... returning cached.value")
       return await cached.value
     }
     let task = Task<AnyImageProvider?, Never>.immediate { [source] in

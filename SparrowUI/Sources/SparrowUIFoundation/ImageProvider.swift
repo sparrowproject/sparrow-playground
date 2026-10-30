@@ -6,7 +6,7 @@ import AppKit
 
 @MainActor
 public protocol ImageProvider: Sendable {
-  func getImage() -> Future<ImageRef>
+  func getImage() async -> ImageRef?
 }
 
 public typealias AnyImageProvider = any ImageProvider
@@ -17,27 +17,24 @@ public final class CachingImageProvider: ImageProvider {
     self.source = source
   }
 
-  public func getImage() -> Future<ImageRef> {
+  public func getImage() async -> ImageRef? {
     switch state {
     case .loaded(let value):
-      return .value(value)
+      return value
 
     case .loading(let task):
-      return .deferred(task)
+      return await task.value
 
     case .empty:
-      switch source.getImage() {
-      case .value(let value):
-        return .value(value)
-      case .deferred(let innerTask):
-        let task = Task<ImageRef?, Never> {
-          let value = await innerTask.value
-          state = .loaded(value)
-          return value
-        }
-        state = .loading(task)
-        return .deferred(task)
+      let task = Task.immediate {
+        await source.getImage()
       }
+
+      state = .loading(task)
+
+      let value = await task.value
+      state = .loaded(value)
+      return value
     }
   }
 
@@ -58,10 +55,8 @@ public final class DecodingImageProvider: ImageProvider {
     self.codec = codec
   }
 
-  public func getImage() -> Future<ImageRef> {
-    .deferred(.init {
-      await codec.decode(data)
-    })
+  public func getImage() async -> ImageRef? {
+    await codec.decode(data)
   }
 
   private let data: Data

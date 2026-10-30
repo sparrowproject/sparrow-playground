@@ -67,7 +67,7 @@ final class PersistentWebHistory: WebHistory {
         }
       }
 
-      guard let image = await imageProvider.getImage().value else { return }
+      guard let image = await imageProvider.getImage() else { return }
       guard let imageData = await ImageCodecs.lossless.encode(image) else {
         print(">>> image encoding failed!")
         return
