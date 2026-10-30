@@ -8,16 +8,14 @@ public struct ImageFromStreamProvider: ImageProvider {
     initialPos = stream.position
   }
 
-  public func getImage() -> Future<ImageRef> {
-    .deferred(.init {
-      let device = try! CanvasDevice.getSharedDevice()
+  public func getImage() async -> ImageRef? {
+    let device = try! CanvasDevice.getSharedDevice()
 
-      guard let bitmap = try? await CanvasBitmap.loadAsync(device, stream).value else {
-        return nil
-      }
+    guard let bitmap = try? await CanvasBitmap.loadAsync(device, stream).value else {
+      return nil
+    }
 
-      return .bitmap(bitmap)
-    })
+    return .bitmap(bitmap)
   }
 
   private let stream: AnyIRandomAccessStream
