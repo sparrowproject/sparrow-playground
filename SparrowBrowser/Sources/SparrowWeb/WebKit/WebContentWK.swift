@@ -23,13 +23,14 @@ final class WebContentWK: NSObject, WebContent {
     webView.uiDelegate = self
     webView.perform(NSSelectorFromString("_setIconLoadingDelegate:"), with: self)
 
-    setUpObservers()
-
     if let interactionState = model.interactionState {
       webView.interactionState = interactionState
     } else if let url = model.url {
       load(url: url)
     }
+
+    // This must come last as it will overwrite model fields.
+    setUpObservers()
   }
 
   let webView: WKWebView
