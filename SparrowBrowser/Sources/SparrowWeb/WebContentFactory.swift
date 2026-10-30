@@ -3,7 +3,7 @@ import SparrowToolbelt
 
 @MainActor
 public protocol WebContentFactory {
-  func createWebContent(initializationParams: WebContentInitializationParams?) -> WebContent
+  func createWebContent(model: WebContentModel) -> WebContent
 }
 
 public protocol WebContentFactoryProviding {

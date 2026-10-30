@@ -8,11 +8,11 @@ final class WebContentFactoryWK: WebContentFactory {
     self.partition = partition
   }
 
-  func createWebContent(initializationParams: WebContentInitializationParams?) -> WebContent {
+  func createWebContent(model: WebContentModel) -> WebContent {
     WebContentWK(
       dependencies: dependencies,
       configuration: configuration,
-      initializationParams: initializationParams,
+      model: model,
     )
   }
 

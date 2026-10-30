@@ -21,15 +21,7 @@ final class DefaultLiveTab {
     self.dependencies = dependencies
     self.tabModel = tabModel
 
-    let webContent = webContent ?? dependencies.webContentFactory.createWebContent(initializationParams: {
-      if let data = tabModel.interactionState {
-        .interactionState(data)
-      } else if let url = tabModel.url {
-        .url(url)
-      } else {
-        nil
-      }
-    }())
+    let webContent = webContent ?? dependencies.webContentFactory.createWebContent(model: tabModel.webContentModel ?? .init())
     self.webContent = webContent
 
     tabModel.webContentModel = webContent.model

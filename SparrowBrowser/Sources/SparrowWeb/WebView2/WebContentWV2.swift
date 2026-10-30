@@ -18,10 +18,11 @@ final class WebContentWV2: NSObject, WebContent {
 
   init(
     dependencies: Dependencies,
-    initializationParams: WebContentInitializationParams?,
+    model: WebContentModel,
     configurationProvider: @escaping ConfigurationProvider,
   ) {
     self.dependencies = dependencies
+    self.model = model
     self.configurationProvider = configurationProvider
     super.init()
 
@@ -31,18 +32,15 @@ final class WebContentWV2: NSObject, WebContent {
 
     initializeWebView()
 
-    switch initializationParams {
-    case .url(let url):
+    // TODO: Figure out how to actually restore web content state.
+    if let url = model.url {
       load(url: url)
-    case .interactionState, .none:
-      // TODO: Implement support for interaction state.
-      break
     }
   }
 
   let webView = WebView2()
   var coreWebView: CoreWebView2?
-  let model = WebContentModel()
+  var model: WebContentModel
   var action: ((WebContentAction) -> Void)?
 
   var backForwardList: any WebContentBackForwardList {
@@ -183,7 +181,6 @@ final class WebContentWV2: NSObject, WebContent {
 
     coreWebView.faviconChanged.addHandler { [weak self] _, _ in
       guard let self else { return }
-      // print(">>> faviconChanged, uri: \(coreWebView.faviconUri)")
       updateFavicon()
     }
 
@@ -279,7 +276,7 @@ final class WebContentWV2: NSObject, WebContent {
 
     let webContent = WebContentWV2(
       dependencies: dependencies,
-      initializationParams: nil,
+      model: .init(),
       configurationProvider: configurationProvider,
     )
 

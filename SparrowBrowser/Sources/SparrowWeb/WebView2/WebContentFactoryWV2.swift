@@ -12,8 +12,8 @@ final class WebContentFactoryWV2: WebContentFactory {
     self.partition = partition
   }
 
-  func createWebContent(initializationParams: WebContentInitializationParams?) -> WebContent {
-    WebContentWV2(dependencies: dependencies, initializationParams: initializationParams) { [weak self] in
+  func createWebContent(model: WebContentModel) -> WebContent {
+    WebContentWV2(dependencies: dependencies, model: model) { [weak self] in
       await self?.configuration()
     }
   }

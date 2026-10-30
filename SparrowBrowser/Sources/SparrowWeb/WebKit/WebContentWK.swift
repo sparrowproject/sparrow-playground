@@ -9,10 +9,11 @@ final class WebContentWK: NSObject, WebContent {
   init(
     dependencies: Dependencies,
     configuration: WKWebViewConfiguration,
-    initializationParams: WebContentInitializationParams?,
+    model: WebContentModel,
   ) {
     // TODO: Setup properly.
     self.dependencies = dependencies
+    self.model = model
     webView = .init(frame: .zero, configuration: configuration)
 
     super.init()
@@ -24,18 +25,15 @@ final class WebContentWK: NSObject, WebContent {
 
     setUpObservers()
 
-    switch initializationParams {
-    case .url(let url):
+    if let interactionState = model.interactionState {
+      webView.interactionState = interactionState
+    } else if let url = model.url {
       load(url: url)
-    case .interactionState(let data):
-      webView.interactionState = data
-    case .none:
-      break
     }
   }
 
   let webView: WKWebView
-  let model = WebContentModel()
+  let model: WebContentModel
   var action: ((WebContentAction) -> Void)?
 
   var backForwardList: any WebContentBackForwardList {
@@ -302,7 +300,7 @@ extension WebContentWK: WKUIDelegate {
     let webContent = WebContentWK(
       dependencies: dependencies,
       configuration: configuration,
-      initializationParams: nil,
+      model: .init(),
     )
     action(.createdNew(webContent, modifierFlags: navigationAction.modifierFlags))
     return webContent.webView

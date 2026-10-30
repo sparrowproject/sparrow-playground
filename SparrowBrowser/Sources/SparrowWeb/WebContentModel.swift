@@ -5,6 +5,8 @@ import SparrowUIFoundation
 @MainActor
 @Observable
 public final class WebContentModel {
+  public init() {}
+
   public init(
     url: URL?,
     title: String?,
@@ -24,8 +26,6 @@ public final class WebContentModel {
   public internal(set) var canGoForward = false
   public internal(set) var faviconURL: URL?
   public internal(set) var interactionState: Data?
-
-  init() {}
 }
 
 extension WebContentModel {
