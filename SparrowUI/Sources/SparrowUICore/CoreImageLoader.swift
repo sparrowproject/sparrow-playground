@@ -21,11 +21,17 @@ public final class CoreImageLoader {
     }
 
     #if os(macOS)
-
     if case .symbol(let source) = source {
       return NSImage(systemSymbolName: source.systemName, accessibilityDescription: nil)?
         .withSymbolConfiguration(.init(pointSize: source.size, weight: .from(source.weight)))
     }
+    #elseif os(Windows)
+    if case .symbol = source {
+      print(">>> CoreImageLoader: ignoring symbol source!")
+      return nil
+    }
+    #endif
+
     if let fileURL = source.fileURL {
       // TODO: Consider how to add a cache here.
       let data: Data? = await withCheckedContinuation { continuation in
@@ -36,36 +42,8 @@ public final class CoreImageLoader {
       guard let data else { return nil }
       return await ImageCodecs.lossless.decode(data)
     }
+
     return nil
-
-    #elseif os(Windows)
-
-    if case .symbol = source {
-      print(">>> CoreImageLoader: ignoring symbol source!")
-      return .value(nil)
-    }
-    
-    // TODO: Add support for image formats other than SVG!
-    return .deferred(.init {
-      guard
-        let url = source.fileURL,
-        url.pathExtension.lowercased() == "svg",
-        let xml = await loadFileAsString(url)
-      else {
-        print(">>> failed to load url: \(source.fileURL)")
-        return nil
-      }
-
-      // TODO: Consider using loadAsync instead. However, the last time we tried that it crashed
-      // within Win2D on a background thread.
-      guard let svg = try? CanvasSvgDocument.loadFromXml(CanvasDevice.getSharedDevice(), xml) else {
-        print(">>> failed to load svg at url: \(url)")
-        return nil
-      }
-      return .svg(svg)
-    })
-
-    #endif
   }
 
   private let context: CoreViewContext
