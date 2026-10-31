@@ -123,8 +123,6 @@ public final class CoreImageView: CoreView {
 
   private var cachedImage: ImageRef? {
     didSet {
-      guard cachedImage !== oldValue else { return }
-
       #if os(macOS)
       (layer as! CoreImageLayer).image = cachedImage
       #elseif os(Windows)
