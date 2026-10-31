@@ -297,6 +297,19 @@ public final class CoreImageView: CoreView {
 
 #if os(macOS)
 private final class CoreImageLayer: CALayer {
+  override init() {
+    super.init()
+    configureImageLayerAsChild()
+  }
+
+  override init(layer: Any) {
+    super.init(layer: layer)
+  }
+
+  required init(coder: NSCoder) {
+    fatalError("Not implemented!")
+  }
+
   var image: NSImage? {
     didSet {
       guard image !== oldValue else { return }
@@ -307,10 +320,6 @@ private final class CoreImageLayer: CALayer {
       imageLayer.contents = image
 
       CATransaction.commit()
-
-      if tintColor == nil {
-        configureImageLayerAsChild()
-      }
     }
   }
 
