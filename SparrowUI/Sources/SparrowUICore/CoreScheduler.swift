@@ -60,16 +60,20 @@ public final class CoreScheduler {
       }
     }
 
-    while !updateQueue.isEmpty {
-      let items = updateQueue
-      updateQueue = []
-      processWorkItems(items)
-    }
+    // Wait for all work to be completed. Note, deferred work can queue normal work, so this
+    // outer loop is needed to ensure all work completes within the same transaction.
+    while !updateQueue.isEmpty || !deferredUpdateQueue.isEmpty {
+      while !updateQueue.isEmpty {
+        let items = updateQueue
+        updateQueue = []
+        processWorkItems(items)
+      }
 
-    while !deferredUpdateQueue.isEmpty {
-      let items = deferredUpdateQueue
-      deferredUpdateQueue = []
-      processWorkItems(items)
+      while !deferredUpdateQueue.isEmpty {
+        let items = deferredUpdateQueue
+        deferredUpdateQueue = []
+        processWorkItems(items)
+      }
     }
 
     for observer in updateObservers {

@@ -47,9 +47,9 @@ public final class CoreImageView: CoreView {
     bind({ [state = imageState] in state.source() }, to: \CoreImageView._source)
     bind({ [state = imageState] in state.resizable() }, to: \CoreImageView._resizable)
     bind({ [state = imageState] in state.tintColor() }, to: \CoreImageView._tintColor)
+    bind({ [state] in state.effectiveSize }, to: \CoreImageView._renderSize)
 
     #if os(Windows)
-    bind({ [state] in state.effectiveSize }, to: \CoreImageView._renderSize)
     bind({ [context] in context.backingScaleFactor }, to: \CoreImageView._backingScaleFactor)
     #endif
   }
@@ -101,6 +101,17 @@ public final class CoreImageView: CoreView {
       if let loadingStatus {
         loadingStatus.set(_loadingStatus)
       }
+    }
+  }
+
+  private var _renderSize: CGSize = .zero {
+    didSet {
+      guard _renderSize != oldValue else { return }
+      #if os(macOS)
+      (layer as! CoreImageLayer).imageSize = _renderSize
+      #elseif os(Windows)
+      scheduleRenderImage()
+      #endif
     }
   }
 
@@ -175,13 +186,6 @@ public final class CoreImageView: CoreView {
 
   #if os(Windows)
   private var surface: CompositionDrawingSurface?
-
-  private var _renderSize: CGSize = .zero {
-    didSet {
-      guard _renderSize != oldValue else { return }
-      scheduleRenderImage()
-    }
-  }
 
   private var _backingScaleFactor: CGFloat = 1.0 {
     didSet {
@@ -330,6 +334,13 @@ private final class CoreImageLayer: CALayer {
     }
   }
 
+  var imageSize = CGSize.zero {
+    didSet {
+      guard imageSize != oldValue else { return }
+      imageLayer.frame = .init(origin: .zero, size: imageSize)
+    }
+  }
+
   var tintColor: CoreColor? {
     didSet {
       guard tintColor != oldValue else { return }
@@ -341,21 +352,6 @@ private final class CoreImageLayer: CALayer {
         backgroundColor = .clear
       }
     }
-  }
-
-  override func layoutSublayers() {
-    super.layoutSublayers()
-
-    CATransaction.begin()
-    CATransaction.setDisableActions(true)
-
-    imageLayer.frame = bounds
-
-    if tintColor == nil {
-      configureImageLayerAsChild()
-    }
-
-    CATransaction.commit()
   }
 
   // Load the image into this layer, and use it as a mask when applying a tint color.
