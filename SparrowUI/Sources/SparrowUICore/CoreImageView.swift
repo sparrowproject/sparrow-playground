@@ -68,7 +68,9 @@ public final class CoreImageView: CoreView {
       guard _source != oldValue else { return }
 
       cachedImage = nil
-      scheduleRenderImage()
+      if let _source {
+        loadImage(source: _source)
+      }
     }
   }
 
@@ -119,57 +121,30 @@ public final class CoreImageView: CoreView {
     state as! ImageState
   }
 
-  private var cachedImage: ImageRef?
+  private var cachedImage: ImageRef? {
+    didSet {
+      guard cachedImage !== oldValue else { return }
 
-  private func scheduleRenderImage() {
-    guard !renderImagePending else { return }
-    renderImagePending = true
-    // Use scheduleDeferredUpdate here to allow other property changes to be applied
-    // before actually calling `renderImage`.
-    context.scheduler.scheduleDeferredUpdate { [weak self] in
-      guard let self else { return }
-      renderImagePending = false
-      renderImage()
+      #if os(macOS)
+      (layer as! CoreImageLayer).image = cachedImage
+      #elseif os(Windows)
+      scheduleRenderImage()
+      #endif
     }
   }
 
-  private func renderImage() {
-    #if os(Windows)
-    guard _renderSize.width > 0, _renderSize.height > 0 else {
-      _loadingStatus = .idle
-      clearImage()
-      return
-    }
-    #endif
-
-    guard let _source else {
-      _loadingStatus = .idle
-      clearImage()
-      return
-    }
-
-    func complete() {
-      imageState.intrinsicSize = cachedImage?.size
-      if let cachedImage {
-        _loadingStatus = .loaded
-        applyImage(cachedImage)
-      } else {
-        _loadingStatus = .failed
-        clearImage()
-      }
-    }
-
-    if cachedImage != nil {
-      complete()
-      return
-    }
+  private func loadImage(source: ImageSource) {
+    assert(cachedImage == nil)
 
     loadImageTask?.cancel()
     loadImageTask = .immediate {
-      let image = await CoreImageLoader(context: context).loadImage(source: _source)
+      let image = await CoreImageLoader(context: context).loadImage(source: source)
       guard !Task.isCancelled else { return }
+
       cachedImage = image
-      complete()
+      imageState.intrinsicSize = image?.size
+      _loadingStatus = image != nil ? .loaded : .failed
+
       loadImageTask = nil
     }
   }
@@ -192,6 +167,24 @@ public final class CoreImageView: CoreView {
       guard _backingScaleFactor != oldValue else { return }
       scheduleRenderImage()
     }
+  }
+
+  private func scheduleRenderImage() {
+    guard !renderImagePending else { return }
+    renderImagePending = true
+    context.scheduler.scheduleUpdate { [weak self] in
+      guard let self else { return }
+      renderImagePending = false
+      renderImage()
+    }
+  }
+
+  private func renderImage() {
+    guard let cachedImage, _renderSize.width > 0, _renderSize.height > 0 else {
+      clearImage()
+      return
+    }
+    applyImage(cachedImage)
   }
 
   private func applyImage(_ image: ImageRef) {
