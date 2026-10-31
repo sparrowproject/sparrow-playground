@@ -149,16 +149,6 @@ public final class CoreImageView: CoreView {
     }
   }
 
-  #if os(macOS)
-  private func applyImage(_ image: NSImage) {
-    (layer as! CoreImageLayer).image = image
-  }
-
-  private func clearImage() {
-    (layer as! CoreImageLayer).image = nil
-  }
-  #endif
-
   #if os(Windows)
   private var surface: CompositionDrawingSurface?
 
@@ -317,6 +307,10 @@ private final class CoreImageLayer: CALayer {
       imageLayer.contents = image
 
       CATransaction.commit()
+
+      if tintColor == nil {
+        configureImageLayerAsChild()
+      }
     }
   }
 

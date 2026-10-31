@@ -62,6 +62,7 @@ public final class CoreScheduler {
 
     // Wait for all work to be completed. Note, deferred work can queue normal work, so this
     // outer loop is needed to ensure all work completes within the same transaction.
+    // TODO: Consider if this is something we want to explicitly disallow.
     while !updateQueue.isEmpty || !deferredUpdateQueue.isEmpty {
       while !updateQueue.isEmpty {
         let items = updateQueue
