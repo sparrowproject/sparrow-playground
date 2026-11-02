@@ -16,7 +16,7 @@ public struct AddressBarView: View {
       Button(action: {
         viewModel.focusEditor(selectAll: true)
       }, label: { _ in
-        Text(viewModel.content.placeholderValue)
+        Text(viewModel.placeholderString)
           .font(.system(size: 13, weight: .light))
           .foregroundColor(.primaryText)
           .allowsAnimation(false)

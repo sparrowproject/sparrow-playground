@@ -18,38 +18,33 @@ public final class AddressBarViewModel {
 
   @MainActor
   public struct Content {
-    public var placeholderValue: String = ""
-    public var editorValue: String = "" {
-      didSet {
-        editorSelection = nil
-      }
-    }
-    public var editorSelection: Range<String.Index>?
+    public let placeholderValue: String
+    public let editorValue: String
+    public let editorSelection: Range<String.Index>?
   }
 
-  public internal(set) var content = Content()
-
   public var editorHasFocus: Bool {
-    mode == .editor
+    // mode == .editor
+    tabState.editorHasFocus == true
   }
 
   public func focusEditor(blank: Bool = false, selectAll: Bool = true) {
     switch mode {
     case .placeholder:
       if blank {
-        content.editorValue = ""
+        tabState.editorString = ""
       }
       if selectAll {
-        content.editorSelection = content.editorValue.startIndex..<content.editorValue.endIndex
+        tabState.editorSelection = tabState.editorString.startIndex..<tabState.editorString.endIndex
       }
-      mode = .editor
+      tabState.editorHasFocus = true
     case .editor:
       suggestionsViewModel.moveSelectionToNextSearch()
     }
   }
 
   public func dismissEditor() {
-    mode = .placeholder
+    tabState.editorHasFocus = false
     handleURLChanged(url) // Put the current URL back.
   }
 
@@ -59,9 +54,28 @@ public final class AddressBarViewModel {
   }
 
   let suggestionsViewModel: SuggestionsViewModel
-  var mode = Mode.placeholder
   var placeholderPositionInHost: CGPoint?
   var placeholderSize = CGSize.zero
+
+  var mode: Mode {
+    if editorHasFocus {
+      .editor
+    } else {
+      .placeholder
+    }
+  }
+
+  var placeholderString: String {
+    tabState.placeholderString
+  }
+
+  var editorString: String {
+    tabState.editorString
+  }
+
+  var editorSelection: Range<String.Index> {
+    tabState.editorSelection
+  }
 
   var url: URL? {
     groupModel.selectedTabModel.url
@@ -71,13 +85,21 @@ public final class AddressBarViewModel {
     groupModel.selectedTabModel.id
   }
 
+  var tabState: AddressBarTabState {
+    groupModel.selectedTabModel.addressBarTabState ?? {
+      let state = AddressBarTabState()
+      groupModel.selectedTabModel.value.addressBarTabState = state
+      return state
+    }()
+  }
+
   func handleURLChanged(_ url: URL?) {
     guard mode == .placeholder else { return }
 
     let hostname = url?.host() ?? ""
 
-    content.placeholderValue = hostname
-    content.editorValue = url?.absoluteString ?? ""
+    tabState.placeholderString = hostname
+    tabState.editorString = url?.absoluteString ?? ""
   }
 
   func handleTabChange() {

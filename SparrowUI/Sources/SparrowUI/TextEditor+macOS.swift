@@ -28,6 +28,8 @@ struct TextBoxRepresentable: NSViewRepresentable {
     func setText(_ text: String, withSelection selection: Range<String.Index>) {
       guard let editorView else { return }
 
+      print(">>> setText, text: \"\(text)\", selection: \(selection)")
+
       assert(text == textBinding.get())
       assert(selection == selectionBinding.get())
 

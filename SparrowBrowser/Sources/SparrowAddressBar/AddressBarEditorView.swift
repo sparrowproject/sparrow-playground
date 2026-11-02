@@ -47,11 +47,11 @@ public struct AddressBarEditorView: View {
     .onChange(of: (buffer, bufferSelection), perform: { buffer, bufferSelection in
       apply(autocompleteModel.handleEditorChange(value: buffer, selection: bufferSelection))
     })
-    .onChange(of: (viewModel.content.editorValue, viewModel.content.editorSelection)) { value, selection in
+    .onChange(of: (viewModel.editorString, viewModel.editorSelection)) { value, selection in
       if buffer != value {
         buffer = value
       }
-      if let selection, bufferSelection != selection {
+      if bufferSelection != selection {
         bufferSelection = selection
       }
     }
@@ -74,8 +74,8 @@ public struct AddressBarEditorView: View {
     .onAppear {
       // TODO: Can we avoid this Task somehow?
       Task {
-        buffer = viewModel.content.editorValue
-        bufferSelection = viewModel.content.editorSelection ?? buffer.endIndex ..< buffer.endIndex
+        buffer = viewModel.editorString
+        bufferSelection = viewModel.editorSelection
         autocompleteModel.initializeEditorState(value: buffer, selection: bufferSelection)
         focused = true
         withAnimation {
@@ -151,9 +151,9 @@ public struct AddressBarEditorView: View {
   }
 
   private func submit(_ result: SuggestQueryResult) {
-    viewModel.content.editorValue = result.value
-    viewModel.content.editorSelection = nil
-    viewModel.mode = .placeholder
+    viewModel.tabState.editorString = result.value
+    viewModel.tabState.editorSelection = result.value.endIndex ..< result.value.endIndex
+    viewModel.tabState.editorHasFocus = false
     focused = nil
     if let completion = AddressBarCompletion(result) {
       action(.submit(completion))

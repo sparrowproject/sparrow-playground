@@ -15,6 +15,8 @@ public final class TabModel {
   public internal(set) var groupID: TabGroupID
   public internal(set) var isSelected = false
   public internal(set) var webContentModel: WebContentModel?
+
+  var attributes = [AnyHashable: AnyTabAttribute]()
 }
 
 extension TabModel {
@@ -53,6 +55,14 @@ extension TabModel {
 
   public var interactionState: Data? {
     webContentModel?.interactionState
+  }
+
+  public func attribute<Attr: TabAttribute>(for attr: Attr.Type) -> Attr? {
+    attributes[AnyHashable(attr.key)] as? Attr
+  }
+
+  public func updateAttribute<Attr: TabAttribute>(_ attr: Attr?) {
+    attributes[AnyHashable(Attr.key)] = attr
   }
 }
 
