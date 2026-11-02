@@ -308,6 +308,23 @@ extension WebContentWK: WKUIDelegate {
   }
 }
 
+extension WebContentWK {
+  /// Support `window.print()`.
+  /// The frame is WebKit's private _WKFrameHandle, passed through unchanged.
+  @objc(_webView:printFrame:)
+  func _webView(_ webView: WKWebView, printFrame frame: NSObject) {
+    let selector = NSSelectorFromString("_printOperationWithPrintInfo:forFrame:")
+    guard webView.responds(to: selector) else { return }
+    guard let operation = webView.perform(
+      selector,
+      with: NSPrintInfo.shared,
+      with: frame,
+    )?.takeUnretainedValue() as? NSPrintOperation else { return }
+
+    operation.run()
+  }
+}
+
 // These declarations mirror WebKit's private _WKIconLoadingDelegate protocol.
 // Keeping them here avoids depending on private SDK headers while still exposing
 // the Objective-C selector WebKit looks up on its delegate.
