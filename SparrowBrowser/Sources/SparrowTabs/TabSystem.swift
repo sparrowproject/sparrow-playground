@@ -224,6 +224,13 @@ final class DefaultTabSystem: TabSystem {
     let tabModel = model(forTab: tabID)
     let targetTabModel = model(forTab: otherTabID)
 
+    // TODO: Consider if this should be an assertion failure and enforced at a higher level or not.
+    // Silently returning here seems to work well and is fairly simple.
+    guard tabModel.isPinned == targetTabModel.isPinned else {
+      print(">>> Cannot move across pinned tab boundary!")
+      return
+    }
+
     guard tabModel.groupID == targetTabModel.groupID else {
       // TODO: Make this possible.
       assertionFailure("Can only move a tab to the position of another tab in the same group!")

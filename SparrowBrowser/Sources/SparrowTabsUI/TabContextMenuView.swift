@@ -5,6 +5,7 @@ import SparrowUIFoundation
 
 struct TabContextMenuView: View {
   let tabsStyle: TabsStyle
+  let isPinned: () -> Bool
   let isEnabled: (SparrowCommand.ID) -> Bool
   let action: (SparrowCommand.ID) -> Void
 
@@ -22,7 +23,7 @@ struct TabContextMenuView: View {
         .separator(),
         .command(SparrowCommands.reloadTab),
         .command(SparrowCommands.duplicateTab),
-        .command(SparrowCommands.pinTab),
+        .command(isPinned() ? SparrowCommands.unpinTab : SparrowCommands.pinTab),
         .command(SparrowCommands.muteTab),
         .separator(),
         .command(SparrowCommands.toggleTabMode),

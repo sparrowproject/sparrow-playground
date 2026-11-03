@@ -98,7 +98,11 @@ public struct TabView: View {
       viewModel.isHovered = false
     }
     .contextPopover() { controller in
-      TabContextMenuView(tabsStyle: viewModel.style, isEnabled: viewModel.isCommandEnabled) {
+      TabContextMenuView(
+        tabsStyle: viewModel.style,
+        isPinned: { viewModel.isPinned },
+        isEnabled: viewModel.isCommandEnabled
+      ) {
         controller.dismiss()
         action(.command($0))
       }
