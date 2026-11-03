@@ -1,3 +1,5 @@
+import OrderedCollections
+
 @MainActor
 public protocol TabGroupPolicy: AnyObject {
   var insertionMode: TabInsertionMode { get set }
@@ -23,27 +25,40 @@ final class DefaultTabGroupPolicy: TabGroupPolicy {
   }
 
   func decideInsertionIndexForNewlyOpenedTab(inGroup group: TabGroupModel, openerTabID: TabID) -> Int {
+    // If this opener is already the start of a mini-group, then extend the mini-group.
+    if openerTabID == group.miniGroup.first {
+      guard let lastIndex = group.miniGroup.last.flatMap({ group.tabIDs.firstIndex(of: $0) }) else {
+        preconditionFailure("Last tab of mini group not found in given group!")
+      }
+      return lastIndex + 1
+    }
+
     guard let openerIndex = group.tabIDs.firstIndex(of: openerTabID) else {
       preconditionFailure("Opener tab should be part of the given group!")
     }
-    if openerTabID == group.miniGroup.first {
-      return openerIndex + group.miniGroup.count
+
+    // If the opener is a pinned tab, then the newly opened tab should be just outside the pinned range.
+    if openerIndex < group.pinnedCount {
+      return group.pinnedCount
     }
+
+    // Else, just open adjacent to the opener.
     return openerIndex + 1
   }
 
   func decideNextSelectedTabAfterRemovalOfSelectedTab(inGroup group: TabGroupModel) -> TabID? {
     let selectedTabID = group.selectedTabModel.id
 
-    guard let index = group.tabIDs.firstIndex(of: selectedTabID) else { return nil }
-
-    let range: Range<Int>
+    let considerationSet: OrderedSet<TabID>
     if group.miniGroup.contains(selectedTabID) {
-      // Stay within the group!
-      let startIndex = group.tabIDs.firstIndex(of: group.miniGroup.first!)!
-      range = startIndex..<(startIndex + group.miniGroup.count)
+      considerationSet = group.miniGroup // Stay within the mini-group!
     } else {
-      range = 0..<group.tabIDs.count
+      considerationSet = group.tabIDs
+    }
+
+    let range = 0 ..< considerationSet.count
+    guard let index = considerationSet.firstIndex(of: selectedTabID) else {
+      preconditionFailure("Selected tab not found in consideration set!")
     }
 
     let nextIndex: Int? =
@@ -55,6 +70,6 @@ final class DefaultTabGroupPolicy: TabGroupPolicy {
         nil
       }
 
-    return nextIndex.flatMap { group.tabIDs[$0] }
+    return nextIndex.flatMap { considerationSet[$0] }
   }
 }

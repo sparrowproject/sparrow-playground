@@ -21,6 +21,7 @@ public final class TabGroupModel {
   public internal(set) var pinnedCount: Int = 0
 
   /// Not persisted. This represents a group of tabs opened from the first tab.
+  /// This may not be a contiguous run of tabs as the first may be a pinned tab.
   public internal(set) var miniGroup = OrderedSet<TabID>()
 }
 
@@ -34,18 +35,10 @@ extension TabGroupModel: Identifiable {}
 
 extension TabGroupModel {
   func extendMiniGroup(from openerTabID: TabID, adding tabID: TabID) {
-    let openerIndex = tabIDs.firstIndex(of: openerTabID)!
-    let tabIndex = tabIDs.firstIndex(of: tabID)!
-
     if miniGroup.first == openerTabID {
-      miniGroup.insert(tabID, at: tabIndex - openerIndex)
+      miniGroup.append(tabID)
     } else {
       miniGroup = [openerTabID, tabID]
-    }
-
-    // Assert that `miniGroup` is a contiguous subset of `tabIDs`:
-    for i in 0..<miniGroup.count {
-      assert(tabIDs[openerIndex + i] == miniGroup[i])
     }
   }
 
