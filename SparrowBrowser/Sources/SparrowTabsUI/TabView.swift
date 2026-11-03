@@ -174,6 +174,7 @@ public struct TabView: View {
   private func closeButtonIsVisible(geom: GeometryProxy) -> Bool {
     !options().contains(.noCloseButton)
       && viewModel.isHovered
+      && !viewModel.isPinned
       && (geom.width > Metrics.iconSize + Metrics.intraContentPadding + Metrics.closeButtonSize)
   }
 }

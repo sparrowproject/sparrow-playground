@@ -30,7 +30,7 @@ FetchContent_Declare(swift_tagged
 
 FetchContent_Declare(swift_collections
   GIT_REPOSITORY https://github.com/apple/swift-collections.git
-  GIT_TAG 1.5.1
+  GIT_TAG 1.7.5
   GIT_SHALLOW TRUE
 )
 

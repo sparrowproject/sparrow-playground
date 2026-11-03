@@ -14,6 +14,7 @@ public final class TabModel {
   public let id: TabID
   public internal(set) var groupID: TabGroupID
   public internal(set) var isSelected = false
+  public internal(set) var isPinned = false
   public internal(set) var webContentModel: WebContentModel?
 
   var attributes = [AnyHashable: AnyTabAttribute]()

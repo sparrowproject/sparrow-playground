@@ -269,9 +269,13 @@ public final class BrowserWindowViewModel {
         dependencies.tabSystem.duplicateTab(tabID)
       }
     case .pinTab:
-      print(">>> implement me!")
+      withAnimation {
+        dependencies.tabSystem.pin(tab: tabID)
+      }
     case .unpinTab:
-      print(">>> implement me!")
+      withAnimation {
+        dependencies.tabSystem.unpin(tab: tabID)
+      }
     case .muteTab:
       print(">>> implement me!")
     case .unmuteTab:

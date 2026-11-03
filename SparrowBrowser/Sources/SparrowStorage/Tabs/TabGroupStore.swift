@@ -20,6 +20,7 @@ final class TabGroupStore {
         id: groupData.id,
         tabIDs: groupData.tabIDs,
         selectedTabID: groupData.selectedTabID,
+        pinnedCount: groupData.pinnedCount,
       )
       initialGroupData[groupData.id] = groupData
     }
@@ -162,6 +163,7 @@ extension TabGroupData {
       id: groupModel.id,
       tabIDs: groupModel.tabIDs.elements,
       selectedTabID: groupModel.selectedTabModel.id.nilIfInvalid,
+      pinnedCount: groupModel.pinnedCount,
     )
   }
 }

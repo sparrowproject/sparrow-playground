@@ -17,6 +17,9 @@ public final class TabGroupModel {
   }
   public internal(set) var selectedTabModel = Handle<TabModel>(.invalid)
 
+  /// The first N tabIDs are treated as pinned.
+  public internal(set) var pinnedCount: Int = 0
+
   /// Not persisted. This represents a group of tabs opened from the first tab.
   public internal(set) var miniGroup = OrderedSet<TabID>()
 }

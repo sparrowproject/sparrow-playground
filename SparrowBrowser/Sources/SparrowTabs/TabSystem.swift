@@ -31,6 +31,9 @@ public protocol TabSystem: AnyObject {
 
   func move(tab tabID: TabID, toPositionOf otherTabID: TabID)
 
+  func pin(tab tabID: TabID)
+  func unpin(tab tabID: TabID)
+
   func addObserver(_: TabSystemObserver)
   func removeObserver(_: TabSystemObserver)
 }
@@ -229,6 +232,40 @@ final class DefaultTabSystem: TabSystem {
 
     let groupModel = model(forGroup: tabModel.groupID)
     groupModel.tabIDs.move(tabID, toPositionOf: otherTabID)
+  }
+
+  func pin(tab tabID: TabID) {
+    guard let tabModel = model.tabs[tabID] else {
+      assertionFailure("Unknown TabID!")
+      return
+    }
+    guard !tabModel.isPinned else {
+      return
+    }
+    guard let groupModel = model.groups[tabModel.groupID] else {
+      assertionFailure("Unknown TabGroupID!")
+      return
+    }
+    groupModel.tabIDs.move(members: [tabID], to: groupModel.pinnedCount)
+    groupModel.pinnedCount += 1
+    tabModel.isPinned = true
+  }
+
+  func unpin(tab tabID: TabID) {
+    guard let tabModel = model.tabs[tabID] else {
+      assertionFailure("Unknown TabID!")
+      return
+    }
+    guard tabModel.isPinned else {
+      return
+    }
+    guard let groupModel = model.groups[tabModel.groupID] else {
+      assertionFailure("Unknown TabGroupID!")
+      return
+    }
+    groupModel.tabIDs.move(members: [tabID], to: groupModel.pinnedCount)
+    groupModel.pinnedCount -= 1
+    tabModel.isPinned = false
   }
 
   func addObserver(_ observer: TabSystemObserver) {

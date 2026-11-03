@@ -1,4 +1,5 @@
 import Foundation
+import SparrowUIFoundation
 
 @MainActor
 public protocol TabSystemInitializer: Sendable {
@@ -14,6 +15,7 @@ public protocol TabSystemInitializer: Sendable {
     id: TabGroupID,
     tabIDs: [TabID],
     selectedTabID: TabID?,
+    pinnedCount: Int?,
   )
 }
 
@@ -44,11 +46,13 @@ final class DefaultTabSystemInitializer: TabSystemInitializer {
     id: TabGroupID,
     tabIDs: [TabID],
     selectedTabID: TabID?,
+    pinnedCount: Int?,
   ) {
     let groupModel = TabGroupModel(id: id)
     groupModel.tabIDs = .init(tabIDs)
     // This will be updated to be the actual tab model in `finish`.
     groupModel.selectedTabModel = .init(selectedTabID.flatMap({ .init(id: $0, groupID: id) }) ?? .invalid)
+    groupModel.pinnedCount = pinnedCount ?? 0
     provisionalGroups[id] = groupModel
   }
 
@@ -68,6 +72,13 @@ final class DefaultTabSystemInitializer: TabSystemInitializer {
           group.tabIDs.remove(tabID)
         }
       }
+
+      // Validate pinned count and apply to tab models.
+      group.pinnedCount = clamp(group.pinnedCount, 0, group.tabIDs.count)
+      for i in 0..<group.pinnedCount {
+        model.tabs[group.tabIDs.elements[i]]!.isPinned = true
+      }
+
       setGroupModel(group)
     }
 

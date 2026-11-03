@@ -26,6 +26,10 @@ final class TabViewModel {
     dragOffset != nil
   }
 
+  var isPinned: Bool {
+    tabModel.isPinned
+  }
+
   var tabID: TabID {
     tabModel.id
   }
