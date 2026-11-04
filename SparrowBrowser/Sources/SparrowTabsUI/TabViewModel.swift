@@ -30,6 +30,10 @@ final class TabViewModel {
     tabModel.isPinned
   }
 
+  var groupID: TabGroupID {
+    tabModel.groupID
+  }
+
   var tabID: TabID {
     tabModel.id
   }

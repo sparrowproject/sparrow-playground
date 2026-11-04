@@ -49,7 +49,7 @@ public final class TopTabsViewModel {
     })
 
     let diff = newViewModels.keys.difference(from: tabViewModels.keys)
-    if !diff.removals.isEmpty {
+    if diff.removals.contains(where: { tabViewModels[$0.element]?.groupID == groupModel.id }) {
       updateIsLayoutLockedAfterRemoval()
     }
 
@@ -83,6 +83,17 @@ public final class TopTabsViewModel {
       }
 
       unlockTask = nil
+    }
+  }
+}
+
+extension CollectionDifference.Change {
+  var element: ChangeElement {
+    switch self {
+    case .insert(_, let element, _):
+      element
+    case .remove(_, let element, _):
+      element
     }
   }
 }
