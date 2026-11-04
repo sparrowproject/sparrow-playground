@@ -20,26 +20,29 @@ public final class SuggestQueryModel {
 }
 
 extension SuggestQueryModel {
-  /// Generate a transitional model. This model preserves the previous results while the
-  /// new results are being fetched, even if they no longer match. It also updates the
-  /// selection of the first match if appropriate.
+  /// Generate a transitional model. This model preserves the previous search results, if
+  /// they still make sense, while the new results are being fetched. This is useful for
+  /// minimizing suggestions flicker while typing.
   public func transitionalModel(from previous: SuggestQueryModel?) -> SuggestQueryModel {
     guard let previous, status != .done else { return self }
 
-    if
-      input.hasPrefix(previous.input),
-      let firstCompletion = previous.completions.first,
-      firstCompletion.selection != nil,
-      firstCompletion.value.hasPrefix(input)
-    {
-      let model = SuggestQueryModel(input: input)
-      model.completions = previous.completions
-      model.completions[0] = with(firstCompletion) {
-        $0.selection = input.endIndex ..< firstCompletion.value.endIndex
-      }
-      return model
-    }
+    guard input.hasPrefix(previous.input) else { return self }
 
-    return previous
+    // This solution is dependent on the implementation of `MergedSuggestQuery`.
+
+    // Preserve non-preferred results.
+    let previousNonPreferredResults = previous.completions.filter({
+      !$0.preferredMatch
+    })
+
+    let model = SuggestQueryModel(input: input)
+    model.completions = completions
+
+    let insertionIndex = max(0, (completions.last?.isChat == true) ? completions.count - 1 : completions.count)
+    model.completions.insert(
+      contentsOf: previousNonPreferredResults,
+      at: insertionIndex,
+    )
+    return model
   }
 }
