@@ -36,7 +36,7 @@ extension WindowSystemModel {
       id: .init(),
       profileID: profileID,
       groupID: groupID,
-      scopedSpaces: [groupID],
+      scratchSpace: groupID,
     )
     windows[windowModel.id] = windowModel
     return windowModel

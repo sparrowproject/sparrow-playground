@@ -38,6 +38,11 @@ public struct SpaceSelectorView: View {
           .offset(x: layout.offsetX(for: chipViewModel), y: layout.offsetY(for: chipViewModel))
       }
 
+      // Repeated(viewModel.otherChipViewModels.values) { chipViewModel in
+      //   spaceChipView(for: chipViewModel)
+      //     .offset(x: layout.offsetX(for: chipViewModel), y: layout.offsetY(for: chipViewModel))
+      // }
+
       IfLet(viewModel.draggingChipViewModel) { chipViewModel in
         SpaceChipView(viewModel: chipViewModel) { _ in }
           .width(Metrics.buttonSize)

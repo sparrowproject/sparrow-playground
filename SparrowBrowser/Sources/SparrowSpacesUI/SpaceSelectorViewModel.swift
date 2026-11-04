@@ -80,7 +80,7 @@ public final class SpaceSelectorViewModel {
         return
       }
 
-      browserWindowModel.scopedSpaces.remove(sourceGroupID)
+      browserWindowModel.scratchSpace = nil
 
       spaceGridModel[row: targetRow, col: targetCol] = sourceGroupID
     } else {
@@ -90,7 +90,7 @@ public final class SpaceSelectorViewModel {
       if targetViewModel.section == .scratch {
         guard targetViewModel.groupID == nil else { return }
 
-        browserWindowModel.scopedSpaces.append(sourceGroupID)
+        browserWindowModel.scratchSpace = sourceGroupID
 
         spaceGridModel[row: sourceRow, col: sourceCol] = nil
       } else {
@@ -117,7 +117,7 @@ public final class SpaceSelectorViewModel {
         return nil
       }
 
-      dependencies.browserWindowModel.scopedSpaces.remove(groupID)
+      dependencies.browserWindowModel.scratchSpace = nil
 
       let spaceGridModel = dependencies.spaceGridModel
 

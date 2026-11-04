@@ -169,7 +169,7 @@ final class DefaultWindowManager: WindowManager {
 
   private func handleWindowClosed(for window: BrowserWindow) {
     let windowModel = window.windowModel
-    for space in windowModel.scopedSpaces {
+    if let space = windowModel.scratchSpace {
       window.viewModel.dependencies.tabSystem.remove(group: space)
     }
     dependencies.windowSystemModel.windows.removeValue(forKey: window.windowModel.id)
@@ -195,8 +195,9 @@ final class DefaultWindowManager: WindowManager {
       }
     
     case .createScratchSpace:
+      assert(window.windowModel.scratchSpace == nil)
       let groupID = TabGroupID.newSpace()
-      window.windowModel.scopedSpaces.append(groupID)
+      window.windowModel.scratchSpace = groupID
       activateGroup(groupID, inWindow: window)
 
     case .createSavedSpace(let row, let col):

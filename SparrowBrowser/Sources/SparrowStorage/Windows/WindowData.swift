@@ -42,7 +42,8 @@ struct WindowData: Codable, Sendable, Equatable {
 struct BrowserWindowData: Codable, Sendable, Equatable {
   let profileID: ProfileID
   let groupID: TabGroupID
-  let scopedSpaces: OrderedSet<TabGroupID>
+  let scopedSpaces: OrderedSet<TabGroupID>? // DEPRECATED
+  let scratchSpace: TabGroupID?
 }
 
 extension WindowData.Kind {
@@ -54,7 +55,8 @@ extension WindowData.Kind {
       return .browser(.init(
         profileID: browserWindowModel.profileID,
         groupID: browserWindowModel.groupID,
-        scopedSpaces: browserWindowModel.scopedSpaces,
+        scopedSpaces: nil,
+        scratchSpace: browserWindowModel.scratchSpace,
       ))
     }
   }
@@ -81,7 +83,7 @@ extension WindowData {
         id: id,
         profileID: browserData.profileID,
         groupID: browserData.groupID,
-        scopedSpaces: browserData.scopedSpaces,
+        scratchSpace: browserData.scratchSpace ?? browserData.scopedSpaces?.first,
       )
       #if os(Windows)
       browserWindowModel.frame = frame

@@ -50,7 +50,7 @@ final class SpaceChipViewModel {
   var groupModel: TabGroupModel? {
     let groupID: TabGroupID? =
       if section == .scratch {
-        dependencies.browserWindowModel.scopedSpaces[safe: row * col]
+        dependencies.browserWindowModel.scratchSpace
       } else {
         dependencies.spaceGridModel[row: row, col: col]
       }

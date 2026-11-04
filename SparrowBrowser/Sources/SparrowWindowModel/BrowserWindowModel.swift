@@ -1,5 +1,4 @@
 import Observation
-import OrderedCollections
 import SparrowProfileModel
 import SparrowTabs
 
@@ -9,11 +8,11 @@ public final class BrowserWindowModel: WindowModel {
     id: WindowID,
     profileID: ProfileID,
     groupID: TabGroupID,
-    scopedSpaces: OrderedSet<TabGroupID>,
+    scratchSpace: TabGroupID?,
   ) {
     self.profileID = profileID
     self.groupID = groupID
-    self.scopedSpaces = scopedSpaces
+    self.scratchSpace = scratchSpace
     super.init(id: id, kind: .browser)
   }
 
@@ -22,8 +21,8 @@ public final class BrowserWindowModel: WindowModel {
   /// Identifies the selected space for the window. This group is of type `space:`.
   public var groupID: TabGroupID
 
-  /// Represents the ordered set of spaces scoped to the window. If the window is
-  /// closed, then these groups will be removed. `groupID` may reference one of
-  /// these groups or one from the profile's `SpaceSystem.savedGroups`.
-  public var scopedSpaces: OrderedSet<TabGroupID>
+  /// An optional "scratch" space scoped to the window. If the window is closed, then
+  /// this group will be removed. `groupID` may reference either this group or one from
+  /// the profile's `SpaceSystem.savedGroups`.
+  public var scratchSpace: TabGroupID?
 }
