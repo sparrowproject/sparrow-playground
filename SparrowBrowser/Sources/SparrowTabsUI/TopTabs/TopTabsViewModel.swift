@@ -49,6 +49,10 @@ public final class TopTabsViewModel {
     })
 
     let diff = newViewModels.keys.difference(from: tabViewModels.keys)
+
+    // When the group changes, all of the tabs should just be resized immediately without delay.
+    // However, if tabs are removed from the current tab strip, then hold the sizes constant (i.e.,
+    // engage the `lockedTabCount` mechanism).
     if diff.removals.contains(where: { tabViewModels[$0.element]?.groupID == groupModel.id }) {
       updateIsLayoutLockedAfterRemoval()
     }
