@@ -272,6 +272,73 @@ extension WebContentWK: WKNavigationDelegate {
 extension WebContentWK: WKUIDelegate {
   func webView(
     _ webView: WKWebView,
+    runJavaScriptAlertPanelWithMessage message: String,
+    initiatedByFrame frame: WKFrameInfo,
+    completionHandler: @escaping @MainActor () -> Void
+  ) {
+    guard let window = webView.window else {
+      completionHandler()
+      return
+    }
+
+    let alert = javaScriptAlert(message: message, frame: frame)
+    alert.beginSheetModal(for: window) { _ in
+      completionHandler()
+    }
+  }
+
+  func webView(
+    _ webView: WKWebView,
+    runJavaScriptConfirmPanelWithMessage message: String,
+    initiatedByFrame frame: WKFrameInfo,
+    completionHandler: @escaping @MainActor (Bool) -> Void
+  ) {
+    guard let window = webView.window else {
+      completionHandler(false)
+      return
+    }
+
+    let alert = javaScriptAlert(message: message, frame: frame)
+    alert.addButton(withTitle: "Cancel")
+    alert.beginSheetModal(for: window) { response in
+      completionHandler(response == .alertFirstButtonReturn)
+    }
+  }
+
+  func webView(
+    _ webView: WKWebView,
+    runJavaScriptTextInputPanelWithPrompt prompt: String,
+    defaultText: String?,
+    initiatedByFrame frame: WKFrameInfo,
+    completionHandler: @escaping @MainActor (String?) -> Void
+  ) {
+    guard let window = webView.window else {
+      completionHandler(nil)
+      return
+    }
+
+    let alert = javaScriptAlert(message: prompt, frame: frame)
+    alert.addButton(withTitle: "Cancel")
+    let textField = NSTextField(frame: NSRect(x: 0, y: 0, width: 300, height: 24))
+    textField.stringValue = defaultText ?? ""
+    alert.accessoryView = textField
+    alert.window.initialFirstResponder = textField
+    alert.beginSheetModal(for: window) { response in
+      completionHandler(response == .alertFirstButtonReturn ? textField.stringValue : nil)
+    }
+  }
+
+  private func javaScriptAlert(message: String, frame: WKFrameInfo) -> NSAlert {
+    let alert = NSAlert()
+    alert.alertStyle = .informational
+    alert.messageText = frame.request.url?.host ?? "JavaScript"
+    alert.informativeText = message
+    alert.addButton(withTitle: "OK")
+    return alert
+  }
+
+  func webView(
+    _ webView: WKWebView,
     runOpenPanelWith parameters: WKOpenPanelParameters,
     initiatedByFrame frame: WKFrameInfo,
     completionHandler: @escaping @MainActor @Sendable ([URL]?) -> Void
