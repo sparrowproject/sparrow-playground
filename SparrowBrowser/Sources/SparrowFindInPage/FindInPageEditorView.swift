@@ -22,7 +22,7 @@ public struct FindInPageEditorView: View {
           .fill(.primaryBackground)
           .padding(.all, 1)
 
-        editor
+        controls
       }
       .shadow(color: StandardColors.shadow, radius: StandardMetrics.shadowRadius)
     }
@@ -36,16 +36,43 @@ public struct FindInPageEditorView: View {
   private enum Metrics {
     static let width: CGFloat = 200
     static let height: CGFloat = 36
+    static let dividerWidth: CGFloat = 1
+    static let padding: CGFloat = 6
+  }
+
+  private static var closeSymbol: SymbolSource {
+    #if os(macOS)
+    .init(systemName: "xmark", size: 10)
+    #elseif os(Windows)
+    .init(glyph: "\u{e711}", size: 10) // Cancel
+    #endif
   }
 
   private let viewModel: FindInPageViewModel
   private let action: (Action) -> Void
+
+  private var controls: some View {
+    Group { geom in
+      editor
+        .width(geom.width - closeButtonWidth - 2 * Metrics.padding)
+
+      divider
+        .offset(x: geom.width - closeButtonWidth - Metrics.padding)
+        .padding(.vertical, Metrics.padding / 2)
+
+      closeButton
+        .width(closeButtonWidth)
+        .alignment(.trailing)
+    }
+    .padding(.all, Metrics.padding)
+  }
 
   private var editor: some View {
     TextEditor(text: .init(get: { viewModel.searchString }, set: { viewModel.searchString = $0 })) {
       handleTextEditorAction($0)
     }
     .font(.system(size: 11))
+    .contentPadding(.horizontal, 0)
     .foregroundColor(.primaryText)
     .alignment(.leading)
     .focused(when: focusedBinding, equals: true)
@@ -55,6 +82,25 @@ public struct FindInPageEditorView: View {
         viewModel.isEditorFocused = true
       }
     }
+  }
+
+  private var divider: some View {
+    StandardColors.border
+      .width(Metrics.dividerWidth)
+      .offset(x: Metrics.dividerWidth / 2)
+  }
+
+  private var closeButton: some View {
+    Button {
+      action(.dismiss)
+    } label: {
+      Symbol(source: Self.closeSymbol)
+    }
+    .buttonStyle(.standard)
+  }
+
+  private var closeButtonWidth: CGFloat {
+    Metrics.height - 2 * Metrics.padding
   }
 
   private var focusedBinding: Binding<Bool?> {
