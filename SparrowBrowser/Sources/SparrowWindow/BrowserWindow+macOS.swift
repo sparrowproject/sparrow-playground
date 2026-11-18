@@ -301,7 +301,7 @@ public final class BrowserWindow: NSWindow, Sendable {
     
     let insets = EdgeInsets(
       leading: rect.maxX + paddingX,
-      trailing: 0,
+      trailing: 30, // Add a blank area for window grabbing.
       top: 0,
       bottom: 0,
     )

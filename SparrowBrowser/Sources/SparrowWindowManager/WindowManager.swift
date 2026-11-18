@@ -109,8 +109,6 @@ final class DefaultWindowManager: WindowManager {
 
     let groupModel = tabSystem.model(forGroup: groupID)
 
-    ensureAtLeastOneTab(for: groupModel, in: tabSystem)
-
     let viewModel = BrowserWindowViewModel(dependencies: container, groupModel: .init(groupModel))
 
     let window = BrowserWindow(
@@ -122,6 +120,8 @@ final class DefaultWindowManager: WindowManager {
       guard let self, let browserWindow else { return }
       handleBrowserWindowAction($0, for: browserWindow)
     }
+
+    ensureAtLeastOneTab(for: window)
 
     #if os(macOS)
     window.center()
@@ -227,18 +227,17 @@ final class DefaultWindowManager: WindowManager {
     let previousGroupID = window.windowModel.groupID
     guard previousGroupID != groupID else { return }
 
-    ensureAtLeastOneTab(for: groupModel, in: tabSystem)
-
     window.windowModel.groupID = groupID
     window.viewModel.groupModel.value = groupModel
+
+    ensureAtLeastOneTab(for: window)
 
     tabSystem.unloadLiveTabs(forGroup: previousGroupID)
   }
 
-  private func ensureAtLeastOneTab(for groupModel: TabGroupModel, in tabSystem: TabSystem) {
-    if groupModel.tabIDs.isEmpty {
-      // TODO: Add proper initialization for tab groups. For now just add a dummy initial tab.
-      tabSystem.load(.init(url: URL(string: "https://news.ycombinator.com/")!), inGroup: groupModel.id)
+  private func ensureAtLeastOneTab(for window: BrowserWindow) {
+    if window.viewModel.groupModel.tabIDs.isEmpty {
+      window.viewModel.handleCommand(.newTab).flatMap { handleBrowserWindowAction(.view($0), for: window) }
     }
   }
 
