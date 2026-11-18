@@ -82,6 +82,9 @@ public final class BrowserWindow: NSWindow, Sendable {
     // Just grab this once.
     updateTitleBarHeight()
 
+    // Run this once at startup synchronously to avoid the insets momentarily appearing incorrect.
+    updateTitleBarInsets()
+
     setUpObservers()
   }
 
